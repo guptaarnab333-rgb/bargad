@@ -1496,13 +1496,16 @@ a.card:active {
 /* ---------------- Onboarding backdrop ----------------
    Same shape language as the welcome screen, dialled further down so it never
    competes with a form the user is trying to fill in. */
+/* NOTE: .onboard sits ON the scroll container, so it must never set
+   overflow. Clipping belongs on the decorative layer alone, otherwise the
+   page stops scrolling and everything below the fold becomes unreachable. */
 .onboard {
   position: relative;
-  overflow: hidden;
 }
 .onboard__bg {
   position: absolute;
   inset: 0;
+  overflow: hidden;
   pointer-events: none;
   z-index: 0;
 }
