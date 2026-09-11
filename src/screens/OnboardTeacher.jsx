@@ -96,7 +96,7 @@ export default function OnboardTeacher() {
       <TopBar
         title="Set up your profile"
         back
-        onBack={() => (step === 1 ? nav('/') : go(step - 1))}
+        onBack={() => (step === 1 ? nav('/welcome') : go(step - 1))}
       />
       <Progress step={step} total={STEPS} />
 
@@ -112,7 +112,7 @@ export default function OnboardTeacher() {
                 className="input"
                 value={d.name}
                 onChange={(e) => set('name', e.target.value)}
-                placeholder="e.g. Ananya Sen"
+                placeholder="e.g. Ananya Rawat"
                 autoFocus
               />
             </Field>
@@ -121,7 +121,7 @@ export default function OnboardTeacher() {
                 className="input"
                 value={d.qualification}
                 onChange={(e) => set('qualification', e.target.value)}
-                placeholder="e.g. M.Sc Mathematics, Jadavpur University"
+                placeholder="e.g. M.Sc Mathematics, Doon University"
               />
             </Field>
             <Field label={`Years of teaching experience: ${d.experience}`}>

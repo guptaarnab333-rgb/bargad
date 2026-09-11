@@ -88,7 +88,7 @@ export default function OnboardFamily() {
       <TopBar
         title="Tell us what you need"
         back
-        onBack={() => (step === 1 ? nav('/') : go(step - 1))}
+        onBack={() => (step === 1 ? nav('/welcome') : go(step - 1))}
       />
       <Progress step={step} total={STEPS} />
 
@@ -105,7 +105,7 @@ export default function OnboardFamily() {
                 className="input"
                 value={d.parentName}
                 onChange={(e) => set('parentName', e.target.value)}
-                placeholder="e.g. Sudipta Basu"
+                placeholder="e.g. Anil Gusain"
                 autoFocus
               />
             </Field>

@@ -6,6 +6,7 @@ const KEY = 'bargad.v1'
 
 const emptyState = {
   bootstrapped: false,
+  introSeen: false,
   role: null, // 'teacher' | 'family'
   teacher: null,
   family: null,
@@ -29,6 +30,9 @@ const AppCtx = createContext(null)
 
 function reducer(state, a) {
   switch (a.type) {
+    case 'SEEN_INTRO':
+      return { ...state, introSeen: true }
+
     case 'SET_ROLE':
       return { ...state, role: a.role }
 

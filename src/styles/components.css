@@ -1548,3 +1548,106 @@ a.card:active {
   height: 100%;
   display: block;
 }
+
+/* ---------------- Intro ----------------
+   One idea per screen. The tinted ground changes per slide so progress is
+   felt as well as shown by the dots. */
+.intro {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: calc(var(--safe-t) + 20px) var(--s-5) calc(var(--s-6) + var(--safe-b));
+  transition: background var(--dur-3) var(--ease);
+}
+.intro--green {
+  background: var(--green-t);
+}
+.intro--indigo {
+  background: var(--indigo-t);
+}
+.intro--orange {
+  background: var(--orange-t);
+}
+.intro__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+}
+.intro__skip {
+  font-size: var(--t-sm);
+  font-weight: 700;
+  color: var(--ink-2);
+  padding: 12px 8px;
+  margin: -12px -8px;
+}
+.intro__art {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  min-height: 180px;
+  animation: introIn var(--dur-3) var(--ease-out) both;
+}
+.intro__copy {
+  flex: none;
+  animation: introIn var(--dur-3) var(--ease-out) both;
+}
+.intro__title {
+  font-family: var(--font-display);
+  font-size: 1.85rem;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+.intro__body {
+  margin-top: var(--s-4);
+  font-size: var(--t-body);
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 40ch;
+  text-wrap: pretty;
+}
+.intro__foot {
+  flex: none;
+  margin-top: var(--s-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+.intro__dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+.intro__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: var(--r-pill);
+  background: rgba(39, 39, 39, 0.22);
+  padding: 0;
+  transition: width var(--dur-2) var(--ease), background var(--dur-2);
+  /* keeps a 44px tap target without a 44px dot */
+  box-sizing: content-box;
+  border: 16px solid transparent;
+  background-clip: content-box;
+  margin: -16px;
+}
+.intro__dot--on {
+  width: 26px;
+  background: var(--ink);
+  background-clip: content-box;
+}
+@keyframes introIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro__art,
+  .intro__copy {
+    animation: none;
+  }
+}

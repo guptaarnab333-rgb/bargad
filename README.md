@@ -61,6 +61,11 @@ src/
 
 State lives on the device only. **Profile → Reset the prototype** clears it.
 
+The demo data is seeded in two real places: Dehradun (eight localities, where the primary research
+was done) and Delhi NCR (four). Testers recognise where they are, and locality filtering is visibly
+doing something. Bargad itself is not tied to a city; every screen reads the city off the locality
+record in `seed.js`.
+
 ---
 
 ## Design system

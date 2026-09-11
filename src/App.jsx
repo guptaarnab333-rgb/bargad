@@ -4,6 +4,7 @@ import { useApp } from './store/AppContext'
 import { Toasts } from './components/UI'
 import TabBar from './components/TabBar'
 
+import Intro from './screens/Intro'
 import Welcome from './screens/Welcome'
 import OnboardTeacher from './screens/OnboardTeacher'
 import OnboardFamily from './screens/OnboardFamily'
@@ -73,11 +74,15 @@ export default function App() {
             element={
               role && !needsOnboard(role) ? (
                 <Navigate to={role === 'teacher' ? '/t' : '/f'} replace />
+              ) : state.introSeen || teacher || family ? (
+                <Navigate to="/welcome" replace />
               ) : (
-                <Welcome />
+                <Navigate to="/intro" replace />
               )
             }
           />
+          <Route path="/intro" element={<Intro />} />
+          <Route path="/welcome" element={<Welcome />} />
           <Route path="/onboard/teacher" element={<OnboardTeacher />} />
           <Route path="/onboard/family" element={<OnboardFamily />} />
 
