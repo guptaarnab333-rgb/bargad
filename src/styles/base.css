@@ -126,6 +126,16 @@ select {
      the screen edge while the content beside it is inset by 20px. */
   scroll-padding-inline: var(--s-5);
 }
+
+/* A full-bleed chip row: it scrolls edge to edge, but the first and last chips
+   line up with the page gutter. The visual padding and the scroll-padding above
+   must stay equal, so both read the same token. */
+.chiprow {
+  padding: 10px var(--s-5) 4px;
+}
+.chiprow--tight {
+  padding: 2px var(--s-5);
+}
 .u-scroll-x::-webkit-scrollbar {
   display: none;
 }

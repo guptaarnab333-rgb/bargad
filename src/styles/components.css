@@ -172,17 +172,18 @@
    tapping it is what reveals which fields are still missing. aria-disabled, not
    [disabled], because [disabled] hides that answer from keyboard and screen
    reader users and reintroduces the dead-end this pattern exists to solve. */
-.btn[aria-disabled='true'] {
+.btn--waiting {
   background: var(--sunk);
   color: var(--ink-3);
 }
-.btn[aria-disabled='true']:hover {
+.btn--waiting:hover {
+  background: var(--sunk);
   filter: none;
 }
 
 .btn[disabled] {
   background: var(--sunk);
-  color: var(--ink-4);
+  color: var(--ink-3); /* --ink-4 here was 2.8:1 and failed */
   pointer-events: none;
 }
 .btn--block {
@@ -246,6 +247,15 @@
   background: var(--ink);
   filter: brightness(1.2);
 }
+/* Same contract as .btn--waiting: looks not-ready, stays tappable, and
+   tapping says what is missing. The old treatment was a real [disabled] plus
+   inline opacity 0.35, which measured 2.15:1 and answered nothing. */
+.iconbtn--waiting,
+.iconbtn--waiting:hover {
+  background: var(--sunk);
+  color: var(--ink-3);
+  filter: none;
+}
 .iconbtn--on {
   background: var(--ink);
   color: #fff;
@@ -297,7 +307,10 @@
 /* Filter chips */
 .fchip {
   flex: none;
-  padding: 10px 16px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--s-4);
   border-radius: var(--r-pill);
   background: var(--surface);
   font-size: var(--t-sm);
@@ -668,7 +681,7 @@ a.card:active {
 }
 .seg__item {
   flex: 1;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 var(--s-3);
   border-radius: var(--r-pill);
   font-size: var(--t-sm);
@@ -717,7 +730,10 @@ a.card:active {
   background: var(--surface);
   border-radius: var(--r-md);
   padding: 15px var(--s-4);
-  font-size: var(--t-body);
+  /* 16px is the floor below which iOS zooms the whole page in on focus. Never
+     use --t-body (15px) on a field. Blocking zoom in the viewport meta would
+     "fix" it by taking pinch-zoom away from everyone. */
+  font-size: 1rem;
   transition: box-shadow var(--dur-1);
 }
 .input::placeholder,
@@ -1149,7 +1165,7 @@ a.card:active {
   display: flex;
   align-items: flex-end;
   gap: var(--s-2);
-  padding: var(--s-3) var(--s-4) calc(var(--s-3) + var(--safe-b));
+  padding: var(--s-3) var(--s-5) calc(var(--s-3) + var(--safe-b));
   background: var(--surface);
 }
 .composer__input {
@@ -1159,7 +1175,7 @@ a.card:active {
   padding: 12px var(--s-4);
   border-radius: var(--r-lg);
   background: var(--bg);
-  font-size: var(--t-body);
+  font-size: 1rem; /* iOS focus-zoom floor, as above */
   resize: none;
   line-height: 1.4;
   font-family: inherit;
@@ -1522,9 +1538,17 @@ a.card:active {
   pointer-events: none;
   z-index: 0;
 }
-.onboard > *:not(.onboard__bg) {
+/* Two classes here beats .topbar's one, so this silently stripped the top bar
+   of position:sticky and Back scrolled off the screen on the long steps. The
+   bar must be excluded and its sticky restated at matching specificity. */
+.onboard > *:not(.onboard__bg):not(.topbar) {
   position: relative;
   z-index: 1;
+}
+.onboard > .topbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
 }
 .onboard .blob--a {
   width: 168px;
@@ -1631,26 +1655,34 @@ a.card:active {
 }
 .intro__dots {
   display: flex;
-  gap: 8px;
+  gap: 0; /* the 44px targets provide the spacing; a gap would add to it */
   justify-content: center;
 }
+/* The dot is drawn by ::before so the button itself can be a real 44px target.
+   Do not shrink the box back with a negative inline margin: that is what made
+   the three targets overlap by 24px, and the last sibling wins a hit test, so
+   aiming at dot 2 selected dot 3. Vertical claw-back only. */
 .intro__dot {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: none;
+  margin: -16px 0;
+}
+.intro__dot::before {
+  content: '';
+  display: block;
   width: 9px;
   height: 9px;
   border-radius: var(--r-pill);
   background: rgba(39, 39, 39, 0.22);
-  padding: 0;
   transition: width var(--dur-2) var(--ease), background var(--dur-2);
-  /* keeps a 44px tap target without a 44px dot */
-  box-sizing: content-box;
-  border: 16px solid transparent;
-  background-clip: content-box;
-  margin: -16px;
 }
-.intro__dot--on {
+.intro__dot--on::before {
   width: 26px;
   background: var(--ink);
-  background-clip: content-box;
 }
 @keyframes introIn {
   from {

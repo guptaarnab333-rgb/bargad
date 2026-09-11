@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button, Field, OptionGroup, Sheet } from './UI'
+import { useApp } from '../store/AppContext'
 import { IcCheck, IcQuestion, IcX } from './Icons'
 
 const STEP_LABELS = {
@@ -76,6 +77,7 @@ export function Timeline({ events = [], status, awaiting = 'them' }) {
  * which is labelled honestly in the UI rather than pretending to be real.
  */
 export function RespondSheet({ open, onClose, who, onResolve, asOther = false }) {
+  const { toast } = useApp()
   const [mode, setMode] = useState(null)
   const [note, setNote] = useState('')
   const [reason, setReason] = useState('Not able to take a new student')
@@ -102,7 +104,15 @@ export function RespondSheet({ open, onClose, who, onResolve, asOther = false })
             <Button variant="quiet" onClick={() => setMode(null)}>
               Back
             </Button>
-            <Button block disabled={!note.trim()} onClick={() => onResolve('clarify', { note })}>
+            <Button
+              block
+              aria-disabled={!note.trim()}
+              onClick={() =>
+                note.trim()
+                  ? onResolve('clarify', { note })
+                  : toast('Write your question first, then send it.')
+              }
+            >
               Send question
             </Button>
           </>

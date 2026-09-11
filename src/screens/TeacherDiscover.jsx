@@ -65,7 +65,7 @@ export default function TeacherDiscover() {
       />
 
       <FilterRow options={SUBJECTS} value={subject} onChange={setSubject} allLabel="All subjects" />
-      <div className="u-scroll-x" style={{ padding: '10px 20px 4px' }}>
+      <div className="u-scroll-x chiprow">
         {SORTS.map((s) => (
           <button
             key={s.id}

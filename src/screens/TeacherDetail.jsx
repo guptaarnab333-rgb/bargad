@@ -259,7 +259,15 @@ export default function TeacherDetail() {
         title={`Request ${t.name.split(' ')[0]}`}
         subtitle="Already filled in from your requirement. Change anything that is different for this teacher."
         footer={
-          <Button block onClick={send} disabled={!payload.subjects.length}>
+          <Button
+            block
+            onClick={() =>
+              payload.subjects.length
+                ? send()
+                : toast('Choose at least one subject you need help with.')
+            }
+            aria-disabled={!payload.subjects.length}
+          >
             Send request
           </Button>
         }

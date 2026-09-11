@@ -238,11 +238,10 @@ export default function Thread({ role }) {
           }}
         />
         <button
-          className="iconbtn iconbtn--solid"
+          className={`iconbtn iconbtn--solid${text.trim() ? '' : ' iconbtn--waiting'}`}
           aria-label="Send"
-          onClick={send}
-          disabled={!text.trim()}
-          style={!text.trim() ? { opacity: 0.35 } : undefined}
+          onClick={() => (text.trim() ? send() : toast('Write a message first.'))}
+          aria-disabled={!text.trim()}
         >
           <IcSend size={19} />
         </button>

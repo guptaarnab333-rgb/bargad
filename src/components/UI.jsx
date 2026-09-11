@@ -19,6 +19,8 @@ export function Button({
     variant !== 'primary' && `btn--${variant}`,
     size === 'sm' && 'btn--sm',
     block && 'btn--block',
+    // Not-ready: muted, but still tappable, and tapping says what is missing.
+    p['aria-disabled'] === true && 'btn--waiting',
     className,
   ]
     .filter(Boolean)
@@ -163,7 +165,7 @@ export function OptionGroup({ options, value, onChange, multi = false, wide = fa
 /* ---------------- Filter chip row ---------------- */
 export function FilterRow({ options, value, onChange, allLabel = 'All' }) {
   return (
-    <div className="u-scroll-x" style={{ padding: '2px 20px' }}>
+    <div className="u-scroll-x chiprow chiprow--tight">
       <button className="fchip" aria-pressed={!value} onClick={() => onChange(null)}>
         {allLabel}
       </button>
