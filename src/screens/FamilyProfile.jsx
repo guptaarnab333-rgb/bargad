@@ -1,0 +1,270 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useApp } from '../store/AppContext'
+import { BOARDS, CLASSES, MODES, SLOTS, SUBJECTS, FORMATS, LOCALITIES } from '../data/seed'
+import { Avatar, Button, Chip, Field, KV, OptionGroup, SectionHead, Sheet, Switch, TopBar } from '../components/UI'
+import { IcArrow, IcInfo, IcLock, IcSwap } from '../components/Icons'
+import { cityName, inr, localityName, modeLabel, slotLabel } from '../lib/utils'
+
+export default function FamilyProfile() {
+  const { state, dispatch, toast } = useApp()
+  const nav = useNavigate()
+  const f = state.family
+  const [sheet, setSheet] = useState(null)
+
+  const save = (data) => {
+    dispatch({ type: 'SAVE_FAMILY', data })
+    toast('Requirement updated')
+  }
+
+  const sent = state.requests.filter((r) => r.from === 'me-family')
+
+  return (
+    <>
+      <TopBar title="Profile" />
+
+      <div className="page" style={{ paddingTop: 4 }}>
+        {/* ---- Identity ---- */}
+        <div className="u-row" style={{ gap: 16, alignItems: 'flex-start' }}>
+          <Avatar name={f.parentName} size={96} />
+          <div className="u-grow" style={{ paddingTop: 4 }}>
+            <h1 className="h1">{f.parentName}</h1>
+            <p className="sm" style={{ marginTop: 4 }}>
+              Parent · {localityName(f.locality)}, {cityName(f.locality)}
+            </p>
+            <div className="u-wrap" style={{ marginTop: 10 }}>
+              <Chip tone={f.looking ? 'indigo' : ''}>
+                <span className={`dot${f.looking ? ' dot--pulse' : ''}`} />
+                {f.looking ? 'Looking for a Teacher' : 'Search paused'}
+              </Chip>
+            </div>
+          </div>
+        </div>
+
+        {/* ---- Learner ---- */}
+        <SectionHead title="The learner" />
+        <div className="card">
+          <div className="u-row" style={{ gap: 14 }}>
+            <Avatar name={f.learner} size={56} />
+            <div className="u-grow">
+              <span className="h3">{f.learner}</span>
+              <p className="sm" style={{ marginTop: 2 }}>
+                {f.classLevel} · {f.board}
+              </p>
+            </div>
+          </div>
+          <div className="notice notice--orange" style={{ marginTop: 16 }}>
+            <IcLock size={19} />
+            <span className="sm">
+              Teachers see <strong className="strong">“{f.classLevel} · {f.board}”</strong> and
+              your locality. {f.learner}’s name reaches a teacher only when you accept them.
+            </span>
+          </div>
+        </div>
+
+        {/* ---- Requirement ---- */}
+        <SectionHead
+          title="What you are looking for"
+          action={
+            <button className="sechead__link" onClick={() => setSheet('req')}>
+              Edit
+            </button>
+          }
+        />
+        <KV
+          items={[
+            { k: 'Subjects', v: f.subjects.join(', ') },
+            { k: 'Class', v: f.classLevel },
+            { k: 'Board', v: f.board },
+            { k: 'Budget', v: `${inr(f.budgetMin)}–${inr(f.budgetMax)}` },
+            { k: 'Mode', v: f.modes.map(modeLabel).join(' · ') },
+            { k: 'Format', v: f.format === 'group' ? 'Small group' : 'One-to-one' },
+            { k: 'When', v: f.slots.map(slotLabel).join(' · ') },
+            { k: 'Area', v: localityName(f.locality) },
+          ]}
+        />
+
+        {f.need && (
+          <div className="card card--sunk" style={{ marginTop: 12 }}>
+            <p className="eyebrow">What you told teachers</p>
+            <p className="body" style={{ marginTop: 7, color: 'var(--ink)' }}>
+              “{f.need}”
+            </p>
+          </div>
+        )}
+
+        {/* ---- Intent ---- */}
+        <SectionHead title="Your intent" />
+        <div className="card">
+          <div className="u-spread" style={{ gap: 14 }}>
+            <div className="u-grow">
+              <span className="h3">Looking for a Teacher</span>
+              <p className="sm" style={{ marginTop: 3 }}>
+                {f.looking
+                  ? 'Teachers nearby can see this requirement and offer to teach.'
+                  : 'Hidden from teachers. You can still browse and send requests yourself.'}
+              </p>
+            </div>
+            <Switch
+              checked={!!f.looking}
+              label="Looking for a teacher"
+              onChange={(v) => {
+                dispatch({ type: 'SET_LOOKING', looking: v })
+                toast(v ? 'Teachers can see your requirement' : 'Your search is paused')
+              }}
+            />
+          </div>
+        </div>
+
+        {/* ---- Counters ---- */}
+        <div className="card card--sunk" style={{ marginTop: 14, padding: 0 }}>
+          <div className="u-row">
+            <div className="stat">
+              <div className="stat__n num">{sent.length}</div>
+              <div className="stat__l">Requests sent</div>
+            </div>
+            <div className="stat">
+              <div className="stat__n num">{state.threads.filter((t) => t.withId).length}</div>
+              <div className="stat__l">Connections</div>
+            </div>
+            <div className="stat">
+              <div className="stat__n num">
+                {state.threads.filter((t) => t.withId && t.active).length}
+              </div>
+              <div className="stat__l">Tuition running</div>
+            </div>
+          </div>
+        </div>
+
+        {/* ---- Device ---- */}
+        <SectionHead title="This device" />
+        <button className="card" style={{ width: '100%' }} onClick={() => nav('/t')}>
+          <div className="u-row" style={{ gap: 12 }}>
+            <span
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 12,
+                background: 'var(--green-t)',
+                color: 'var(--green-ink)',
+                display: 'grid',
+                placeItems: 'center',
+                flex: 'none',
+              }}
+            >
+              <IcSwap size={19} />
+            </span>
+            <div className="u-grow">
+              <span className="h3">
+                {state.teacher ? 'Switch to your teacher account' : 'Set up a teacher account'}
+              </span>
+              <p className="sm" style={{ marginTop: 2 }}>
+                See the other side of the same network.
+              </p>
+            </div>
+            <IcArrow size={18} />
+          </div>
+        </button>
+
+        <div className="notice" style={{ marginTop: 14 }}>
+          <IcInfo size={18} />
+          <span>Prototype: everything stays on this device. Nothing is sent anywhere.</span>
+        </div>
+
+        <Button
+          block
+          variant="ghost"
+          style={{ marginTop: 12, color: 'var(--blush-ink)' }}
+          onClick={() => {
+            if (confirm('Clear all prototype data on this device?')) {
+              dispatch({ type: 'RESET' })
+              nav('/', { replace: true })
+            }
+          }}
+        >
+          Reset the prototype
+        </Button>
+      </div>
+
+      {/* ---- Edit requirement ---- */}
+      <Sheet
+        open={sheet === 'req'}
+        onClose={() => setSheet(null)}
+        title="What you are looking for"
+        subtitle="Teachers read this before deciding whether to offer."
+        footer={
+          <Button block onClick={() => setSheet(null)}>
+            Done
+          </Button>
+        }
+      >
+        <Field label="Subjects">
+          <OptionGroup
+            options={SUBJECTS}
+            value={f.subjects}
+            onChange={(v) => save({ subjects: v })}
+            multi
+          />
+        </Field>
+        <Field label="Class">
+          <OptionGroup options={CLASSES} value={f.classLevel} onChange={(v) => save({ classLevel: v })} />
+        </Field>
+        <Field label="Board">
+          <OptionGroup options={BOARDS} value={f.board} onChange={(v) => save({ board: v })} />
+        </Field>
+        <Field label="Area">
+          <select
+            className="select"
+            value={f.locality}
+            onChange={(e) => save({ locality: e.target.value })}
+          >
+            {LOCALITIES.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Mode">
+          <OptionGroup options={MODES} value={f.modes} onChange={(v) => save({ modes: v })} multi wide />
+        </Field>
+        <Field label="When">
+          <OptionGroup options={SLOTS} value={f.slots} onChange={(v) => save({ slots: v })} multi wide />
+        </Field>
+        <Field label="Format">
+          <OptionGroup options={FORMATS} value={f.format} onChange={(v) => save({ format: v })} />
+        </Field>
+        <Field label={`Budget: ${inr(f.budgetMin)} to ${inr(f.budgetMax)}`}>
+          <span className="xs">Lowest</span>
+          <input
+            className="range"
+            type="range"
+            min="1000"
+            max="10000"
+            step="100"
+            value={f.budgetMin}
+            onChange={(e) => save({ budgetMin: Math.min(+e.target.value, f.budgetMax - 200) })}
+          />
+          <span className="xs">Highest</span>
+          <input
+            className="range"
+            type="range"
+            min="1000"
+            max="12000"
+            step="100"
+            value={f.budgetMax}
+            onChange={(e) => save({ budgetMax: Math.max(+e.target.value, f.budgetMin + 200) })}
+          />
+        </Field>
+        <Field label="What is going wrong">
+          <textarea
+            className="textarea"
+            value={f.need}
+            onChange={(e) => save({ need: e.target.value })}
+          />
+        </Field>
+        <div style={{ height: 16 }} />
+      </Sheet>
+    </>
+  )
+}

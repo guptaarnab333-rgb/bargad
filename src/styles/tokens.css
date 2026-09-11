@@ -1,0 +1,108 @@
+/* ============================================================
+   BARGAD · Design tokens
+   Flat colour blocks on a warm ground. Separation comes from
+   fill contrast and spacing, never from a border.
+   Four brand colours, each owning one product state.
+   ============================================================ */
+
+:root {
+  /* ---------- Ground ---------- */
+  --bg: #f5f1ea;
+  --surface: #ffffff;
+  --sunk: #ebe6dc;
+
+  /* ---------- Ink ramp (all verified ≥4.5:1 on --bg) ---------- */
+  --ink: #272727;
+  --ink-2: #57534b; /* 6.5:1, secondary body */
+  --ink-3: #656158; /* ≥4.6:1 on every surface in the system */
+  --ink-4: #8e897f; /* decoration only: switch track, grab handle, empty art */
+
+  /* ---------- Brand ---------- */
+  --green: #0dab76; /* fills, tints, dots: never behind white text */
+  --green-deep: #07754d; /* white text on green needs this: 5.7:1, matching indigo */
+  --indigo: #5248f8;
+  --orange: #ffac3e;
+  --blush: #fdd5ce;
+
+  /* Text-safe variants for type placed on each colour's own tint */
+  --green-ink: #05603f;
+  --orange-ink: #8a5200;
+  --indigo-ink: #3a30cf;
+  --blush-ink: #9c3f2c;
+
+  /* Tints: surfaces, chips, state blocks */
+  --green-t: #d3f0e4;
+  --green-t2: #a9e2c8;
+  --indigo-t: #dedcfe;
+  --indigo-t2: #c3bffd;
+  --orange-t: #ffe7c6;
+  --orange-t2: #ffd79e;
+  --blush-t: #fde9e4;
+
+  /* ---------- Radii ---------- */
+  --r-xs: 8px;
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 20px;
+  --r-xl: 26px;
+  --r-2xl: 32px;
+  --r-pill: 999px;
+  /* Signature shape, from the reference poster language */
+  --r-arch: 999px 999px 20px 20px;
+
+  /* ---------- Spacing (4pt) ---------- */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-7: 32px;
+  --s-8: 40px;
+  --s-9: 56px;
+  --s-10: 72px;
+
+  /* ---------- Elevation: sheets and toasts only ---------- */
+  --e-2: 0 2px 10px rgba(39, 39, 39, 0.06);
+  --e-3: 0 14px 40px rgba(39, 39, 39, 0.14);
+  --e-4: 0 -8px 34px rgba(39, 39, 39, 0.16);
+
+  /* ---------- Type ---------- */
+  --font-display: 'Bricolage Grotesque', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-ui: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+
+  --t-display: 2.25rem; /* 36 */
+  --t-h1: 1.625rem; /* 26 */
+  --t-h2: 1.25rem; /* 20 */
+  --t-h3: 1.0625rem; /* 17 */
+  --t-body: 0.9375rem; /* 15 */
+  --t-sm: 0.8125rem; /* 13 */
+  --t-xs: 0.75rem; /* 12 */
+
+  /* ---------- Motion: state change only ---------- */
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-1: 150ms;
+  --dur-2: 220ms;
+  --dur-3: 320ms;
+
+  /* ---------- Z-index scale ---------- */
+  --z-sticky: 20;
+  --z-nav: 30;
+  --z-scrim: 40;
+  --z-sheet: 41;
+  --z-toast: 60;
+
+  /* ---------- Layout ---------- */
+  --shell-max: 460px;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-1: 0ms;
+    --dur-2: 0ms;
+    --dur-3: 0ms;
+  }
+}
