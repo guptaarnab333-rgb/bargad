@@ -9,7 +9,7 @@ import { useApp } from '../store/AppContext'
  * Three screens, one idea each. Bargad's difference is a mechanism, not a
  * feature, so a parent who lands straight on a list of tutors will assume it
  * works like every other tutor site. This is the only place that gets said.
- * Skippable, and shown once.
+ * Skippable, shown once on a new device, and replayable from Profile.
  */
 const SLIDES = [
   {
@@ -34,14 +34,20 @@ const SLIDES = [
 
 export default function Intro() {
   const nav = useNavigate()
-  const { dispatch } = useApp()
+  const { state, dispatch } = useApp()
   const [i, setI] = useState(0)
   const slide = SLIDES[i]
   const last = i === SLIDES.length - 1
 
+  // Replayed from Profile once an account exists: send the user back to it
+  // rather than dropping them into a role choice they already made.
+  const { role, teacher, family } = state
+  const home =
+    role === 'teacher' && teacher ? '/t' : role === 'family' && family ? '/f' : null
+
   const finish = () => {
     dispatch({ type: 'SEEN_INTRO' })
-    nav('/welcome', { replace: true })
+    nav(home ?? '/welcome', { replace: true })
   }
 
   return (
@@ -50,7 +56,7 @@ export default function Intro() {
         <div className="intro__top">
           <Logo size={30} />
           <button className="intro__skip" onClick={finish}>
-            Skip
+            {home ? 'Close' : 'Skip'}
           </button>
         </div>
 
@@ -77,7 +83,7 @@ export default function Intro() {
             ))}
           </div>
           <Button block onClick={() => (last ? finish() : setI(i + 1))}>
-            {last ? 'Get started' : 'Next'}
+            {last ? (home ? 'Back to Bargad' : 'Get started') : 'Next'}
           </Button>
         </div>
       </div>

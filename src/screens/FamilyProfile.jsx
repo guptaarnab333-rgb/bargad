@@ -166,6 +166,36 @@ export default function FamilyProfile() {
           </div>
         </button>
 
+        <button
+          className="card"
+          style={{ width: '100%', marginTop: 10 }}
+          onClick={() => nav('/intro')}
+        >
+          <div className="u-row" style={{ gap: 12 }}>
+            <span
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 12,
+                background: 'var(--orange-t)',
+                color: 'var(--orange-ink)',
+                display: 'grid',
+                placeItems: 'center',
+                flex: 'none',
+              }}
+            >
+              <IcInfo size={19} />
+            </span>
+            <div className="u-grow">
+              <span className="h3">What Bargad does differently</span>
+              <p className="sm" style={{ marginTop: 2 }}>
+                The three screens you saw when you first opened the app.
+              </p>
+            </div>
+            <IcArrow size={18} />
+          </div>
+        </button>
+
         <div className="notice" style={{ marginTop: 14 }}>
           <IcInfo size={18} />
           <span>Prototype: everything stays on this device. Nothing is sent anywhere.</span>
