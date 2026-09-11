@@ -36,7 +36,13 @@ export const cityName = (id) => LOCALITIES.find((l) => l.id === id)?.city ?? ''
 export const slotLabel = (id) => SLOTS.find((s) => s.id === id)?.label ?? id
 export const slotShort = (id) => slotLabel(id).replace('Weekday ', 'Wkdy ').replace('Weekend ', 'Wknd ')
 export const modeShort = (id) => MODES.find((m) => m.id === id)?.short ?? id
-export const modeLabel = (id) => MODES.find((m) => m.id === id)?.label ?? id
+
+/** Mode wording is role-specific. Say whose screen it is being read on. */
+export const modeLabel = (id, role) =>
+  MODES.find((m) => m.id === id)?.[role === 'family' ? 'family' : 'teacher'] ?? id
+
+/** MODES shaped for OptionGroup and FilterRow, worded for one side. */
+export const modesFor = (role) => MODES.map((m) => ({ ...m, label: modeLabel(m.id, role) }))
 
 export const modesLine = (modes = []) => modes.map(modeShort).join(' + ')
 

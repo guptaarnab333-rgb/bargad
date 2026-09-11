@@ -1,10 +1,10 @@
 import { Fragment, useMemo, useState } from 'react'
 import { useApp } from '../store/AppContext'
-import { BOARDS, CLASSES, LOCALITIES, MODES, SUBJECTS, TEACHERS } from '../data/seed'
+import { BOARDS, CLASSES, LOCALITIES, SUBJECTS, TEACHERS } from '../data/seed'
 import { TeacherCard } from '../components/Cards'
 import { Button, Chip, Empty, FilterRow, OptionGroup, Promo, Sheet, TopBar } from '../components/UI'
 import { IcSliders } from '../components/Icons'
-import { filterTeachers, inr, localityName, scoreTeacherForRequirement } from '../lib/utils'
+import { filterTeachers, inr, localityName, modesFor, scoreTeacherForRequirement } from '../lib/utils'
 
 const SORTS = [
   { id: 'fit', label: 'Best fit' },
@@ -175,7 +175,7 @@ export default function FamilyDiscover() {
         <div className="field">
           <span className="field__label">How classes happen</span>
           <OptionGroup
-            options={MODES}
+            options={modesFor('family')}
             value={adv.mode}
             onChange={(v) => setAdv((s) => ({ ...s, mode: s.mode === v ? null : v }))}
             wide

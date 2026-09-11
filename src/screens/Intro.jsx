@@ -4,6 +4,7 @@ import { Logo } from '../components/Brand'
 import Doodle from '../components/Doodle'
 import { Button } from '../components/UI'
 import { useApp } from '../store/AppContext'
+import { useThemeColor } from '../lib/useThemeColor'
 
 /**
  * Three screens, one idea each. Bargad's difference is a mechanism, not a
@@ -15,18 +16,21 @@ const SLIDES = [
   {
     doodle: 'plane',
     tint: 'intro--green',
+    token: '--green-t',
     title: 'Nobody stands in between',
     body: 'No bureau taking your first month’s fee. No charge for a teacher to reply to you. You find each other and deal with each other directly.',
   },
   {
     doodle: 'book',
     tint: 'intro--indigo',
+    token: '--indigo-t',
     title: 'Both sides choose',
     body: 'Teachers decide which families to answer. Families decide which teacher to accept. Nobody here is a lead being sold to someone.',
   },
   {
     doodle: 'globe',
     tint: 'intro--orange',
+    token: '--orange-t',
     title: 'Teachers near you, who are actually free',
     body: 'See who teaches your child’s class in your area, what they charge, and whether they have room right now, before you message anyone.',
   },
@@ -38,6 +42,7 @@ export default function Intro() {
   const [i, setI] = useState(0)
   const slide = SLIDES[i]
   const last = i === SLIDES.length - 1
+  useThemeColor(slide.token)
 
   // Replayed from Profile once an account exists: send the user back to it
   // rather than dropping them into a role choice they already made.

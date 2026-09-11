@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
 import { useApp } from '../store/AppContext'
-import { BOARDS, CLASSES, FORMATS, LOCALITIES, MODES, REQUIREMENTS, SUBJECTS } from '../data/seed'
+import { BOARDS, CLASSES, FORMATS, LOCALITIES, REQUIREMENTS, SUBJECTS } from '../data/seed'
 import { RequirementCard } from '../components/Cards'
 import { Button, Empty, FilterRow, OptionGroup, Sheet, TopBar } from '../components/UI'
 import { IcSliders } from '../components/Icons'
-import { filterRequirements, scoreRequirementForTeacher } from '../lib/utils'
+import { filterRequirements, modesFor, scoreRequirementForTeacher } from '../lib/utils'
 
 const SORTS = [
   { id: 'fit', label: 'Best fit' },
@@ -158,7 +158,7 @@ export default function TeacherDiscover() {
         <div className="field">
           <span className="field__label">Mode</span>
           <OptionGroup
-            options={MODES}
+            options={modesFor('teacher')}
             value={adv.mode}
             onChange={(v) => setAdv((s) => ({ ...s, mode: s.mode === v ? null : v }))}
             wide

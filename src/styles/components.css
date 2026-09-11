@@ -167,6 +167,19 @@
   transform: scale(0.975);
   filter: brightness(0.95);
 }
+/* A primary action whose form is not filled in yet. It must LOOK not-ready so
+   nobody assumes the empty fields are optional, but it must stay tappable:
+   tapping it is what reveals which fields are still missing. aria-disabled, not
+   [disabled], because [disabled] hides that answer from keyboard and screen
+   reader users and reintroduces the dead-end this pattern exists to solve. */
+.btn[aria-disabled='true'] {
+  background: var(--sunk);
+  color: var(--ink-3);
+}
+.btn[aria-disabled='true']:hover {
+  filter: none;
+}
+
 .btn[disabled] {
   background: var(--sunk);
   color: var(--ink-4);

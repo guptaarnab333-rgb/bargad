@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../store/AppContext'
-import { BOARDS, CLASSES, MODES, SLOTS, SUBJECTS, FORMATS, LOCALITIES } from '../data/seed'
+import { BOARDS, CLASSES, SLOTS, SUBJECTS, FORMATS, LOCALITIES } from '../data/seed'
 import { Avatar, Button, Chip, Field, KV, OptionGroup, SectionHead, Sheet, Switch, TopBar } from '../components/UI'
 import { IcArrow, IcInfo, IcLock, IcSwap } from '../components/Icons'
-import { cityName, inr, localityName, modeLabel, slotLabel } from '../lib/utils'
+import { cityName, inr, localityName, modeLabel, modesFor, slotLabel } from '../lib/utils'
 
 export default function FamilyProfile() {
   const { state, dispatch, toast } = useApp()
@@ -77,7 +77,7 @@ export default function FamilyProfile() {
             { k: 'Class', v: f.classLevel },
             { k: 'Board', v: f.board },
             { k: 'Budget', v: `${inr(f.budgetMin)}–${inr(f.budgetMax)}` },
-            { k: 'Mode', v: f.modes.map(modeLabel).join(' · ') },
+            { k: 'Mode', v: f.modes.map((m) => modeLabel(m, 'family')).join(' · ') },
             { k: 'Format', v: f.format === 'group' ? 'Small group' : 'One-to-one' },
             { k: 'When', v: f.slots.map(slotLabel).join(' · ') },
             { k: 'Area', v: localityName(f.locality) },
@@ -256,7 +256,7 @@ export default function FamilyProfile() {
           </select>
         </Field>
         <Field label="Mode">
-          <OptionGroup options={MODES} value={f.modes} onChange={(v) => save({ modes: v })} multi wide />
+          <OptionGroup options={modesFor('family')} value={f.modes} onChange={(v) => save({ modes: v })} multi wide />
         </Field>
         <Field label="When">
           <OptionGroup options={SLOTS} value={f.slots} onChange={(v) => save({ slots: v })} multi wide />

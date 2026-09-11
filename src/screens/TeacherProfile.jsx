@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../store/AppContext'
-import { CAPACITY, MODES, SLOTS } from '../data/seed'
+import { CAPACITY, SLOTS } from '../data/seed'
 import { Avatar, Button, Chip, Field, KV, OptionGroup, Sheet, SectionHead, TopBar } from '../components/UI'
 import { CapacityChip } from '../components/Cards'
 import { IcArrow, IcCheck, IcInfo, IcShield, IcSwap } from '../components/Icons'
-import { classRange, cityName, inr, localityName, modeLabel, slotLabel } from '../lib/utils'
+import { classRange, cityName, inr, localityName, modeLabel, modesFor, slotLabel } from '../lib/utils'
 
 export default function TeacherProfile() {
   const { state, dispatch, toast } = useApp()
@@ -86,7 +86,7 @@ export default function TeacherProfile() {
             { k: 'Seats open', v: t.capacity === 'full' ? '0' : `${t.seatsLeft}` },
             { k: 'When', v: t.slots.map(slotLabel).join(' · ') },
             { k: 'Travels up to', v: `${t.radiusKm} km` },
-            { k: 'How', v: t.modes.map(modeLabel).join(' · ') },
+            { k: 'How', v: t.modes.map((m) => modeLabel(m, 'teacher')).join(' · ') },
             { k: 'Format', v: t.formats.includes('group') ? 'One-to-one + group' : 'One-to-one' },
           ]}
         />
@@ -315,7 +315,7 @@ export default function TeacherProfile() {
           />
         </Field>
         <Field label="How you teach">
-          <OptionGroup options={MODES} value={t.modes} onChange={(v) => save({ modes: v })} multi wide />
+          <OptionGroup options={modesFor('teacher')} value={t.modes} onChange={(v) => save({ modes: v })} multi wide />
         </Field>
         <Field
           label={`How far you travel: ${t.radiusKm} km`}

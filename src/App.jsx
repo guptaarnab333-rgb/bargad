@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useApp } from './store/AppContext'
+import { useThemeColor } from './lib/useThemeColor'
 import { Toasts } from './components/UI'
 import TabBar from './components/TabBar'
 
@@ -33,6 +34,8 @@ function ScrollReset() {
 /** Role-aware shell with bottom navigation. */
 function RoleLayout({ role, children }) {
   const { state } = useApp()
+  // The tab bar is the bottom-most surface on every role screen.
+  useThemeColor('--surface')
   // Badge only what genuinely needs the user's attention: a request they must
   // answer, or a question asked of them.
   const mine = state.requests.filter((r) =>

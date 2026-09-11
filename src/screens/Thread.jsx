@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useApp } from '../store/AppContext'
 import { Avatar, Button, Chip, Field, OptionGroup, Sheet, TopBar } from '../components/UI'
 import { IcCal, IcCheck, IcPin, IcSend } from '../components/Icons'
-import { localityName, modeLabel, requirementById, teacherById } from '../lib/utils'
+import { localityName, requirementById, teacherById } from '../lib/utils'
 
 const DAYS = ['This Saturday', 'This Sunday', 'Next Tuesday', 'Next Thursday']
 const TIMES = ['4:00 pm', '5:00 pm', '6:00 pm', '7:00 pm']

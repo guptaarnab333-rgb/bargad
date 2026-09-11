@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BOARDS, CLASSES, LOCALITIES, MODES, SLOTS, SUBJECTS, FORMATS } from '../data/seed'
+import { BOARDS, CLASSES, LOCALITIES, SLOTS, SUBJECTS, FORMATS } from '../data/seed'
 import { Button, Field, OptionGroup, Progress, TopBar } from '../components/UI'
 import { useApp } from '../store/AppContext'
 import Doodle from '../components/Doodle'
-import { inr } from '../lib/utils'
+import { inr, modesFor } from '../lib/utils'
 
 const STEPS = 4
 
@@ -185,7 +185,7 @@ export default function OnboardFamily() {
             </Field>
             <Field label="How should classes happen?">
               <OptionGroup
-                options={MODES}
+                options={modesFor('family')}
                 value={d.modes}
                 onChange={(v) => set('modes', v)}
                 multi
@@ -264,14 +264,25 @@ export default function OnboardFamily() {
         )}
 
         {showMissing && missing.length > 0 && (
-          <div className="notice notice--orange" role="alert" style={{ marginTop: 24 }}>
+          <div
+            className="notice notice--orange"
+            role="alert"
+            id="onboard-missing"
+            style={{ marginTop: 24 }}
+          >
             <span>
               Still needed on this step: <strong>{listMissing(missing)}</strong>.
             </span>
           </div>
         )}
 
-        <Button block onClick={next} style={{ marginTop: showMissing && missing.length ? 12 : 28 }}>
+        <Button
+          block
+          onClick={next}
+          aria-disabled={missing.length > 0}
+          aria-describedby={showMissing && missing.length ? 'onboard-missing' : undefined}
+          style={{ marginTop: showMissing && missing.length ? 12 : 28 }}
+        >
           {step === STEPS ? 'Start looking' : 'Continue'}
         </Button>
       </div>

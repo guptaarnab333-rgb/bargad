@@ -61,10 +61,13 @@ export const CLASSES = [
   'Class 12',
 ]
 
+/* The same three arrangements, worded from each side. "At my place" means
+   opposite things to a teacher and to a parent, so a mode never carries one
+   shared label: read it through modeLabel(id, role) or modesFor(role). */
 export const MODES = [
-  { id: 'home', label: "At student's home", short: 'Home' },
-  { id: 'mine', label: 'At my place', short: 'Batch' },
-  { id: 'online', label: 'Online', short: 'Online' },
+  { id: 'home', short: 'Home', teacher: "At the student's home", family: 'At our home' },
+  { id: 'mine', short: 'Batch', teacher: 'At my place', family: "At the teacher's place" },
+  { id: 'online', short: 'Online', teacher: 'Online', family: 'Online' },
 ]
 
 export const SLOTS = [

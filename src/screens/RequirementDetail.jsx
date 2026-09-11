@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApp } from '../store/AppContext'
-import { MODES, SLOTS } from '../data/seed'
+import { SLOTS } from '../data/seed'
 import { Avatar, Button, Chip, Field, KV, OptionGroup, Sheet, TopBar } from '../components/UI'
 import { IcCheck, IcInfo, IcLock, IcPin, IcX } from '../components/Icons'
 import {
@@ -10,6 +10,7 @@ import {
   inr,
   localityName,
   modeLabel,
+  modesFor,
   requirementById,
   scoreRequirementForTeacher,
   slotLabel,
@@ -111,7 +112,7 @@ export default function RequirementDetail() {
           items={[
             { k: 'Budget', v: `${inr(r.budgetMin)}–${inr(r.budgetMax)}/mo` },
             { k: 'Your fee', v: `${inr(t.fee)}/mo` },
-            { k: 'Mode', v: r.modes.map((m) => modeLabel(m)).join(' · ') },
+            { k: 'Mode', v: r.modes.map((m) => modeLabel(m, 'teacher')).join(' · ') },
             { k: 'Format', v: r.format === 'group' ? 'Small group' : 'One-to-one' },
             { k: 'When', v: r.slots.map(slotLabel).join(' · ') },
             {
@@ -204,7 +205,7 @@ export default function RequirementDetail() {
 
         <Field label="How you would teach">
           <OptionGroup
-            options={MODES.filter((m) => t.modes.includes(m.id))}
+            options={modesFor('teacher').filter((m) => t.modes.includes(m.id))}
             value={payload.mode}
             onChange={(v) => set('mode', v)}
             wide

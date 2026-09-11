@@ -121,6 +121,10 @@ select {
   scrollbar-width: none;
   -ms-overflow-style: none;
   scroll-snap-type: x proximity;
+  /* Chips snap to the SCROLLPORT edge, which ignores padding-inline: without
+     this the row rests at scrollLeft:20 and the first chip sits flush against
+     the screen edge while the content beside it is inset by 20px. */
+  scroll-padding-inline: var(--s-5);
 }
 .u-scroll-x::-webkit-scrollbar {
   display: none;

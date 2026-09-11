@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApp } from '../store/AppContext'
-import { REVIEWS, MODES, SLOTS } from '../data/seed'
+import { REVIEWS, SLOTS } from '../data/seed'
 import { Avatar, Button, Chip, KV, Sheet, Stars, TopBar, Field, OptionGroup } from '../components/UI'
 import { CapacityChip, VerifiedChip } from '../components/Cards'
 import { IcCheck, IcInfo, IcLock, IcPin, IcShield } from '../components/Icons'
@@ -13,6 +13,7 @@ import {
   inr,
   localityName,
   modeLabel,
+  modesFor,
   slotLabel,
   teacherById,
 } from '../lib/utils'
@@ -124,7 +125,7 @@ export default function TeacherDetail() {
             { k: 'Experience', v: `${t.experience} years` },
             { k: 'Boards', v: t.boards.join(', ') },
             { k: 'Classes', v: classRange(t.classes) },
-            { k: 'How classes happen', v: t.modes.map(modeLabel).join(' · ') },
+            { k: 'How classes happen', v: t.modes.map((m) => modeLabel(m, 'family')).join(' · ') },
             { k: 'Format', v: t.formats.includes('group') ? 'One-to-one or group' : 'One-to-one' },
             { k: 'Available', v: t.slots.map(slotLabel).join(' · ') },
             { k: 'Travels up to', v: `${t.radiusKm} km` },
@@ -285,7 +286,7 @@ export default function TeacherDetail() {
 
         <Field label="How should classes happen?">
           <OptionGroup
-            options={MODES.filter((m) => t.modes.includes(m.id))}
+            options={modesFor('family').filter((m) => t.modes.includes(m.id))}
             value={payload.mode}
             onChange={(v) => set('mode', v)}
             wide
