@@ -97,7 +97,7 @@ export default function Thread({ role }) {
                 {name}
               </span>
               <span
-                className="xs"
+                className="xs u-truncate"
                 style={{ display: 'block', fontFamily: 'var(--font-ui)', fontWeight: 500 }}
               >
                 {role === 'teacher'

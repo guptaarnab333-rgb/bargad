@@ -656,6 +656,14 @@ a.card:active {
 .switch[aria-checked='true'] {
   background: var(--green);
 }
+/* The track is 54x32 by design. ::before extends the hit area to 44px tall
+   without touching the visual size. Vertical only, so it cannot overlap a
+   neighbouring control the way a symmetric negative margin would. */
+.switch::before {
+  content: '';
+  position: absolute;
+  inset: -6px 0;
+}
 .switch::after {
   content: '';
   position: absolute;
