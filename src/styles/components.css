@@ -1914,3 +1914,59 @@ a.card:active {
 .sharerow .fchip {
   background: var(--surface);
 }
+
+/* ---------------- Account ---------------- */
+.authart {
+  display: grid;
+  place-items: center;
+  padding: 8px 0 22px;
+  color: var(--ink);
+}
+.phonerow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.phonerow__cc {
+  flex: none;
+  padding: 15px 14px;
+  border-radius: var(--r-md);
+  background: var(--sunk);
+  font-size: 1rem;
+  font-weight: 700;
+}
+.otp {
+  display: flex;
+  gap: 8px;
+}
+.otp__box {
+  flex: 1;
+  min-width: 0;
+  height: 56px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  text-align: center;
+  /* Above the 16px floor, so iOS does not zoom the page on focus. */
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+.otp__box:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--indigo);
+}
+.linkish {
+  font: inherit;
+  font-weight: 700;
+  color: var(--indigo-ink);
+  text-decoration: underline;
+}
+.welcome__login {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 12px;
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+  text-align: center;
+}

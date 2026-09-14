@@ -11,7 +11,8 @@ const STEPS = 4
 
 export default function OnboardFamily() {
   const nav = useNavigate()
-  const { dispatch, toast } = useApp()
+  const { state, dispatch, toast } = useApp()
+  const account = state.account
   const [step, setStep] = useState(1)
   const [d, setD] = useState({
     parentName: '',
@@ -69,7 +70,9 @@ export default function OnboardFamily() {
     if (step < STEPS) return go(step + 1)
     dispatch({ type: 'SAVE_FAMILY', data: d })
     toast('You are now looking for a teacher', 'green')
-    nav('/f', { replace: true })
+    // Ask for an account where the answer matters: there is finally something
+    // worth keeping, and losing it to a cleared browser is the real risk.
+    nav(account ? '/f' : '/auth?next=/f', { replace: true })
   }
 
   const listMissing = (items) =>

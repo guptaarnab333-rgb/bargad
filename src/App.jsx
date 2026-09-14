@@ -5,6 +5,7 @@ import { useThemeColor } from './lib/useThemeColor'
 import { Toasts } from './components/UI'
 import TabBar from './components/TabBar'
 
+import Auth from './screens/Auth'
 import Intro from './screens/Intro'
 import Welcome from './screens/Welcome'
 import OnboardTeacher from './screens/OnboardTeacher'
@@ -85,6 +86,7 @@ export default function App() {
             }
           />
           <Route path="/intro" element={<Intro />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/onboard/teacher" element={<OnboardTeacher />} />
           <Route path="/onboard/family" element={<OnboardFamily />} />

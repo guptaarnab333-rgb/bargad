@@ -11,7 +11,8 @@ const STEPS = 5
 
 export default function OnboardTeacher() {
   const nav = useNavigate()
-  const { dispatch, toast } = useApp()
+  const { state, dispatch, toast } = useApp()
+  const account = state.account
   const [step, setStep] = useState(1)
   const [d, setD] = useState({
     name: '',
@@ -89,7 +90,7 @@ export default function OnboardTeacher() {
     if (step < STEPS) return go(step + 1)
     dispatch({ type: 'SAVE_TEACHER', data: d })
     toast('Your teaching profile is live', 'green')
-    nav('/t', { replace: true })
+    nav(account ? '/t' : '/auth?next=/t', { replace: true })
   }
 
   const listMissing = (items) =>

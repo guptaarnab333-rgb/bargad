@@ -186,6 +186,33 @@ export default function TeacherProfile() {
           </p>
         </div>
 
+        {/* ---- Account ---- */}
+        <SectionHead title="Account" />
+        <div className="card">
+          <span className="h3">{state.account ? state.account.value : 'No account yet'}</span>
+          <p className="sm" style={{ marginTop: 6 }}>
+            {state.account
+              ? 'Your profile comes back on any phone you log in from.'
+              : 'Everything is on this device only. An account means it survives a new phone or a cleared browser.'}
+          </p>
+          <Button
+            block
+            variant={state.account ? 'ghost' : 'sunk'}
+            size="sm"
+            style={{ marginTop: 12 }}
+            onClick={() => {
+              if (state.account) {
+                dispatch({ type: 'SIGN_OUT' })
+                toast('Signed out of this device')
+              } else {
+                nav('/auth?next=/t/profile')
+              }
+            }}
+          >
+            {state.account ? 'Sign out' : 'Add an account'}
+          </Button>
+        </div>
+
         {/* ---- Contact details, private until shared ---- */}
         <SectionHead
           title="Your contact details"

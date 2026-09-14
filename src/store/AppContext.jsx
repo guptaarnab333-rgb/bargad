@@ -7,6 +7,7 @@ const KEY = 'bargad.v1'
 const emptyState = {
   bootstrapped: false,
   introSeen: false,
+  account: null,
   role: null, // 'teacher' | 'family'
   teacher: null,
   family: null,
@@ -33,6 +34,12 @@ function reducer(state, a) {
     case 'SEEN_INTRO':
       return { ...state, introSeen: true }
 
+    /* Designed, not implemented: the account is what an identity WOULD hang
+       off. Nothing is verified and nothing leaves the device. */
+    case 'SET_ACCOUNT':
+      return { ...state, account: { method: a.method, value: a.value } }
+    case 'SIGN_OUT':
+      return { ...state, account: null }
     case 'SET_ROLE':
       return { ...state, role: a.role }
 

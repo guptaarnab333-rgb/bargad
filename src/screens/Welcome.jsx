@@ -84,6 +84,9 @@ export default function Welcome() {
             <strong>No cold messages.</strong> Phone numbers and addresses stay hidden until both
             sides agree to connect.
           </p>
+          <button className="welcome__login" onClick={() => nav('/auth?mode=login')}>
+            Used Bargad before? <strong>Log in</strong>
+          </button>
           <p className="xs" style={{ textAlign: 'center' }}>
             Academic prototype · All people and data are fictional
           </p>
