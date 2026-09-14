@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { IcBack, IcCheck, IcSearch, IcSliders, IcStar, IcX } from './Icons'
+import { IcBack, IcCamera, IcCheck, IcSearch, IcSliders, IcStar, IcX } from './Icons'
 import Doodle from './Doodle'
 import { initials, subjectCategory, tintFor } from '../lib/utils'
 import { ACADEMIC_SUBJECTS, ACTIVITY_SUBJECTS, CATEGORIES, SUBJECTS } from '../data/seed'
@@ -67,6 +67,69 @@ export function Avatar({ name = '', size = 44, shape = 'round', photo, className
         <img src={photo} alt="" loading="lazy" onError={() => setFailed(true)} />
       ) : (
         initials(name)
+      )}
+    </span>
+  )
+}
+
+/* ---------------- Avatar you can change ----------------
+   A photo is picked from the camera roll, centre-cropped square and scaled to
+   400px before it is stored, because the whole profile lives in localStorage
+   and a phone photo straight off the sensor is several megabytes of base64.
+   At this size it is about 40KB, which the quota carries comfortably. */
+export function AvatarInput({ name, photo, size = 96, onChange }) {
+  const file = useRef(null)
+  const [busy, setBusy] = useState(false)
+
+  const take = (f) => {
+    if (!f) return
+    setBusy(true)
+    const url = URL.createObjectURL(f)
+    const img = new Image()
+    img.onload = () => {
+      const S = 400
+      const side = Math.min(img.width, img.height)
+      const c = document.createElement('canvas')
+      c.width = S
+      c.height = S
+      const ctx = c.getContext('2d')
+      ctx.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, S, S)
+      URL.revokeObjectURL(url)
+      onChange(c.toDataURL('image/jpeg', 0.82))
+      setBusy(false)
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      setBusy(false)
+    }
+    img.src = url
+  }
+
+  return (
+    <span className="avatarin">
+      <Avatar name={name} photo={photo} size={size} />
+      <button
+        type="button"
+        className="avatarin__btn"
+        aria-label={photo ? 'Change your photo' : 'Add a photo'}
+        onClick={() => file.current?.click()}
+      >
+        {busy ? '…' : <IcCamera size={15} />}
+      </button>
+      <input
+        ref={file}
+        type="file"
+        accept="image/*"
+        hidden
+        onChange={(e) => {
+          take(e.target.files?.[0])
+          e.target.value = ''
+        }}
+      />
+      {photo && (
+        <button type="button" className="avatarin__clear" onClick={() => onChange(null)}>
+          Remove
+        </button>
       )}
     </span>
   )

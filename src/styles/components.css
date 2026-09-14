@@ -1970,3 +1970,30 @@ a.card:active {
   color: var(--ink-2);
   text-align: center;
 }
+
+/* ---------------- Avatar you can change ---------------- */
+.avatarin {
+  position: relative;
+  display: inline-grid;
+  justify-items: center;
+  flex: none;
+}
+.avatarin__btn {
+  position: absolute;
+  right: -2px;
+  top: 66px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-pill);
+  background: var(--ink);
+  color: #fff;
+  box-shadow: 0 0 0 3px var(--bg);
+}
+.avatarin__clear {
+  margin-top: 8px;
+  font-size: var(--t-xs);
+  font-weight: 700;
+  color: var(--ink-3);
+}

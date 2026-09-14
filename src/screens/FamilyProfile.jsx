@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../store/AppContext'
 import { BOARDS, BUDGET_CAP, CLASSES, FORMATS, LOCALITIES, SLOTS } from '../data/seed'
-import { Avatar, Button, CONTACT_FIELDS, Chip, ContactFields, Field, KV, OptionGroup, SectionHead, Segmented, Sheet, SubjectPicker, Switch, TopBar } from '../components/UI'
+import { Avatar, AvatarInput, Button, CONTACT_FIELDS, Chip, ContactFields, Field, KV, OptionGroup, SectionHead, Segmented, Sheet, SubjectPicker, Switch, TopBar } from '../components/UI'
 import { IcArrow, IcInfo, IcLock, IcSwap } from '../components/Icons'
 import { budgetLabel, budgetUpTo, cityName, inr, localityName, modeLabel, modesFor, slotLabel } from '../lib/utils'
 
@@ -26,7 +26,11 @@ export default function FamilyProfile() {
       <div className="page" style={{ paddingTop: 4 }}>
         {/* ---- Identity ---- */}
         <div className="u-row" style={{ gap: 16, alignItems: 'flex-start' }}>
-          <Avatar name={f.parentName} size={96} />
+          <AvatarInput
+            name={f.parentName}
+            photo={f.photo}
+            onChange={(p) => save({ photo: p })}
+          />
           <div className="u-grow" style={{ paddingTop: 4 }}>
             <h1 className="h1">{f.parentName}</h1>
             <p className="sm" style={{ marginTop: 4 }}>

@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../store/AppContext'
 import { AGE_BANDS, BOARDS, CAPACITY, CLASSES, SLOTS } from '../data/seed'
-import { Avatar, Button, CONTACT_FIELDS, Chip, ContactFields, Field, KV, OptionGroup, SectionHead, Segmented, Sheet, SubjectPicker, TopBar } from '../components/UI'
+import { Avatar, AvatarInput, Button, CONTACT_FIELDS, Chip, ContactFields, Field, KV, OptionGroup, SectionHead, Segmented, Sheet, SubjectPicker, TopBar } from '../components/UI'
 import { CapacityChip } from '../components/Cards'
-import { IcArrow, IcCheck, IcInfo, IcShield, IcSwap } from '../components/Icons'
+import { IcArrow, IcCheck, IcInfo, IcLock, IcShield, IcSwap } from '../components/Icons'
 import { cityName, inr, localityName, modeLabel, modesFor, slotLabel, subjectsInCategory, teachesRange } from '../lib/utils'
 
 export default function TeacherProfile() {
@@ -27,7 +27,11 @@ export default function TeacherProfile() {
       <div className="page" style={{ paddingTop: 4 }}>
         {/* ---- Identity ---- */}
         <div className="u-row" style={{ gap: 16, alignItems: 'flex-start' }}>
-          <Avatar name={t.name} size={96} />
+          <AvatarInput
+            name={t.name}
+            photo={t.photo}
+            onChange={(p) => save({ photo: p })}
+          />
           <div className="u-grow" style={{ paddingTop: 4 }}>
             <h1 className="h1">{t.name}</h1>
             <p className="sm" style={{ marginTop: 4 }}>

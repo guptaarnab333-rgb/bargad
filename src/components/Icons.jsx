@@ -190,3 +190,11 @@ export const IcPeople = (p) => (
     <path d="M16 5.6a3.2 3.2 0 0 1 0 5.8M17.4 14.6a5.8 5.8 0 0 1 3 4.8" />
   </S>
 )
+
+export const IcCamera = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" />
+    <circle cx="12" cy="13" r="3.2" />
+  </svg>
+)
