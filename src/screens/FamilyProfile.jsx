@@ -16,6 +16,9 @@ export default function FamilyProfile() {
     dispatch({ type: 'SAVE_FAMILY', data })
     toast('Requirement updated')
   }
+  /* Sliders and text fields report themselves as you move or type them, so
+     they save without a confirmation. Only discrete choices announce. */
+  const saveQuiet = (data) => dispatch({ type: 'SAVE_FAMILY', data })
 
   const sent = state.requests.filter((r) => r.from === 'me-family')
 
@@ -302,7 +305,7 @@ export default function FamilyProfile() {
           </Button>
         }
       >
-        <ContactFields value={f.contact ?? {}} onChange={(v) => save({ contact: v })} />
+        <ContactFields value={f.contact ?? {}} onChange={(v) => saveQuiet({ contact: v })} />
       </Sheet>
 
       {/* ---- Edit requirement ---- */}
@@ -361,7 +364,7 @@ export default function FamilyProfile() {
             max={BUDGET_CAP}
             step="100"
             value={f.budgetMax}
-            onChange={(e) => save({ budgetMax: +e.target.value })}
+            onChange={(e) => saveQuiet({ budgetMax: +e.target.value })}
           />
           <span className="xs" style={{ display: 'block', marginTop: 6 }}>
             The most you can pay each month. Slide to the end for no limit.
@@ -371,7 +374,7 @@ export default function FamilyProfile() {
           <textarea
             className="textarea"
             value={f.need}
-            onChange={(e) => save({ need: e.target.value })}
+            onChange={(e) => saveQuiet({ need: e.target.value })}
           />
         </Field>
         <div style={{ height: 16 }} />

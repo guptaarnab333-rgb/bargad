@@ -17,6 +17,9 @@ export default function TeacherProfile() {
     dispatch({ type: 'SAVE_TEACHER', data })
     toast('Profile updated')
   }
+  /* Sliders and text fields report themselves as you move or type them, so
+     they save without a confirmation. Only discrete choices announce. */
+  const saveQuiet = (data) => dispatch({ type: 'SAVE_TEACHER', data })
 
   const activeCount = state.threads.filter((x) => x.withRequirement && x.active).length
 
@@ -356,7 +359,7 @@ export default function TeacherProfile() {
       >
         <ContactFields
           value={t.contact ?? {}}
-          onChange={(v) => save({ contact: v })}
+          onChange={(v) => saveQuiet({ contact: v })}
         />
       </Sheet>
 
@@ -419,7 +422,7 @@ export default function TeacherProfile() {
             min="1"
             max="15"
             value={t.radiusKm}
-            onChange={(e) => save({ radiusKm: +e.target.value })}
+            onChange={(e) => saveQuiet({ radiusKm: +e.target.value })}
           />
         </Field>
         <div style={{ height: 16 }} />
@@ -492,7 +495,7 @@ export default function TeacherProfile() {
           max="12000"
           step="100"
           value={t.fee}
-          onChange={(e) => save({ fee: +e.target.value })}
+          onChange={(e) => saveQuiet({ fee: +e.target.value })}
         />
         <div className="notice" style={{ margin: '18px 0 24px' }}>
           <IcInfo size={18} />

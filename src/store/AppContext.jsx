@@ -263,11 +263,18 @@ function reducer(state, a) {
       }
 
     /* ---------- toasts ---------- */
-    case 'TOAST':
+    case 'TOAST': {
+      /* A continuous control fires per step of a drag. Without this, one slide
+         of the budget slider stacked a dozen identical confirmations down the
+         screen. The same sentence twice is never more informative than once,
+         so the standing one has its life extended instead. */
+      const already = state.toasts.some((t) => t.text === a.text)
+      if (already) return state
       return {
         ...state,
         toasts: [...state.toasts, { id: uid('t'), text: a.text, tone: a.tone }],
       }
+    }
     case 'UNTOAST':
       return { ...state, toasts: state.toasts.filter((t) => t.id !== a.id) }
 
