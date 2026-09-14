@@ -4,17 +4,7 @@ import { useApp } from '../store/AppContext'
 import { SLOTS } from '../data/seed'
 import { Avatar, Button, Chip, Field, KV, OptionGroup, Sheet, TopBar } from '../components/UI'
 import { IcCheck, IcInfo, IcLock, IcPin, IcX } from '../components/Icons'
-import {
-  distanceFrom,
-  distLabel,
-  inr,
-  localityName,
-  modeLabel,
-  modesFor,
-  requirementById,
-  scoreRequirementForTeacher,
-  slotLabel,
-} from '../lib/utils'
+import { budgetLabel, budgetUpTo, distanceFrom, distLabel, inr, localityName, modeLabel, modesFor, requirementById, scoreRequirementForTeacher, slotLabel } from '../lib/utils'
 
 export default function RequirementDetail() {
   const { id } = useParams()
@@ -110,7 +100,7 @@ export default function RequirementDetail() {
         </h2>
         <KV
           items={[
-            { k: 'Budget', v: `${inr(r.budgetMin)}–${inr(r.budgetMax)}/mo` },
+            { k: 'Budget', v: `${budgetUpTo(r.budgetMax)}/mo` },
             { k: 'Your fee', v: `${inr(t.fee)}/mo` },
             { k: 'Mode', v: r.modes.map((m) => modeLabel(m, 'teacher')).join(' · ') },
             { k: 'Format', v: r.format === 'group' ? 'Small group' : 'One-to-one' },
@@ -235,7 +225,7 @@ export default function RequirementDetail() {
 
         <Field
           label={`Your fee for this: ${inr(payload.fee)}/month`}
-          hint={`Their budget is ${inr(r.budgetMin)}–${inr(r.budgetMax)}. You can offer a different fee for this family.`}
+          hint={`They can pay ${budgetLabel(r.budgetMax)} a month. You can offer a different fee for this family.`}
         >
           <input
             className="range"

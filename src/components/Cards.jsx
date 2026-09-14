@@ -2,15 +2,7 @@ import { Link } from 'react-router-dom'
 import { Avatar, Chip, Stars } from './UI'
 import { IcClock, IcPeople, IcPin, IcShield } from './Icons'
 import { CAPACITY } from '../data/seed'
-import {
-  classRange,
-  distLabel,
-  inr,
-  localityName,
-  modesLine,
-  slotShort,
-  STATUS_META,
-} from '../lib/utils'
+import { budgetUpTo, classRange, distLabel, inr, localityName, modesLine, slotShort, STATUS_META } from '../lib/utils'
 
 /* Capacity is shown wherever a teacher appears. It answers
    "why am I contacting someone who cannot take my child?" */
@@ -101,7 +93,7 @@ export function RequirementCard({ req, to, reasons = [], km, hot = false }) {
           {req.classLevel} · {req.board}
         </div>
         <div className="tcard__price">
-          {inr(req.budgetMin)}–{(req.budgetMax / 1000).toFixed(req.budgetMax % 1000 ? 1 : 0)}k
+          {budgetUpTo(req.budgetMax)}
           <span>budget / month</span>
         </div>
       </div>

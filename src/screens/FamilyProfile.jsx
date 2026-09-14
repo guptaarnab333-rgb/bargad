@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../store/AppContext'
-import { BOARDS, CLASSES, SLOTS, SUBJECTS, FORMATS, LOCALITIES } from '../data/seed'
-import { Avatar, Button, Chip, Field, KV, OptionGroup, SectionHead, Sheet, Switch, TopBar } from '../components/UI'
+import { BOARDS, BUDGET_CAP, CLASSES, FORMATS, LOCALITIES, SLOTS } from '../data/seed'
+import { Avatar, Button, Chip, Field, KV, OptionGroup, SectionHead, Sheet, SubjectPicker, Switch, TopBar } from '../components/UI'
 import { IcArrow, IcInfo, IcLock, IcSwap } from '../components/Icons'
-import { cityName, inr, localityName, modeLabel, modesFor, slotLabel } from '../lib/utils'
+import { budgetLabel, budgetUpTo, cityName, inr, localityName, modeLabel, modesFor, slotLabel } from '../lib/utils'
 
 export default function FamilyProfile() {
   const { state, dispatch, toast } = useApp()
@@ -76,7 +76,7 @@ export default function FamilyProfile() {
             { k: 'Subjects', v: f.subjects.join(', ') },
             { k: 'Class', v: f.classLevel },
             { k: 'Board', v: f.board },
-            { k: 'Budget', v: `${inr(f.budgetMin)}–${inr(f.budgetMax)}` },
+            { k: 'Budget', v: budgetUpTo(f.budgetMax) },
             { k: 'Mode', v: f.modes.map((m) => modeLabel(m, 'family')).join(' · ') },
             { k: 'Format', v: f.format === 'group' ? 'Small group' : 'One-to-one' },
             { k: 'When', v: f.slots.map(slotLabel).join(' · ') },
@@ -229,11 +229,11 @@ export default function FamilyProfile() {
         }
       >
         <Field label="Subjects">
-          <OptionGroup
-            options={SUBJECTS}
+          <SubjectPicker
             value={f.subjects}
             onChange={(v) => save({ subjects: v })}
-            multi
+            custom={f.customSubjects}
+            onCustomChange={(m) => save({ customSubjects: m })}
           />
         </Field>
         <Field label="Class">
@@ -264,27 +264,19 @@ export default function FamilyProfile() {
         <Field label="Format">
           <OptionGroup options={FORMATS} value={f.format} onChange={(v) => save({ format: v })} />
         </Field>
-        <Field label={`Budget: ${inr(f.budgetMin)} to ${inr(f.budgetMax)}`}>
-          <span className="xs">Lowest</span>
+        <Field label={`Monthly budget: ${budgetLabel(f.budgetMax)}`}>
           <input
             className="range"
             type="range"
             min="1000"
-            max="10000"
-            step="100"
-            value={f.budgetMin}
-            onChange={(e) => save({ budgetMin: Math.min(+e.target.value, f.budgetMax - 200) })}
-          />
-          <span className="xs">Highest</span>
-          <input
-            className="range"
-            type="range"
-            min="1000"
-            max="12000"
+            max={BUDGET_CAP}
             step="100"
             value={f.budgetMax}
-            onChange={(e) => save({ budgetMax: Math.max(+e.target.value, f.budgetMin + 200) })}
+            onChange={(e) => save({ budgetMax: +e.target.value })}
           />
+          <span className="xs" style={{ display: 'block', marginTop: 6 }}>
+            The most you can pay each month. Slide to the end for no limit.
+          </span>
         </Field>
         <Field label="What is going wrong">
           <textarea

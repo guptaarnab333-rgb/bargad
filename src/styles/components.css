@@ -261,6 +261,37 @@
   color: #fff;
 }
 
+/* ---------------- Subject picker ---------------- */
+.picker__add {
+  display: flex;
+  gap: var(--s-2);
+  align-items: center;
+  margin-top: 10px;
+}
+.picker__add .input {
+  flex: 1;
+}
+/* Reads as an invitation rather than another subject, without a stroke. */
+.opt--add {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--sunk);
+  color: var(--ink-3);
+}
+.opt--add:hover {
+  background: var(--sunk);
+}
+.picker__other {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: var(--sunk);
+  text-align: left;
+  font-size: var(--t-xs);
+  color: var(--ink-3);
+}
+
 /* ---------------- Chips ---------------- */
 .chip {
   display: inline-flex;

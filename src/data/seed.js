@@ -32,7 +32,12 @@ export const LOCALITIES = [
   { id: 'gurugram', name: 'Gurugram', city: 'Gurugram', lat: 28.46, lng: 77.03 },
 ]
 
-export const SUBJECTS = [
+/* A subject's identity is its display string: it is joined straight into copy
+   in twenty-odd places, compared with includes() in the matchers, and already
+   persisted that way in every saved profile. So the category lives in a lookup
+   BESIDE the list, never inside it. Turning these into objects would print
+   [object Object] across the app and silently stop every match. */
+export const ACADEMIC_SUBJECTS = [
   'Mathematics',
   'Physics',
   'Chemistry',
@@ -42,7 +47,53 @@ export const SUBJECTS = [
   'History',
   'Geography',
   'Computer Science',
+  'Accountancy',
+  'Economics',
+  'Business Studies',
+  'Political Science',
+  'Sanskrit',
+  'Environmental Science',
 ]
+
+/* Zomato keeps District beside Dining rather than burying it in a filter,
+   because they are different errands. Finding a Maths tutor and finding a
+   guitar teacher are different errands too. */
+export const ACTIVITY_SUBJECTS = [
+  'Guitar',
+  'Keyboard',
+  'Vocal Music',
+  'Tabla',
+  'Classical Dance',
+  'Drawing and Painting',
+  'Chess',
+  'Football',
+  'Cricket',
+  'Badminton',
+  'Swimming',
+  'Karate',
+  'Yoga',
+  'Public Speaking',
+  'Creative Writing',
+  'Coding for Kids',
+  'Robotics',
+  'Photography',
+]
+
+export const SUBJECTS = [...ACADEMIC_SUBJECTS, ...ACTIVITY_SUBJECTS]
+
+/** name -> 'academic' | 'activity'. A subject someone typed in is not in here. */
+export const SUBJECT_CATEGORY = Object.fromEntries([
+  ...ACADEMIC_SUBJECTS.map((s) => [s, 'academic']),
+  ...ACTIVITY_SUBJECTS.map((s) => [s, 'activity']),
+])
+
+export const CATEGORIES = [
+  { id: 'academic', label: 'Academics' },
+  { id: 'activity', label: 'Activities' },
+]
+
+/** The top of the budget slider. Past this the family means "no limit". */
+export const BUDGET_CAP = 12000
 
 export const BOARDS = ['CBSE', 'ICSE', 'ISC', 'UK Board']
 
@@ -355,6 +406,86 @@ export const TEACHERS = [
     joined: 'Apr 2024',
   },
 
+  /* ---- Activities ---- */
+  {
+    id: 't-neha',
+    name: 'Neha Uniyal',
+    headline: 'Guitar & Keyboard • Classes 4–12',
+    intro:
+      'Guitar from the first open chord, keyboard for anyone with a piano at home gathering dust. Trinity grades if you want them, songs if you do not.',
+    qualification: 'Trinity College London, Grade 8 Guitar',
+    experience: 6,
+    subjects: ['Guitar', 'Keyboard'],
+    classes: ['Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'],
+    boards: [],
+    modes: ['mine', 'home'],
+    locality: 'rajpur-road',
+    radiusKm: 6,
+    slots: ['we-morning', 'wd-evening'],
+    fee: 2800,
+    formats: ['one', 'group'],
+    capacity: 'open',
+    seatsLeft: 4,
+    verified: ['id'],
+    rating: 4.8,
+    reviewCount: 10,
+    studentsTaught: 38,
+    responseHrs: 5,
+    joined: 'Feb 2024',
+  },
+  {
+    id: 't-vikram',
+    name: 'Vikram Rawat',
+    headline: 'Chess & Public Speaking • Classes 3–10',
+    intro:
+      'Chess for children who already play online and keep losing to the same three traps, and speaking practice for the ones who freeze in assembly.',
+    qualification: 'FIDE rated 1860; district debate coach',
+    experience: 5,
+    subjects: ['Chess', 'Public Speaking'],
+    classes: ['Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10'],
+    boards: [],
+    modes: ['online', 'mine'],
+    locality: 'dalanwala',
+    radiusKm: 5,
+    slots: ['we-morning', 'we-evening'],
+    fee: 1900,
+    formats: ['one', 'group'],
+    capacity: 'open',
+    seatsLeft: 6,
+    verified: ['id'],
+    rating: 4.6,
+    reviewCount: 8,
+    studentsTaught: 44,
+    responseHrs: 6,
+    joined: 'Aug 2024',
+  },
+  {
+    id: 't-shruti',
+    name: 'Shruti Iyer',
+    headline: 'Classical Dance & Vocal Music • Classes 2–10',
+    intro:
+      'Bharatanatyam and Carnatic vocal, taught the way I was taught, one small batch at a time. Arangetram only if the child wants one.',
+    qualification: 'Kalakshetra diploma; 12 years teaching',
+    experience: 12,
+    subjects: ['Classical Dance', 'Vocal Music'],
+    classes: ['Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10'],
+    boards: [],
+    modes: ['mine'],
+    locality: 'saket',
+    radiusKm: 5,
+    slots: ['we-morning', 'wd-evening'],
+    fee: 3200,
+    formats: ['group', 'one'],
+    capacity: 'limited',
+    seatsLeft: 2,
+    verified: ['id', 'qualification'],
+    rating: 4.9,
+    reviewCount: 17,
+    studentsTaught: 90,
+    responseHrs: 9,
+    joined: 'Jul 2023',
+  },
+
   /* ---- Delhi NCR ---- */
   {
     id: 't-imran',
@@ -454,7 +585,6 @@ export const REQUIREMENTS = [
     locality: 'dalanwala',
     modes: ['home'],
     slots: ['wd-evening'],
-    budgetMin: 3000,
     budgetMax: 4000,
     format: 'one',
     need: 'Boards in February. She is comfortable with algebra but loses marks badly in geometry and trigonometry. Looking for someone patient who can go back to Class 9 basics if needed.',
@@ -473,7 +603,6 @@ export const REQUIREMENTS = [
     locality: 'rajpur-road',
     modes: ['home', 'online'],
     slots: ['wd-evening', 'we-morning'],
-    budgetMin: 4000,
     budgetMax: 6000,
     format: 'one',
     need: 'Needs serious help with Physics numericals before the pre-boards. Chemistry is a secondary priority, organic mainly.',
@@ -492,7 +621,6 @@ export const REQUIREMENTS = [
     locality: 'race-course',
     modes: ['home'],
     slots: ['wd-afternoon'],
-    budgetMin: 2500,
     budgetMax: 3500,
     format: 'one',
     need: 'He reads well but writing is weak: spelling, sentence structure, and he freezes in comprehension. Hindi is a second subject we would like covered if possible.',
@@ -511,7 +639,6 @@ export const REQUIREMENTS = [
     locality: 'clement-town',
     modes: ['home', 'mine'],
     slots: ['we-evening', 'wd-evening'],
-    budgetMin: 2000,
     budgetMax: 3000,
     format: 'group',
     need: 'Happy with a small batch near Clement Town, she does better with other students around. Budget is tight so a group seat suits us.',
@@ -530,7 +657,6 @@ export const REQUIREMENTS = [
     locality: 'vasant-vihar',
     modes: ['online'],
     slots: ['wd-evening'],
-    budgetMin: 4000,
     budgetMax: 5500,
     format: 'one',
     need: 'Python for the CBSE CS syllabus. He picks things up quickly but has no discipline about practice, so we want someone who will set work and follow up.',
@@ -549,7 +675,6 @@ export const REQUIREMENTS = [
     locality: 'patel-nagar',
     modes: ['home'],
     slots: ['wd-afternoon'],
-    budgetMin: 1800,
     budgetMax: 2500,
     format: 'one',
     need: 'Fractions and word problems. She has decided she is bad at Maths and I would like that changed before it hardens.',
@@ -568,7 +693,6 @@ export const REQUIREMENTS = [
     locality: 'dwarka',
     modes: ['home', 'online'],
     slots: ['we-morning'],
-    budgetMin: 2500,
     budgetMax: 3500,
     format: 'one',
     need: 'Weekend only, her weekdays are full. Map work in Geography is the main gap.',
@@ -587,12 +711,67 @@ export const REQUIREMENTS = [
     locality: 'noida-62',
     modes: ['mine', 'home'],
     slots: ['wd-evening'],
-    budgetMin: 3500,
     budgetMax: 5000,
     format: 'group',
     need: 'Class 12 Maths, calculus specifically. A batch is fine, he is more regular when he has to show up somewhere.',
     posted: '2 days ago',
     responses: 3,
+    preferFemale: false,
+  },
+
+  /* ---- Activities ---- */
+  {
+    id: 'r-negi',
+    family: 'Shalini Negi',
+    learner: 'Vivaan',
+    learnerGender: 'boy',
+    classLevel: 'Class 5',
+    board: 'CBSE',
+    subjects: ['Chess'],
+    locality: 'vasant-vihar',
+    modes: ['home', 'online'],
+    slots: ['we-morning'],
+    budgetMax: 2500,
+    format: 'one',
+    need: 'He plays online constantly and loses to the same traps every time. Weekends only, his weekdays are already full with school work.',
+    posted: '1 day ago',
+    responses: 0,
+    preferFemale: false,
+  },
+  {
+    id: 'r-thapa',
+    family: 'Rekha Thapa',
+    learner: 'Ira',
+    learnerGender: 'girl',
+    classLevel: 'Class 3',
+    board: 'ICSE',
+    subjects: ['Guitar'],
+    locality: 'race-course',
+    modes: ['home'],
+    slots: ['we-morning', 'wd-evening'],
+    budgetMax: 3000,
+    format: 'one',
+    need: 'She has a guitar that was a birthday present and nobody at home can teach her. A complete beginner, seven years old, patient teacher please.',
+    posted: '4 hours ago',
+    responses: 1,
+    preferFemale: true,
+  },
+  {
+    id: 'r-oberoi',
+    family: 'Manav Oberoi',
+    learner: 'Kabir',
+    learnerGender: 'boy',
+    classLevel: 'Class 8',
+    board: 'CBSE',
+    subjects: ['Football', 'Swimming'],
+    locality: 'gurugram',
+    modes: ['mine'],
+    slots: ['we-morning', 'we-evening'],
+    budgetMax: 4000,
+    format: 'group',
+    need: 'He is on the school team but has no technique. A small group on weekends would suit him better than one-to-one.',
+    posted: '3 days ago',
+    responses: 2,
     preferFemale: false,
   },
 ]

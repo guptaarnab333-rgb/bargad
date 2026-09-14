@@ -1,4 +1,13 @@
-import { LOCALITIES, TEACHERS, REQUIREMENTS, SLOTS, MODES, distanceKm } from '../data/seed'
+import {
+  BUDGET_CAP,
+  LOCALITIES,
+  TEACHERS,
+  REQUIREMENTS,
+  SLOTS,
+  MODES,
+  SUBJECT_CATEGORY,
+  distanceKm,
+} from '../data/seed'
 
 export const uid = (p = 'x') => `${p}-${Math.random().toString(36).slice(2, 9)}`
 
@@ -36,6 +45,25 @@ export const cityName = (id) => LOCALITIES.find((l) => l.id === id)?.city ?? ''
 export const slotLabel = (id) => SLOTS.find((s) => s.id === id)?.label ?? id
 export const slotShort = (id) => slotLabel(id).replace('Weekday ', 'Wkdy ').replace('Weekend ', 'Wknd ')
 export const modeShort = (id) => MODES.find((m) => m.id === id)?.short ?? id
+
+/* ---- Subject categories ----
+   `custom` is the map of subjects a person typed in themselves, kept on their
+   own profile as { 'Bharatanatyam': 'activity' }. Anything nobody has
+   classified falls back to academic, so a subject can never vanish from both
+   tabs and become unreachable. */
+export const subjectCategory = (name, custom) =>
+  SUBJECT_CATEGORY[name] ?? custom?.[name] ?? 'academic'
+
+export const subjectsInCategory = (list = [], category, custom) =>
+  list.filter((s) => subjectCategory(s, custom) === category)
+
+/* ---- Budget ----
+   The family states one number: the most they can pay per month. At the top of
+   the slider they are saying they have no ceiling, and every screen must word
+   that the same way. */
+export const isNoBudgetLimit = (v) => v == null || v >= BUDGET_CAP
+export const budgetLabel = (v) => (isNoBudgetLimit(v) ? 'No upper limit' : inr(v))
+export const budgetUpTo = (v) => (isNoBudgetLimit(v) ? 'Any budget' : `Up to ${inr(v)}`)
 
 /** Mode wording is role-specific. Say whose screen it is being read on. */
 export const modeLabel = (id, role) =>
@@ -81,7 +109,7 @@ export function scoreTeacherForRequirement(teacher, req) {
     score += 20
     reasons.push(`Takes ${req.classLevel}`)
   }
-  if (teacher.boards.includes(req.board)) {
+  if (teacher.boards.length && teacher.boards.includes(req.board)) {
     score += 10
     reasons.push(`${req.board} board`)
   }
@@ -102,9 +130,9 @@ export function scoreTeacherForRequirement(teacher, req) {
     score += 10
     reasons.push(slotShort(overlap(teacher.slots, req.slots)[0]))
   }
-  if (teacher.fee <= req.budgetMax) {
+  if (isNoBudgetLimit(req.budgetMax) || teacher.fee <= req.budgetMax) {
     score += 12
-    reasons.push(teacher.fee < req.budgetMin ? 'Under your budget' : 'Within your budget')
+    reasons.push('Within your budget')
   }
   if (teacher.formats.includes(req.format)) score += 5
 
@@ -130,7 +158,7 @@ export function scoreRequirementForTeacher(req, teacher) {
     score += 20
     reasons.push(req.classLevel)
   }
-  if (teacher.boards.includes(req.board)) {
+  if (teacher.boards.length && teacher.boards.includes(req.board)) {
     score += 10
     reasons.push(req.board)
   }
@@ -145,11 +173,9 @@ export function scoreRequirementForTeacher(req, teacher) {
     score += 12
     reasons.push(slotShort(overlap(teacher.slots, req.slots)[0]))
   }
-  if (teacher.fee >= req.budgetMin && teacher.fee <= req.budgetMax) {
+  if (isNoBudgetLimit(req.budgetMax) || teacher.fee <= req.budgetMax) {
     score += 14
-    reasons.push('Matches your fee')
-  } else if (teacher.fee <= req.budgetMax) {
-    score += 8
+    reasons.push('Within their budget')
   }
 
   return { score, reasons: reasons.slice(0, 3), km }
@@ -160,7 +186,7 @@ export function filterTeachers(list, f) {
   return list.filter((t) => {
     if (f.subject && !t.subjects.includes(f.subject)) return false
     if (f.classLevel && !t.classes.includes(f.classLevel)) return false
-    if (f.board && !t.boards.includes(f.board)) return false
+    if (f.board && t.boards.length && !t.boards.includes(f.board)) return false
     if (f.mode && !t.modes.includes(f.mode)) return false
     if (f.locality && t.locality !== f.locality) return false
     if (f.maxFee && t.fee > f.maxFee) return false

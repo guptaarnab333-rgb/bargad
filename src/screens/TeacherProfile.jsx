@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../store/AppContext'
-import { CAPACITY, SLOTS } from '../data/seed'
-import { Avatar, Button, Chip, Field, KV, OptionGroup, Sheet, SectionHead, TopBar } from '../components/UI'
+import { BOARDS, CAPACITY, CLASSES, SLOTS } from '../data/seed'
+import { Avatar, Button, Chip, Field, KV, OptionGroup, SectionHead, Sheet, SubjectPicker, TopBar } from '../components/UI'
 import { CapacityChip } from '../components/Cards'
 import { IcArrow, IcCheck, IcInfo, IcShield, IcSwap } from '../components/Icons'
-import { classRange, cityName, inr, localityName, modeLabel, modesFor, slotLabel } from '../lib/utils'
+import { cityName, classRange, inr, localityName, modeLabel, modesFor, slotLabel, subjectsInCategory } from '../lib/utils'
 
 export default function TeacherProfile() {
   const { state, dispatch, toast } = useApp()
@@ -96,7 +96,7 @@ export default function TeacherProfile() {
           title="What you teach"
           action={
             <button className="sechead__link" onClick={() => setSheet('fee')}>
-              Edit fee
+              Edit
             </button>
           }
         />
@@ -104,7 +104,7 @@ export default function TeacherProfile() {
           items={[
             { k: 'Subjects', v: t.subjects.join(', ') },
             { k: 'Classes', v: classRange(t.classes) },
-            { k: 'Boards', v: t.boards.join(', ') },
+            ...(t.boards.length ? [{ k: 'Boards', v: t.boards.join(', ') }] : []),
             { k: 'Monthly fee', v: inr(t.fee) },
             { k: 'Qualification', v: t.qualification },
             { k: 'Experience', v: `${t.experience} years` },
@@ -337,14 +337,43 @@ export default function TeacherProfile() {
       <Sheet
         open={sheet === 'fee'}
         onClose={() => setSheet(null)}
-        title="Your monthly fee"
-        subtitle="Shown openly on your profile. You set it, and only you change it."
+        title="What you teach"
+        subtitle="Families search by exactly this. Your fee is shown openly, and only you change it."
         footer={
           <Button block onClick={() => setSheet(null)}>
             Done
           </Button>
         }
       >
+        <Field label="Subjects">
+          <SubjectPicker
+            value={t.subjects}
+            onChange={(v) => save({ subjects: v })}
+            custom={t.customSubjects}
+            onCustomChange={(m) => save({ customSubjects: m })}
+          />
+        </Field>
+        <Field label="Classes">
+          <OptionGroup
+            options={CLASSES}
+            value={t.classes}
+            onChange={(v) => save({ classes: v })}
+            multi
+          />
+        </Field>
+        {subjectsInCategory(t.subjects, 'academic', t.customSubjects).length > 0 && (
+          <Field label="Boards">
+            <OptionGroup
+              options={BOARDS}
+              value={t.boards}
+              onChange={(v) => save({ boards: v })}
+              multi
+            />
+          </Field>
+        )}
+        <span className="field__label" style={{ display: 'block', marginTop: 18 }}>
+          Monthly fee
+        </span>
         <div className="h1" style={{ fontSize: '2.4rem', color: 'var(--indigo-ink)', margin: '4px 0 14px' }}>
           {inr(t.fee)}
           <span className="sm" style={{ color: 'var(--ink-3)', fontFamily: 'var(--font-ui)' }}>

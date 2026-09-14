@@ -4,15 +4,7 @@ import { useApp } from '../store/AppContext'
 import { Avatar, Button, Chip, Empty, KV, Segmented, TopBar } from '../components/UI'
 import { RespondSheet, SimulateBar, Timeline } from '../components/RequestBits'
 import { IcPin, IcQuestion } from '../components/Icons'
-import {
-  distanceFrom,
-  distLabel,
-  inr,
-  localityName,
-  requirementById,
-  slotShort,
-  STATUS_META,
-} from '../lib/utils'
+import { budgetUpTo, distanceFrom, distLabel, inr, localityName, requirementById, slotShort, STATUS_META } from '../lib/utils'
 
 export default function TeacherRequests() {
   const { state, dispatch, toast } = useApp()
@@ -126,7 +118,7 @@ export default function TeacherRequests() {
                         <KV
                           tone="blush"
                           items={[
-                            { k: 'Their budget', v: `${inr(r.budgetMin)}–${inr(r.budgetMax)}` },
+                            { k: 'Their budget', v: budgetUpTo(r.budgetMax) },
                             { k: 'Your fee', v: `${inr(state.teacher.fee)}` },
                             { k: 'When', v: r.slots.map(slotShort).join(', ') },
                             {

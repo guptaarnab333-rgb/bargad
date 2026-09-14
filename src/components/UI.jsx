@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { IcBack, IcCheck, IcStar, IcX } from './Icons'
 import Doodle from './Doodle'
-import { initials, tintFor } from '../lib/utils'
+import { initials, subjectCategory, tintFor } from '../lib/utils'
+import { ACADEMIC_SUBJECTS, ACTIVITY_SUBJECTS, CATEGORIES, SUBJECTS } from '../data/seed'
 
 /* ---------------- Button ----------------
    Solid pill, label only. No icon token, no arrow. */
@@ -183,6 +184,93 @@ export function FilterRow({ options, value, onChange, allLabel = 'All' }) {
           </button>
         )
       })}
+    </div>
+  )
+}
+
+/* ---------------- Subject picker ----------------
+   Thirty-three subjects in one grid is a wall, and finding a Maths tutor is a
+   different errand from finding a guitar teacher, so the list sits behind a
+   switch that shows at most eighteen at a time.
+
+   Anything a person types in is kept on their own profile and never written
+   into the shared catalogue, otherwise the taxonomy fragments into "maths",
+   "Maths" and "Mathematics" within a week. A typed name that already exists is
+   quietly resolved to the real entry instead of creating a duplicate. */
+export function SubjectPicker({ value = [], onChange, custom = {}, onCustomChange }) {
+  const [cat, setCat] = useState('academic')
+  const [adding, setAdding] = useState(false)
+  const [draft, setDraft] = useState('')
+
+  const listed = cat === 'academic' ? ACADEMIC_SUBJECTS : ACTIVITY_SUBJECTS
+  const mine = Object.keys(custom).filter((s) => custom[s] === cat)
+  const options = [...listed, ...mine]
+  // Selected subjects that live on the other tab, so nothing a user picked can
+  // silently disappear when they switch.
+  const elsewhere = value.filter((s) => subjectCategory(s, custom) !== cat)
+  const otherCat = cat === 'academic' ? 'activity' : 'academic'
+  const otherLabel = CATEGORIES.find((c) => c.id === otherCat)?.label
+
+  const toggle = (s) =>
+    onChange(value.includes(s) ? value.filter((x) => x !== s) : [...value, s])
+
+  const commit = () => {
+    const clean = draft.trim().replace(/\s+/g, ' ').slice(0, 28)
+    if (!clean) return setAdding(false)
+    const known = SUBJECTS.find((s) => s.toLowerCase() === clean.toLowerCase())
+    const name = known ?? clean.replace(/\b\w/g, (c) => c.toUpperCase())
+    if (!known && custom[name] == null) onCustomChange?.({ ...custom, [name]: cat })
+    if (!value.includes(name)) onChange([...value, name])
+    if (known) setCat(subjectCategory(known, custom))
+    setDraft('')
+    setAdding(false)
+  }
+
+  return (
+    <div className="picker">
+      <Segmented items={CATEGORIES} value={cat} onChange={setCat} />
+      <div className="optgrid" style={{ marginTop: 12 }}>
+        {options.map((s) => (
+          <button
+            key={s}
+            type="button"
+            className="opt"
+            aria-pressed={value.includes(s)}
+            onClick={() => toggle(s)}
+          >
+            {s}
+          </button>
+        ))}
+        {!adding && (
+          <button type="button" className="opt opt--add" onClick={() => setAdding(true)}>
+            + Something else
+          </button>
+        )}
+      </div>
+
+      {adding && (
+        <div className="picker__add">
+          <input
+            className="input"
+            autoFocus
+            maxLength={28}
+            placeholder={cat === 'academic' ? 'e.g. Statistics' : 'e.g. Bharatanatyam'}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') { e.preventDefault(); commit() }
+              if (e.key === 'Escape') { setDraft(''); setAdding(false) }
+            }}
+          />
+          <Button size="sm" onClick={commit}>Add</Button>
+        </div>
+      )}
+
+      {elsewhere.length > 0 && (
+        <button type="button" className="picker__other" onClick={() => setCat(otherCat)}>
+          Also chosen in {otherLabel}: <strong>{elsewhere.join(', ')}</strong>
+        </button>
+      )}
     </div>
   )
 }

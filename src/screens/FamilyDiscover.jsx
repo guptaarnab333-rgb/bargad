@@ -1,10 +1,10 @@
 import { Fragment, useMemo, useState } from 'react'
 import { useApp } from '../store/AppContext'
-import { BOARDS, CLASSES, LOCALITIES, SUBJECTS, TEACHERS } from '../data/seed'
+import { BOARDS, BUDGET_CAP, CLASSES, LOCALITIES, SUBJECTS, TEACHERS } from '../data/seed'
 import { TeacherCard } from '../components/Cards'
 import { Button, Chip, Empty, FilterRow, OptionGroup, Promo, Sheet, TopBar } from '../components/UI'
 import { IcSliders } from '../components/Icons'
-import { filterTeachers, inr, localityName, modesFor, scoreTeacherForRequirement } from '../lib/utils'
+import { budgetLabel, filterTeachers, inr, localityName, modesFor, scoreTeacherForRequirement } from '../lib/utils'
 
 const SORTS = [
   { id: 'fit', label: 'Best fit' },
@@ -24,7 +24,7 @@ export default function FamilyDiscover() {
     board: null,
     mode: null,
     locality: null,
-    maxFee: null,
+    maxFee: f.budgetMax ?? null,
     openOnly: true,
   })
 
@@ -191,19 +191,19 @@ export default function FamilyDiscover() {
         </div>
         <div className="field">
           <span className="field__label">
-            Monthly fee up to {adv.maxFee ? inr(adv.maxFee) : 'any'}
+            Monthly fee: {budgetLabel(adv.maxFee)}
           </span>
           <input
             className="range"
             type="range"
             min="1500"
-            max="12000"
+            max={BUDGET_CAP}
             step="250"
-            value={adv.maxFee ?? 12000}
+            value={adv.maxFee ?? BUDGET_CAP}
             onChange={(e) =>
               setAdv((s) => ({
                 ...s,
-                maxFee: +e.target.value >= 12000 ? null : +e.target.value,
+                maxFee: +e.target.value >= BUDGET_CAP ? null : +e.target.value,
               }))
             }
           />

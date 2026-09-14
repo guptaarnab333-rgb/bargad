@@ -5,18 +5,7 @@ import { REVIEWS, SLOTS } from '../data/seed'
 import { Avatar, Button, Chip, KV, Sheet, Stars, TopBar, Field, OptionGroup } from '../components/UI'
 import { CapacityChip, VerifiedChip } from '../components/Cards'
 import { IcCheck, IcInfo, IcLock, IcPin, IcShield } from '../components/Icons'
-import {
-  avgScore,
-  classRange,
-  distanceFrom,
-  distLabel,
-  inr,
-  localityName,
-  modeLabel,
-  modesFor,
-  slotLabel,
-  teacherById,
-} from '../lib/utils'
+import { avgScore, budgetLabel, classRange, distanceFrom, distLabel, inr, localityName, modeLabel, modesFor, slotLabel, teacherById } from '../lib/utils'
 
 export default function TeacherDetail() {
   const { id } = useParams()
@@ -37,7 +26,6 @@ export default function TeacherDetail() {
     subjects: f.subjects.filter((s) => t?.subjects.includes(s)),
     mode: t?.modes.find((m) => f.modes.includes(m)) ?? t?.modes[0],
     slots: f.slots.filter((s) => t?.slots.includes(s)),
-    budgetMin: f.budgetMin,
     budgetMax: f.budgetMax,
     note: f.need,
   })
@@ -326,7 +314,7 @@ export default function TeacherDetail() {
           <IcInfo size={18} />
           <span>
             Their fee is <strong className="strong">{inr(t.fee)}/month</strong>; your budget is{' '}
-            {inr(f.budgetMin)}–{inr(f.budgetMax)}.{' '}
+            {budgetLabel(f.budgetMax)}.{' '}
             {t.fee > f.budgetMax
               ? 'That is above your range. Say so here rather than after a demo.'
               : 'That fits.'}

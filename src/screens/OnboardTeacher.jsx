@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BOARDS, CLASSES, LOCALITIES, SLOTS, SUBJECTS, FORMATS } from '../data/seed'
-import { Button, Field, OptionGroup, Progress, TopBar } from '../components/UI'
+import { BOARDS, CLASSES, LOCALITIES, SLOTS, FORMATS } from '../data/seed'
+import { Button, Field, OptionGroup, Progress, SubjectPicker, TopBar } from '../components/UI'
 import { useApp } from '../store/AppContext'
 import Doodle from '../components/Doodle'
-import { inr, modesFor } from '../lib/utils'
+import { inr, modesFor, subjectsInCategory } from '../lib/utils'
 
 const STEPS = 5
 
@@ -42,6 +42,9 @@ export default function OnboardTeacher() {
    * that never says why is the fastest way to strand someone, so the button
    * always works and tells you what is missing instead.
    */
+  const teachesAcademic =
+    subjectsInCategory(d.subjects, 'academic', d.customSubjects).length > 0
+
   const missing = {
     1: [
       [d.name.trim().length > 1, 'your name'],
@@ -50,7 +53,9 @@ export default function OnboardTeacher() {
     2: [
       [d.subjects.length > 0, 'at least one subject'],
       [d.classes.length > 0, 'at least one class'],
-      [d.boards.length > 0, 'at least one board'],
+      // Boards only apply to academic teaching. Asking a guitar teacher for a
+      // board would strand them on a requirement they cannot meet.
+      [!teachesAcademic || d.boards.length > 0, 'at least one board'],
     ],
     3: [
       [!!d.locality, 'your locality'],
@@ -155,11 +160,11 @@ export default function OnboardTeacher() {
               This is what families search by, so only pick what you would genuinely take on.
             </p>
             <Field label="Subjects">
-              <OptionGroup
-                options={SUBJECTS}
+              <SubjectPicker
                 value={d.subjects}
                 onChange={(v) => set('subjects', v)}
-                multi
+                custom={d.customSubjects}
+                onCustomChange={(m) => set('customSubjects', m)}
               />
             </Field>
             <Field label="Classes">
@@ -170,14 +175,16 @@ export default function OnboardTeacher() {
                 multi
               />
             </Field>
-            <Field label="Boards">
-              <OptionGroup
-                options={BOARDS}
-                value={d.boards}
-                onChange={(v) => set('boards', v)}
-                multi
-              />
-            </Field>
+            {teachesAcademic && (
+              <Field label="Boards">
+                <OptionGroup
+                  options={BOARDS}
+                  value={d.boards}
+                  onChange={(v) => set('boards', v)}
+                  multi
+                />
+              </Field>
+            )}
           </>
         )}
 

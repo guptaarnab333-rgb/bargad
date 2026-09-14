@@ -6,14 +6,7 @@ import { TeacherCard, RequestCard } from '../components/Cards'
 import { Avatar, Button, Sheet, SectionHead, Switch } from '../components/UI'
 import { BannerDoodle, Logo } from '../components/Brand'
 import { IcArrow, IcSliders } from '../components/Icons'
-import {
-  greeting,
-  inr,
-  localityName,
-  scoreTeacherForRequirement,
-  slotShort,
-  teacherById,
-} from '../lib/utils'
+import { budgetUpTo, greeting, inr, localityName, scoreTeacherForRequirement, slotShort, teacherById } from '../lib/utils'
 
 export default function FamilyHome() {
   const { state, dispatch, toast } = useApp()
@@ -74,7 +67,7 @@ export default function FamilyHome() {
           <p className="intent__sub">
             {f.board} · {localityName(f.locality)} · {f.slots.map(slotShort).join(', ')}
             <br />
-            {inr(f.budgetMin)}–{inr(f.budgetMax)}/month ·{' '}
+            {budgetUpTo(f.budgetMax)}/month ·{' '}
             {f.format === 'group' ? 'Small group' : 'One-to-one'}
           </p>
           <div className="intent__foot">

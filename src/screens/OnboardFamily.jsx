@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BOARDS, CLASSES, LOCALITIES, SLOTS, SUBJECTS, FORMATS } from '../data/seed'
-import { Button, Field, OptionGroup, Progress, TopBar } from '../components/UI'
+import { BOARDS, BUDGET_CAP, CLASSES, FORMATS, LOCALITIES, SLOTS } from '../data/seed'
+import { Button, Field, OptionGroup, Progress, SubjectPicker, TopBar } from '../components/UI'
 import { useApp } from '../store/AppContext'
 import Doodle from '../components/Doodle'
-import { inr, modesFor } from '../lib/utils'
+import { budgetLabel, inr, isNoBudgetLimit, modesFor } from '../lib/utils'
 
 const STEPS = 4
 
@@ -21,7 +21,6 @@ export default function OnboardFamily() {
     locality: '',
     modes: [],
     slots: [],
-    budgetMin: 2500,
     budgetMax: 4000,
     format: 'one',
     need: '',
@@ -141,11 +140,11 @@ export default function OnboardFamily() {
               <OptionGroup options={BOARDS} value={d.board} onChange={(v) => set('board', v)} />
             </Field>
             <Field label="Subjects">
-              <OptionGroup
-                options={SUBJECTS}
+              <SubjectPicker
                 value={d.subjects}
                 onChange={(v) => set('subjects', v)}
-                multi
+                custom={d.customSubjects}
+                onCustomChange={(m) => set('customSubjects', m)}
               />
             </Field>
             <Field
@@ -223,35 +222,32 @@ export default function OnboardFamily() {
                 className="h1"
                 style={{ margin: '2px 0 14px', fontSize: '1.9rem', color: 'var(--indigo-ink)' }}
               >
-                {inr(d.budgetMin)} – {inr(d.budgetMax)}
-                <span
-                  className="sm"
-                  style={{ color: 'var(--ink-3)', fontFamily: 'var(--font-ui)' }}
-                >
-                  {' '}
-                  / month
-                </span>
+                {budgetLabel(d.budgetMax)}
+                {!isNoBudgetLimit(d.budgetMax) && (
+                  <span
+                    className="sm"
+                    style={{ color: 'var(--ink-3)', fontFamily: 'var(--font-ui)' }}
+                  >
+                    {' '}
+                    / month
+                  </span>
+                )}
               </div>
-              <span className="xs">Lowest you expect</span>
+              {/* One slider, not two. Nobody has a minimum they are willing to
+                  pay, so a floor only ever excluded teachers who were cheaper
+                  than expected. */}
               <input
                 className="range"
                 type="range"
                 min="1000"
-                max="10000"
-                step="100"
-                value={d.budgetMin}
-                onChange={(e) => set('budgetMin', Math.min(+e.target.value, d.budgetMax - 200))}
-              />
-              <span className="xs">Most you can go to</span>
-              <input
-                className="range"
-                type="range"
-                min="1000"
-                max="12000"
+                max={BUDGET_CAP}
                 step="100"
                 value={d.budgetMax}
-                onChange={(e) => set('budgetMax', Math.max(+e.target.value, d.budgetMin + 200))}
+                onChange={(e) => set('budgetMax', +e.target.value)}
               />
+              <span className="xs" style={{ display: 'block', marginTop: 6 }}>
+                The most you can pay each month. Slide to the end for no limit.
+              </span>
             </Field>
             <div className="notice notice--indigo" style={{ marginTop: 8 }}>
               <span style={{ flex: 'none', fontSize: 17 }}>🪢</span>
