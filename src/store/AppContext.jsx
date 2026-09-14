@@ -8,6 +8,7 @@ const emptyState = {
   bootstrapped: false,
   introSeen: false,
   account: null,
+  skin: 'original',
   role: null, // 'teacher' | 'family'
   teacher: null,
   family: null,
@@ -36,6 +37,8 @@ function reducer(state, a) {
 
     /* Designed, not implemented: the account is what an identity WOULD hang
        off. Nothing is verified and nothing leaves the device. */
+    case 'SET_SKIN':
+      return { ...state, skin: a.skin }
     case 'SET_ACCOUNT':
       return { ...state, account: { method: a.method, value: a.value } }
     case 'SIGN_OUT':

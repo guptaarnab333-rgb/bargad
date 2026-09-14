@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../store/AppContext'
 import { BOARDS, BUDGET_CAP, CLASSES, FORMATS, LOCALITIES, SLOTS } from '../data/seed'
-import { Avatar, Button, CONTACT_FIELDS, Chip, ContactFields, Field, KV, OptionGroup, SectionHead, Sheet, SubjectPicker, Switch, TopBar } from '../components/UI'
+import { Avatar, Button, CONTACT_FIELDS, Chip, ContactFields, Field, KV, OptionGroup, SectionHead, Segmented, Sheet, SubjectPicker, Switch, TopBar } from '../components/UI'
 import { IcArrow, IcInfo, IcLock, IcSwap } from '../components/Icons'
 import { budgetLabel, budgetUpTo, cityName, inr, localityName, modeLabel, modesFor, slotLabel } from '../lib/utils'
 
@@ -133,6 +133,26 @@ export default function FamilyProfile() {
               </div>
               <div className="stat__l">Tuition running</div>
             </div>
+          </div>
+        </div>
+
+        {/* ---- Appearance: two complete designs, one build ---- */}
+        <SectionHead title="Appearance" />
+        <div className="card">
+          <span className="h3">Design style</span>
+          <p className="sm" style={{ marginTop: 6 }}>
+            Both are complete. Switching is instant and changes nothing about how the app
+            works, so either can be the one you keep.
+          </p>
+          <div style={{ marginTop: 12 }}>
+            <Segmented
+              items={[
+                { id: 'original', label: 'Original' },
+                { id: 'soft', label: 'Soft' },
+              ]}
+              value={state.skin ?? 'original'}
+              onChange={(v) => dispatch({ type: 'SET_SKIN', skin: v })}
+            />
           </div>
         </div>
 

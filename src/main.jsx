@@ -7,6 +7,7 @@ import App from './App'
 import './styles/tokens.css'
 import './styles/base.css'
 import './styles/components.css'
+import './styles/skin-soft.css'
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>

@@ -1,0 +1,153 @@
+/* ============================================================
+   BARGAD · "Soft" skin  ·  an alternative, not a replacement
+   ------------------------------------------------------------
+   Everything here is scoped to [data-skin='soft'] on <html>, so the
+   original design is untouched and switching between the two is one
+   attribute. Nothing in this file changes layout or behaviour: the same
+   markup, the same components, a different surface language.
+
+   The reference is cool near-white rather than warm cream, larger radii,
+   soft elevation instead of flat blocks, and pastel gradient cards.
+   ============================================================ */
+
+:root[data-skin='soft'] {
+  /* ---------- Ground: cool, not warm ---------- */
+  --bg: #f3f4f7;
+  --surface: #ffffff;
+  --sunk: #eceef2;
+
+  /* ---------- Ink ramp, re-verified against the cooler ground ---------- */
+  --ink: #15161c;
+  --ink-2: #4b4e5a; /* 7.7:1 on --bg */
+  --ink-3: #616572; /* 4.9:1 on --bg and on --surface */
+  --ink-4: #9a9daa;
+
+  /* ---------- Brand, held but softened ---------- */
+  --green: #16b87f;
+  --green-deep: #07704c;
+  --indigo: #6357ff;
+  --orange: #ffc056;
+  --blush: #ffd9dd;
+
+  --green-ink: #056248;
+  --orange-ink: #8a5a00;
+  --indigo-ink: #4034d6;
+  --blush-ink: #a63f4b;
+
+  /* Pastels lifted from the reference: butter, periwinkle, mint, rose */
+  --green-t: #d8f4e7;
+  --green-t2: #a9e7cd;
+  --indigo-t: #e6e4ff;
+  --indigo-t2: #c9c4ff;
+  --orange-t: #fdeec4;
+  --orange-t2: #fbdf9b;
+  --blush-t: #ffe6e9;
+
+  /* ---------- Rounder ---------- */
+  --r-xs: 10px;
+  --r-sm: 14px;
+  --r-md: 18px;
+  --r-lg: 24px;
+  --r-xl: 30px;
+  --r-2xl: 36px;
+  --r-arch: 999px;
+
+  /* ---------- Elevation does the separating here, not fill contrast ---------- */
+  --e-1: 0 2px 10px rgba(22, 24, 32, 0.05);
+  --e-2: 0 6px 22px rgba(22, 24, 32, 0.07);
+  --e-3: 0 18px 46px rgba(22, 24, 32, 0.14);
+  --e-4: 0 -10px 38px rgba(22, 24, 32, 0.16);
+
+  /* ---------- One neutral geometric face, no editorial display ---------- */
+  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+/* ---------------- Surfaces lift instead of sitting flat ---------------- */
+[data-skin='soft'] .card,
+[data-skin='soft'] .chatcard,
+[data-skin='soft'] .promo,
+[data-skin='soft'] .intent {
+  box-shadow: var(--e-1);
+}
+[data-skin='soft'] .card--sunk {
+  box-shadow: none;
+}
+[data-skin='soft'] .tabbar {
+  box-shadow: 0 -6px 24px rgba(22, 24, 32, 0.06);
+}
+
+/* ---------------- Controls ---------------- */
+[data-skin='soft'] .opt,
+[data-skin='soft'] .fchip {
+  box-shadow: var(--e-1);
+}
+[data-skin='soft'] .opt[aria-pressed='true'],
+[data-skin='soft'] .fchip[aria-pressed='true'] {
+  box-shadow: none;
+}
+[data-skin='soft'] .searchbar__field,
+[data-skin='soft'] .input,
+[data-skin='soft'] .textarea,
+[data-skin='soft'] .select,
+[data-skin='soft'] .lpick__field {
+  background: var(--sunk);
+  box-shadow: none;
+}
+
+/* The reference's headline treatment: tighter, heavier, no editorial flavour. */
+[data-skin='soft'] .display,
+[data-skin='soft'] .h1,
+[data-skin='soft'] .h2 {
+  font-family: var(--font-ui);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+/* ---------------- The signature of the reference ----------------
+   A pastel wash bleeding in from one corner of a result card. Decorative
+   only, never behind text, and only in result lists: putting it on every
+   .card would tint the whole app, including profile rows and notices. */
+[data-skin='soft'] .cardlist > .card {
+  position: relative;
+  overflow: hidden;
+}
+[data-skin='soft'] .cardlist > .card::after {
+  content: '';
+  position: absolute;
+  right: -70px;
+  top: -80px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 35%,
+    var(--orange-t2) 0%,
+    var(--indigo-t2) 58%,
+    transparent 74%
+  );
+  filter: blur(28px);
+  opacity: 0.9;
+  pointer-events: none;
+}
+/* Content sits above the wash. */
+[data-skin='soft'] .cardlist > .card > * {
+  position: relative;
+  z-index: 1;
+}
+/* Alternate the pastel so a list reads as a set rather than a repeat. */
+[data-skin='soft'] .cardlist > .card:nth-of-type(2n)::after {
+  background: radial-gradient(
+    circle at 35% 35%,
+    var(--green-t2) 0%,
+    var(--indigo-t2) 58%,
+    transparent 74%
+  );
+}
+[data-skin='soft'] .cardlist > .card:nth-of-type(3n)::after {
+  background: radial-gradient(
+    circle at 35% 35%,
+    var(--blush) 0%,
+    var(--indigo-t2) 58%,
+    transparent 74%
+  );
+}

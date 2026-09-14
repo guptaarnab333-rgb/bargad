@@ -33,6 +33,18 @@ function ScrollReset() {
 }
 
 /** Role-aware shell with bottom navigation. */
+/* One attribute on <html> swaps the entire surface language. Keeping both in
+   the build means comparing them is a tap, and going back is not a revert. */
+function SkinSwitch() {
+  const { state } = useApp()
+  useEffect(() => {
+    const el = document.documentElement
+    if (state.skin === 'soft') el.setAttribute('data-skin', 'soft')
+    else el.removeAttribute('data-skin')
+  }, [state.skin])
+  return null
+}
+
 function RoleLayout({ role, children }) {
   const { state } = useApp()
   // The tab bar is the bottom-most surface on every role screen.
@@ -72,6 +84,7 @@ export default function App() {
     <div className="deskframe">
       <div className="shell">
         <ScrollReset />
+        <SkinSwitch />
         <Routes>
           <Route
             path="/"

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../store/AppContext'
 import { AGE_BANDS, BOARDS, CAPACITY, CLASSES, SLOTS } from '../data/seed'
-import { Avatar, Button, Chip, CONTACT_FIELDS, ContactFields, Field, KV, OptionGroup, SectionHead, Sheet, SubjectPicker, TopBar } from '../components/UI'
+import { Avatar, Button, CONTACT_FIELDS, Chip, ContactFields, Field, KV, OptionGroup, SectionHead, Segmented, Sheet, SubjectPicker, TopBar } from '../components/UI'
 import { CapacityChip } from '../components/Cards'
 import { IcArrow, IcCheck, IcInfo, IcShield, IcSwap } from '../components/Icons'
 import { cityName, inr, localityName, modeLabel, modesFor, slotLabel, subjectsInCategory, teachesRange } from '../lib/utils'
@@ -184,6 +184,26 @@ export default function TeacherProfile() {
             Families pay you directly, outside the app. Bargad pays for itself with advertising, so
             no teacher is ever ranked higher for spending money.
           </p>
+        </div>
+
+        {/* ---- Appearance: two complete designs, one build ---- */}
+        <SectionHead title="Appearance" />
+        <div className="card">
+          <span className="h3">Design style</span>
+          <p className="sm" style={{ marginTop: 6 }}>
+            Both are complete. Switching is instant and changes nothing about how the app
+            works, so either can be the one you keep.
+          </p>
+          <div style={{ marginTop: 12 }}>
+            <Segmented
+              items={[
+                { id: 'original', label: 'Original' },
+                { id: 'soft', label: 'Soft' },
+              ]}
+              value={state.skin ?? 'original'}
+              onChange={(v) => dispatch({ type: 'SET_SKIN', skin: v })}
+            />
+          </div>
         </div>
 
         {/* ---- Account ---- */}
