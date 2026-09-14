@@ -103,51 +103,7 @@
   letter-spacing: -0.03em;
 }
 
-/* ---------------- The signature of the reference ----------------
-   A pastel wash bleeding in from one corner of a result card. Decorative
-   only, never behind text, and only in result lists: putting it on every
-   .card would tint the whole app, including profile rows and notices. */
-[data-skin='soft'] .cardlist > .card {
-  position: relative;
-  overflow: hidden;
-}
-[data-skin='soft'] .cardlist > .card::after {
-  content: '';
-  position: absolute;
-  right: -70px;
-  top: -80px;
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle at 35% 35%,
-    var(--orange-t2) 0%,
-    var(--indigo-t2) 58%,
-    transparent 74%
-  );
-  filter: blur(28px);
-  opacity: 0.9;
-  pointer-events: none;
-}
-/* Content sits above the wash. */
-[data-skin='soft'] .cardlist > .card > * {
-  position: relative;
-  z-index: 1;
-}
-/* Alternate the pastel so a list reads as a set rather than a repeat. */
-[data-skin='soft'] .cardlist > .card:nth-of-type(2n)::after {
-  background: radial-gradient(
-    circle at 35% 35%,
-    var(--green-t2) 0%,
-    var(--indigo-t2) 58%,
-    transparent 74%
-  );
-}
-[data-skin='soft'] .cardlist > .card:nth-of-type(3n)::after {
-  background: radial-gradient(
-    circle at 35% 35%,
-    var(--blush) 0%,
-    var(--indigo-t2) 58%,
-    transparent 74%
-  );
-}
+/* The reference puts a blurred pastel wash in the corner of every card. It was
+   tried here and removed: on cards this dense it muddies the text behind it and
+   reads as decoration competing with information. Separation in this skin comes
+   from elevation and radius alone. */
