@@ -1,4 +1,4 @@
-import { AGE_BANDS, BUDGET_CAP, distanceKm, LOCALITIES, MODES, REQUIREMENTS, SLOTS, SUBJECT_CATEGORY, TEACHERS } from '../data/seed'
+import { AGE_BANDS, BUDGET_CAP, distanceKm, haversineKm, LOCALITIES, MODES, REQUIREMENTS, SLOTS, SUBJECT_CATEGORY, TEACHERS } from '../data/seed'
 
 export const uid = (p = 'x') => `${p}-${Math.random().toString(36).slice(2, 9)}`
 
@@ -92,6 +92,28 @@ export const requirementById = (id) => REQUIREMENTS.find((r) => r.id === id)
 
 export const distanceFrom = (fromLocality, toLocality) => distanceKm(fromLocality, toLocality)
 
+/** Nearest named area to a dropped pin. The name is what everyone else sees. */
+export const nearestLocality = (lat, lng) => {
+  let best = null
+  let bestD = Infinity
+  for (const l of LOCALITIES) {
+    const d = haversineKm({ lat, lng }, l)
+    if (d != null && d < bestD) {
+      bestD = d
+      best = l.id
+    }
+  }
+  return best
+}
+
+/* Two people who dropped pins get a real distance between those pins. Anyone
+   still on a plain area gets the old centre-to-centre figure, which is why the
+   copy has always called it indicative. */
+export const distanceBetween = (a, b) =>
+  a?.coords && b?.coords
+    ? haversineKm(a.coords, b.coords)
+    : distanceKm(a?.locality, b?.locality)
+
 export const distLabel = (km) =>
   km == null ? '' : km < 1 ? 'Under 1 km away' : `${km} km away`
 
@@ -134,7 +156,7 @@ export function scoreTeacherForRequirement(teacher, req) {
     reasons.push(`${req.board} board`)
   }
 
-  const km = distanceFrom(req.locality, teacher.locality)
+  const km = distanceBetween(req, teacher)
   if (km != null && km <= teacher.radiusKm) {
     score += 15
     reasons.push(km < 1 ? 'In your area' : `${km} km away`)
@@ -183,7 +205,7 @@ export function scoreRequirementForTeacher(req, teacher) {
     reasons.push(req.board)
   }
 
-  const km = distanceFrom(teacher.locality, req.locality)
+  const km = distanceBetween(teacher, req)
   if (km != null && km <= teacher.radiusKm) {
     score += 18
     reasons.push(km < 1 ? 'Your area' : `${km} km away`)

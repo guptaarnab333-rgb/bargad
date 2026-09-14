@@ -156,9 +156,8 @@ export const CAPACITY = {
 
 export const localityById = (id) => LOCALITIES.find((l) => l.id === id)
 
-export function distanceKm(aId, bId) {
-  const a = localityById(aId)
-  const b = localityById(bId)
+/** Straight-line km between two { lat, lng } points, to one decimal. */
+export function haversineKm(a, b) {
   if (!a || !b) return null
   const R = 6371
   const dLat = ((b.lat - a.lat) * Math.PI) / 180
@@ -169,6 +168,8 @@ export function distanceKm(aId, bId) {
     Math.sin(dLat / 2) ** 2 + Math.sin(dLng / 2) ** 2 * Math.cos(la) * Math.cos(lb)
   return Math.round(2 * R * Math.asin(Math.sqrt(h)) * 10) / 10
 }
+
+export const distanceKm = (aId, bId) => haversineKm(localityById(aId), localityById(bId))
 
 /* ------------------------------------------------------------
    TEACHERS

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { LocalityPicker } from '../components/LocalityPicker'
 import { BOARDS, BUDGET_CAP, CLASSES, FORMATS, LOCALITIES, SLOTS } from '../data/seed'
 import { Button, Field, OptionGroup, Progress, SubjectPicker, TopBar } from '../components/UI'
 import { useApp } from '../store/AppContext'
@@ -169,18 +170,11 @@ export default function OnboardFamily() {
               teacher and arranged a demo class.
             </p>
             <Field label="Your locality">
-              <select
-                className="select"
+              <LocalityPicker
                 value={d.locality}
-                onChange={(e) => set('locality', e.target.value)}
-              >
-                <option value="">Choose an area</option>
-                {LOCALITIES.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.name}
-                  </option>
-                ))}
-              </select>
+                coords={d.coords}
+                onChange={(id, coords) => setD((x) => ({ ...x, locality: id, coords }))}
+              />
             </Field>
             <Field label="How should classes happen?">
               <OptionGroup

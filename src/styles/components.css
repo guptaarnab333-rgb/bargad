@@ -1751,3 +1751,36 @@ a.card:active {
     animation: none;
   }
 }
+
+/* ---------------- Locality picker ---------------- */
+/* Areas are grouped by city, so the city name sits on its own line above its
+   pills rather than being repeated on every one of them. */
+.lpick__city {
+  display: contents;
+}
+.lpick__cityname {
+  flex: 0 0 100%;
+  margin: 6px 0 2px;
+  font-size: var(--t-xs);
+  font-weight: 700;
+  color: var(--ink-3);
+}
+.lpick__city:first-child .lpick__cityname {
+  margin-top: 0;
+}
+.lmap {
+  height: 300px;
+  width: 100%;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--sunk);
+}
+/* Leaflet ships its own control chrome; tone it down to the app's language. */
+.lmap .leaflet-control-zoom a {
+  border-radius: 8px;
+  color: var(--ink);
+}
+.lmap .leaflet-control-attribution {
+  font-size: 9px;
+  background: rgba(255, 255, 255, 0.7);
+}
