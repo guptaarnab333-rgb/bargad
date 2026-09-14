@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useApp } from '../store/AppContext'
-import { BOARDS, CLASSES, FORMATS, LOCALITIES, REQUIREMENTS } from '../data/seed'
+import { AGE_BANDS, BOARDS, CATEGORIES, CLASSES, FORMATS, LOCALITIES, REQUIREMENTS } from '../data/seed'
 import { RequirementCard } from '../components/Cards'
-import { Button, Empty, OptionGroup, SearchBar, Sheet, TopBar, Understood } from '../components/UI'
-import { filterRequirements, modesFor, parseSearch, scoreRequirementForTeacher } from '../lib/utils'
+import { Button, Empty, OptionGroup, SearchBar, Segmented, Sheet, TopBar, Understood } from '../components/UI'
+import { filterRequirements, modesFor, parseSearch, scoreRequirementForTeacher, subjectCategory } from '../lib/utils'
 
 const SORTS = [
   { id: 'fit', label: 'Best fit' },
@@ -15,6 +15,7 @@ const SORTS = [
 export default function TeacherDiscover() {
   const { state } = useApp()
   const t = state.teacher
+  const [category, setCategory] = useState('academic')
   const [q, setQ] = useState('')
   const [dropped, setDropped] = useState([])
   const [sort, setSort] = useState('fit')
@@ -25,6 +26,7 @@ export default function TeacherDiscover() {
     mode: null,
     locality: null,
     format: null,
+    ageBand: null,
   })
 
   const responded = state.requests
@@ -32,6 +34,13 @@ export default function TeacherDiscover() {
     .map((r) => r.toRequirement)
 
   const parsed = useMemo(() => parseSearch(q), [q])
+  // Searching "guitar" while Academics is showing would return nothing, so the
+  // named subject decides the half rather than contradicting it.
+  useEffect(() => {
+    if (!parsed.subject) return
+    const c = subjectCategory(parsed.subject)
+    if (c !== category) switchCategory(c)
+  }, [parsed.subject])
   const chips = parsed.chips.filter((c) => !dropped.includes(c.k))
   const live = useMemo(() => {
     const out = {}
@@ -40,9 +49,18 @@ export default function TeacherDiscover() {
     return out
   }, [parsed, dropped])
 
+  /* Class and board mean nothing under Activities, and an age group means
+     nothing under Academics, so switching drops whichever no longer applies.
+     Leaving them set returns zero results and looks like a broken switch. */
+  const switchCategory = (c) => {
+    setCategory(c)
+    setAdv((s) => ({ ...s, classLevel: null, board: null, ageBand: null }))
+  }
+
   const results = useMemo(() => {
     const base = filterRequirements(REQUIREMENTS, {
       ...adv,
+      category,
       subject: live.subject ?? null,
       locality: live.locality ?? adv.locality,
       city: live.city ?? null,
@@ -63,7 +81,7 @@ export default function TeacherDiscover() {
       pay: (a, b) => b.r.budgetMax - a.r.budgetMax,
     }[sort]
     return scored.sort(by)
-  }, [live, adv, sort, t, responded.join()])
+  }, [live, adv, category, sort, t, responded.join()])
 
   const activeCount = Object.values(adv).filter(Boolean).length
 
@@ -78,6 +96,9 @@ export default function TeacherDiscover() {
         onFilters={() => setOpen(true)}
         activeCount={activeCount}
       />
+      <div className="catrow">
+        <Segmented items={CATEGORIES} value={category} onChange={switchCategory} />
+      </div>
       <Understood chips={chips} onRemove={(k) => setDropped((d) => [...d, k])} />
       <div className="u-scroll-x chiprow">
         {SORTS.map((s) => (
@@ -153,22 +174,37 @@ export default function TeacherDiscover() {
           </>
         }
       >
-        <div className="field">
-          <span className="field__label">Class</span>
-          <OptionGroup
-            options={CLASSES}
-            value={adv.classLevel}
-            onChange={(v) => setAdv((s) => ({ ...s, classLevel: s.classLevel === v ? null : v }))}
-          />
-        </div>
-        <div className="field">
-          <span className="field__label">Board</span>
-          <OptionGroup
-            options={BOARDS}
-            value={adv.board}
-            onChange={(v) => setAdv((s) => ({ ...s, board: s.board === v ? null : v }))}
-          />
-        </div>
+        {category === 'academic' ? (
+          <>
+            <div className="field">
+              <span className="field__label">Class</span>
+              <OptionGroup
+                options={CLASSES}
+                value={adv.classLevel}
+                onChange={(v) => setAdv((s) => ({ ...s, classLevel: s.classLevel === v ? null : v }))}
+              />
+            </div>
+            <div className="field">
+              <span className="field__label">Board</span>
+              <OptionGroup
+                options={BOARDS}
+                value={adv.board}
+                onChange={(v) => setAdv((s) => ({ ...s, board: s.board === v ? null : v }))}
+              />
+            </div>
+          </>
+        ) : (
+          /* An activity has no syllabus year and no board. Asking for either
+             would be a question from the wrong half of the network. */
+          <div className="field">
+            <span className="field__label">Age group</span>
+            <OptionGroup
+              options={AGE_BANDS}
+              value={adv.ageBand}
+              onChange={(v) => setAdv((s) => ({ ...s, ageBand: s.ageBand === v ? null : v }))}
+            />
+          </div>
+        )}
         <div className="field">
           <span className="field__label">Mode</span>
           <OptionGroup

@@ -78,9 +78,16 @@ export const ageBandLabel = (id) => AGE_BANDS.find((b) => b.id === id)?.label ??
 export const ageRange = (bands = []) => {
   const picked = AGE_BANDS.filter((b) => bands.includes(b.id))
   if (!picked.length) return ''
-  const first = picked[0].label.split('–')[0].replace(/\D/g, '')
-  const last = picked[picked.length - 1].label
-  return picked.length === 1 ? last : `${first}–${last}`
+  if (picked.length === 1) return picked[0].label
+  // The low number of the first band and the HIGH number of the last. Gluing
+  // the first number onto the last band's whole label gave "8–14–16 years",
+  // which is three numbers for a two-ended range.
+  const lo = picked[0].label.match(/\d+/)[0]
+  const hiLabel = picked[picked.length - 1].label
+  const hi = hiLabel.includes('+')
+    ? `${hiLabel.match(/\d+/)[0]}+`
+    : hiLabel.match(/(\d+)(?!.*\d)/)[1]
+  return `${lo}–${hi} years`
 }
 
 /** What a teacher takes, worded for whichever half of the network they are in. */
@@ -392,6 +399,12 @@ export function filterTeachers(list, f) {
     if (f.locality && t.locality !== f.locality) return false
     if (f.city && cityName(t.locality) !== f.city) return false
     if (f.maxFee && t.fee > f.maxFee) return false
+    // Academics and activities are separate halves of the network, not two
+    // values of one filter: a family browsing guitar teachers should never be
+    // shown a Maths tutor because the subject chip happened to be clear.
+    if (f.category && !(t.subjects || []).some((x) => subjectCategory(x) === f.category))
+      return false
+    if (f.ageBand && !(t.ageBands || []).includes(f.ageBand)) return false
     if (f.openOnly && t.capacity === 'full') return false
     if (f.text) {
       const hay = `${t.name} ${t.headline} ${t.intro} ${t.qualification} ${t.subjects.join(' ')}`
@@ -410,6 +423,10 @@ export function filterRequirements(list, f) {
     if (f.mode && !r.modes.includes(f.mode)) return false
     if (f.locality && r.locality !== f.locality) return false
     if (f.city && cityName(r.locality) !== f.city) return false
+    if (f.category && !(r.subjects || []).some((x) => subjectCategory(x) === f.category))
+      return false
+    // A family only ever gives a class, so the band is derived rather than asked.
+    if (f.ageBand && ageBandForClass(r.classLevel) !== f.ageBand) return false
     if (f.format && r.format !== f.format) return false
     if (f.text) {
       const hay = `${r.family} ${r.need} ${r.subjects.join(' ')} ${r.classLevel} ${r.board}`.toLowerCase()

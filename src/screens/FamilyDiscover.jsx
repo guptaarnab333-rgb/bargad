@@ -1,9 +1,9 @@
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useApp } from '../store/AppContext'
-import { BOARDS, BUDGET_CAP, CLASSES, LOCALITIES, TEACHERS } from '../data/seed'
+import { AGE_BANDS, BOARDS, BUDGET_CAP, CATEGORIES, CLASSES, LOCALITIES, TEACHERS } from '../data/seed'
 import { TeacherCard } from '../components/Cards'
-import { Button, Chip, Empty, OptionGroup, Promo, SearchBar, Sheet, TopBar, Understood } from '../components/UI'
-import { budgetLabel, filterTeachers, inr, localityName, modesFor, parseSearch, scoreTeacherForRequirement } from '../lib/utils'
+import { Button, Chip, Empty, OptionGroup, Promo, SearchBar, Segmented, Sheet, TopBar, Understood } from '../components/UI'
+import { budgetLabel, filterTeachers, inr, localityName, modesFor, parseSearch, scoreTeacherForRequirement, subjectCategory } from '../lib/utils'
 
 const SORTS = [
   { id: 'fit', label: 'Best fit' },
@@ -15,6 +15,7 @@ const SORTS = [
 export default function FamilyDiscover() {
   const { state } = useApp()
   const f = state.family
+  const [category, setCategory] = useState('academic')
   const [q, setQ] = useState('')
   // Chips the user struck out. Kept as keys rather than rewriting their words,
   // so the sentence they typed stays intact in the box.
@@ -28,9 +29,15 @@ export default function FamilyDiscover() {
     locality: null,
     maxFee: f.budgetMax ?? null,
     openOnly: true,
+    ageBand: null,
   })
 
   const parsed = useMemo(() => parseSearch(q), [q])
+  useEffect(() => {
+    if (!parsed.subject) return
+    const c = subjectCategory(parsed.subject)
+    if (c !== category) switchCategory(c)
+  }, [parsed.subject])
   const chips = parsed.chips.filter((c) => !dropped.includes(c.k))
   const live = useMemo(() => {
     const out = {}
@@ -39,11 +46,19 @@ export default function FamilyDiscover() {
     return out
   }, [parsed, dropped])
 
+  /* Class and board mean nothing under Activities, and an age group means
+     nothing under Academics, so switching drops whichever no longer applies. */
+  const switchCategory = (c) => {
+    setCategory(c)
+    setAdv((s) => ({ ...s, classLevel: null, board: null, ageBand: null }))
+  }
+
   const results = useMemo(() => {
     // What was typed wins over what was set, because it is the more recent and
     // more deliberate statement of the same intent.
     const base = filterTeachers(TEACHERS, {
       ...adv,
+      category,
       subject: live.subject ?? null,
       locality: live.locality ?? adv.locality,
       city: live.city ?? null,
@@ -61,7 +76,7 @@ export default function FamilyDiscover() {
       rating: (a, b) => b.t.rating - a.t.rating,
     }[sort]
     return scored.sort(by)
-  }, [live, adv, sort, f])
+  }, [live, adv, category, sort, f])
 
   const activeCount =
     Object.entries(adv).filter(([k, v]) => (k === 'openOnly' ? v === false : !!v)).length
@@ -80,6 +95,9 @@ export default function FamilyDiscover() {
         onFilters={() => setOpen(true)}
         activeCount={activeCount}
       />
+      <div className="catrow">
+        <Segmented items={CATEGORIES} value={category} onChange={switchCategory} />
+      </div>
       <Understood chips={chips} onRemove={(k) => setDropped((d) => [...d, k])} />
       <div className="u-scroll-x chiprow">
         {SORTS.map((s) => (
@@ -189,22 +207,37 @@ export default function FamilyDiscover() {
           </>
         }
       >
-        <div className="field">
-          <span className="field__label">Class</span>
-          <OptionGroup
-            options={CLASSES}
-            value={adv.classLevel}
-            onChange={(v) => setAdv((s) => ({ ...s, classLevel: s.classLevel === v ? null : v }))}
-          />
-        </div>
-        <div className="field">
-          <span className="field__label">Board</span>
-          <OptionGroup
-            options={BOARDS}
-            value={adv.board}
-            onChange={(v) => setAdv((s) => ({ ...s, board: s.board === v ? null : v }))}
-          />
-        </div>
+        {category === 'academic' ? (
+          <>
+            <div className="field">
+              <span className="field__label">Class</span>
+              <OptionGroup
+                options={CLASSES}
+                value={adv.classLevel}
+                onChange={(v) => setAdv((s) => ({ ...s, classLevel: s.classLevel === v ? null : v }))}
+              />
+            </div>
+            <div className="field">
+              <span className="field__label">Board</span>
+              <OptionGroup
+                options={BOARDS}
+                value={adv.board}
+                onChange={(v) => setAdv((s) => ({ ...s, board: s.board === v ? null : v }))}
+              />
+            </div>
+          </>
+        ) : (
+          /* An activity has no syllabus year and no board. Asking for either
+             would be a question from the wrong half of the network. */
+          <div className="field">
+            <span className="field__label">Age group</span>
+            <OptionGroup
+              options={AGE_BANDS}
+              value={adv.ageBand}
+              onChange={(v) => setAdv((s) => ({ ...s, ageBand: s.ageBand === v ? null : v }))}
+            />
+          </div>
+        )}
         <div className="field">
           <span className="field__label">How classes happen</span>
           <OptionGroup

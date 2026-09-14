@@ -1997,3 +1997,8 @@ a.card:active {
   font-weight: 700;
   color: var(--ink-3);
 }
+
+/* ---------------- Academics / Activities switch on Discover ---------------- */
+.catrow {
+  padding: 4px var(--s-5) 0;
+}
