@@ -189,6 +189,36 @@ export function FilterRow({ options, value, onChange, allLabel = 'All' }) {
   )
 }
 
+/* ---------------- Contact details ----------------
+   Never part of a profile and never part of matching. They exist only so that
+   the moment both sides agree to meet, handing them over is one tap instead of
+   a typing exercise. Kept on the device like everything else. */
+export const CONTACT_FIELDS = [
+  { k: 'phone', label: 'Phone number', type: 'tel', placeholder: '98765 43210', share: 'Phone number' },
+  { k: 'email', label: 'Email', type: 'email', placeholder: 'you@example.com', share: 'Email' },
+  { k: 'address', label: 'Address', type: 'text', placeholder: 'House, street, landmark', share: 'Address' },
+]
+
+export function ContactFields({ value = {}, onChange, only }) {
+  const list = only ? CONTACT_FIELDS.filter((f) => f.k === only) : CONTACT_FIELDS
+  return (
+    <>
+      {list.map((f) => (
+        <Field key={f.k} label={f.label}>
+          <input
+            className="input"
+            type={f.type}
+            autoFocus={!!only}
+            placeholder={f.placeholder}
+            value={value[f.k] ?? ''}
+            onChange={(e) => onChange({ ...value, [f.k]: e.target.value })}
+          />
+        </Field>
+      ))}
+    </>
+  )
+}
+
 /* ---------------- Search ----------------
    One field, with the filter beside it rather than hidden in the top bar. The
    placeholder teaches the grammar by example, because nobody reads an

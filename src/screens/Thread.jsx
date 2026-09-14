@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApp } from '../store/AppContext'
-import { Avatar, Button, Chip, Field, OptionGroup, Sheet, TopBar } from '../components/UI'
+import { Avatar, Button, Chip, CONTACT_FIELDS, ContactFields, Field, OptionGroup, Sheet, TopBar } from '../components/UI'
 import { IcCal, IcCheck, IcPin, IcSend } from '../components/Icons'
 import { Link } from 'react-router-dom'
 import { localityName, requirementById, teacherById } from '../lib/utils'
@@ -25,9 +25,34 @@ export default function Thread({ role }) {
   const endRef = useRef(null)
   const [text, setText] = useState('')
   const [proposing, setProposing] = useState(false)
+  // Which detail the user is about to share but has not saved yet.
+  const [asking, setAsking] = useState(null)
+  const [entry, setEntry] = useState({})
   const [demo, setDemo] = useState({ day: DAYS[0], time: TIMES[1], where: '' })
 
   const base = role === 'teacher' ? '/t' : '/f'
+  const me = role === 'teacher' ? state.teacher : state.family
+  const contact = me?.contact ?? {}
+
+  /* One tap when it is already saved, one field when it is not. Nothing is
+     handed over until the person taps: this is a deliberate act, not a
+     consequence of having filled a form weeks earlier. */
+  const share = (f, valueOverride) => {
+    const v = (valueOverride ?? contact[f.k] ?? '').trim()
+    if (!v) return setAsking(f.k)
+    dispatch({ type: 'SEND_MESSAGE', threadId: th.id, text: `${f.share}: ${v}` })
+    toast(`${f.share} shared`, 'green')
+  }
+  const saveAndShare = () => {
+    const f = CONTACT_FIELDS.find((x) => x.k === asking)
+    const v = (entry[asking] ?? '').trim()
+    if (!v) return
+    const next = { ...contact, [asking]: v }
+    dispatch({ type: role === 'teacher' ? 'SAVE_TEACHER' : 'SAVE_FAMILY', data: { contact: next } })
+    share(f, v)
+    setAsking(null)
+    setEntry({})
+  }
   const who = th
     ? role === 'teacher'
       ? requirementById(th.withRequirement)
@@ -183,11 +208,17 @@ export default function Thread({ role }) {
               )}
               {th.demo.status === 'confirmed' && !th.active && (
                 <>
-                  <div className="notice notice--orange" style={{ marginTop: 14, background: 'rgba(255,255,255,.6)' }}>
-                    <IcPin size={18} />
-                    <span className="sm">
-                      You can share the exact address in this chat now that a demo is fixed.
+                  <div className="sharerow">
+                    <span className="sm" style={{ display: 'block', marginBottom: 8 }}>
+                      A demo is fixed, so you can hand over what they need to reach you.
                     </span>
+                    <div className="u-row" style={{ gap: 8, flexWrap: 'wrap' }}>
+                      {CONTACT_FIELDS.map((f) => (
+                        <button key={f.k} className="fchip" onClick={() => share(f)}>
+                          Share {f.share.toLowerCase()}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                   <Button
                     block
@@ -253,6 +284,24 @@ export default function Thread({ role }) {
           <IcSend size={19} />
         </button>
       </div>
+
+      {/* ---- Save a detail, then send it ---- */}
+      <Sheet
+        open={!!asking}
+        onClose={() => {
+          setAsking(null)
+          setEntry({})
+        }}
+        title={`Share your ${CONTACT_FIELDS.find((f) => f.k === asking)?.share.toLowerCase() ?? ''}`}
+        subtitle="Saved on this device so the next time is one tap. Never shown on your profile."
+        footer={
+          <Button block onClick={saveAndShare} aria-disabled={!(entry[asking] ?? '').trim()}>
+            Save and send
+          </Button>
+        }
+      >
+        {asking && <ContactFields value={entry} onChange={setEntry} only={asking} />}
+      </Sheet>
 
       {/* ---- Propose demo ---- */}
       <Sheet

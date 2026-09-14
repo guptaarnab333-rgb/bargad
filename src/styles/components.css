@@ -1903,3 +1903,14 @@ a.card:active {
   background: var(--indigo-t);
   color: var(--indigo-ink);
 }
+
+/* ---------------- Share contact in a chat ---------------- */
+.sharerow {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, 0.6);
+}
+.sharerow .fchip {
+  background: var(--surface);
+}

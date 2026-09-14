@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../store/AppContext'
 import { AGE_BANDS, BOARDS, CAPACITY, CLASSES, SLOTS } from '../data/seed'
-import { Avatar, Button, Chip, Field, KV, OptionGroup, SectionHead, Sheet, SubjectPicker, TopBar } from '../components/UI'
+import { Avatar, Button, Chip, CONTACT_FIELDS, ContactFields, Field, KV, OptionGroup, SectionHead, Sheet, SubjectPicker, TopBar } from '../components/UI'
 import { CapacityChip } from '../components/Cards'
 import { IcArrow, IcCheck, IcInfo, IcShield, IcSwap } from '../components/Icons'
 import { cityName, inr, localityName, modeLabel, modesFor, slotLabel, subjectsInCategory, teachesRange } from '../lib/utils'
@@ -186,6 +186,29 @@ export default function TeacherProfile() {
           </p>
         </div>
 
+        {/* ---- Contact details, private until shared ---- */}
+        <SectionHead
+          title="Your contact details"
+          action={
+            <button className="sechead__link" onClick={() => setSheet('contact')}>
+              Edit
+            </button>
+          }
+        />
+        <KV
+          items={CONTACT_FIELDS.map((f) => ({
+            k: f.label,
+            v: t.contact?.[f.k] || 'Not added',
+          }))}
+        />
+        <div className="notice" style={{ marginTop: 12 }}>
+          <IcLock size={18} />
+          <span>
+            Never shown on your profile and never used for matching. Saving them here only
+            means that sharing one later is a single tap.
+          </span>
+        </div>
+
         {/* ---- Device / prototype controls ---- */}
         <SectionHead title="This device" />
         <button className="card" style={{ width: '100%' }} onClick={() => nav('/f')}>
@@ -267,6 +290,24 @@ export default function TeacherProfile() {
           Reset the prototype
         </Button>
       </div>
+
+      {/* ---- Contact sheet ---- */}
+      <Sheet
+        open={sheet === 'contact'}
+        onClose={() => setSheet(null)}
+        title="Your contact details"
+        subtitle="Private. Shared only when you tap to share, after both sides have agreed to meet."
+        footer={
+          <Button block onClick={() => setSheet(null)}>
+            Done
+          </Button>
+        }
+      >
+        <ContactFields
+          value={t.contact ?? {}}
+          onChange={(v) => save({ contact: v })}
+        />
+      </Sheet>
 
       {/* ---- Availability sheet ---- */}
       <Sheet
