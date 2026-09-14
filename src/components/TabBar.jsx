@@ -23,17 +23,14 @@ export default function TabBar({ role, badges = {} }) {
   return (
     <nav className="tabbar" aria-label="Main">
       {tabs.map(({ to, end, label, Icon, badge }) => (
-        <NavLink key={to} to={to} end={end} className="tab" aria-label={label}>
+        <NavLink key={to} to={to} end={end} className="tab">
           {({ isActive }) => (
             <>
               <span className="tab__icon">
-                <Icon size={21} sw={isActive ? 2.2 : 1.8} />
+                <Icon size={23} sw={isActive ? 2.3 : 1.8} />
                 {badge > 0 && <span className="tab__badge num">{badge}</span>}
               </span>
-              {/* Only the active tab names itself. Five labels is five pieces
-                  of text competing at the bottom of every screen; one tells you
-                  where you are, which is the only thing a label is for. */}
-              {isActive && <span className="tab__label">{label}</span>}
+              <span>{label}</span>
             </>
           )}
         </NavLink>
