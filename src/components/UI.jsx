@@ -423,20 +423,46 @@ export function SubjectPicker({ value = [], onChange, custom = {}, onCustomChang
 /* ---------------- Sheet ---------------- */
 export function Sheet({ open, onClose, title, subtitle, children, footer }) {
   const ref = useRef(null)
+  /* A sheet used to unmount the instant it closed: it had an entrance and no
+     exit, so it vanished mid-air. Keeping it mounted for the length of its own
+     animation is what makes closing feel like the reverse of opening. */
+  const [mounted, setMounted] = useState(open)
+  const [closing, setClosing] = useState(false)
+
+  useEffect(() => {
+    if (open) {
+      setMounted(true)
+      setClosing(false)
+      return
+    }
+    if (!mounted) return
+    setClosing(true)
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const t = setTimeout(
+      () => {
+        setMounted(false)
+        setClosing(false)
+      },
+      reduced ? 0 : 320
+    )
+    return () => clearTimeout(t)
+  }, [open])
+
   useEffect(() => {
     if (!open) return
     const onKey = (e) => e.key === 'Escape' && onClose()
     document.addEventListener('keydown', onKey)
-    ref.current?.focus()
+    // Without preventScroll, focusing the dialog yanks the page behind it.
+    ref.current?.focus({ preventScroll: true })
     return () => document.removeEventListener('keydown', onKey)
   }, [open, onClose])
 
-  if (!open) return null
+  if (!mounted) return null
   return (
     <>
-      <div className="scrim" onClick={onClose} />
+      <div className={`scrim${closing ? ' scrim--out' : ''}`} onClick={onClose} />
       <div
-        className="sheet"
+        className={`sheet${closing ? ' sheet--out' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-label={title}

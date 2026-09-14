@@ -80,11 +80,13 @@
   --t-xs: 0.75rem; /* 12 */
 
   /* ---------- Motion: state change only ---------- */
-  --ease: cubic-bezier(0.32, 0.72, 0, 1);
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --dur-1: 150ms;
-  --dur-2: 220ms;
-  --dur-3: 320ms;
+  /* A softer landing than the old curve, which arrived abruptly enough to
+     read as a stutter on a mid-range phone. */
+  --ease: cubic-bezier(0.33, 1, 0.24, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-1: 170ms;
+  --dur-2: 250ms;
+  --dur-3: 340ms;
 
   /* ---------- Z-index scale ---------- */
   --z-sticky: 20;

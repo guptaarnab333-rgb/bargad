@@ -983,6 +983,22 @@ a.card:active {
 .sheet:focus-visible {
   outline: none;
 }
+.sheet--out {
+  animation: sink var(--dur-3) var(--ease) forwards;
+}
+.scrim--out {
+  animation: unfade var(--dur-2) var(--ease-out) forwards;
+}
+@keyframes sink {
+  to {
+    transform: translateY(100%);
+  }
+}
+@keyframes unfade {
+  to {
+    opacity: 0;
+  }
+}
 @keyframes rise {
   from {
     transform: translateY(100%);
@@ -1092,13 +1108,16 @@ a.card:active {
 .progress__seg i {
   display: block;
   height: 100%;
-  width: 0;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: left;
   border-radius: var(--r-pill);
   background: var(--indigo);
-  transition: width var(--dur-3) var(--ease);
+  /* Width animates layout on every frame; transform is composited. */
+  transition: transform var(--dur-3) var(--ease);
 }
 .progress__seg--on i {
-  width: 100%;
+  transform: scaleX(1);
 }
 
 /* ---------------- Request timeline ---------------- */
@@ -2001,4 +2020,68 @@ a.card:active {
 /* ---------------- Academics / Activities switch on Discover ---------------- */
 .catrow {
   padding: 4px var(--s-5) 0;
+}
+
+/* ---------------- Tab bar: a floating pill ----------------
+   Detached from the edge and rounded, so it reads as a control sitting on the
+   app rather than a strip welded to the bottom of the screen. Only the active
+   tab names itself: five labels is five pieces of text competing at the foot of
+   every page, and a label's job is to tell you where you are. */
+.tabbar {
+  position: relative;
+  z-index: var(--z-nav);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  margin: 0 var(--s-5) calc(var(--s-3) + var(--safe-b));
+  padding: 7px;
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  box-shadow: 0 6px 26px rgba(39, 39, 39, 0.12);
+}
+.tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 46px;
+  height: 46px;
+  padding: 0 13px;
+  border-radius: var(--r-pill);
+  color: var(--ink-3);
+  font-size: var(--t-xs);
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background var(--dur-2) var(--ease), color var(--dur-2) var(--ease);
+}
+.tab[aria-current='page'] {
+  background: var(--ink);
+  color: #fff;
+}
+.tab__label {
+  /* The label only exists on the active tab, so it grows in rather than
+     appearing from nothing. */
+  animation: tablabel var(--dur-2) var(--ease-out) both;
+}
+@keyframes tablabel {
+  from {
+    opacity: 0;
+    max-width: 0;
+  }
+  to {
+    opacity: 1;
+    max-width: 90px;
+  }
+}
+.tab__icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tab__label {
+    animation: none;
+  }
 }
