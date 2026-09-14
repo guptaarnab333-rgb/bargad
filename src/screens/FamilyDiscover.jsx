@@ -1,10 +1,9 @@
 import { Fragment, useMemo, useState } from 'react'
 import { useApp } from '../store/AppContext'
-import { BOARDS, BUDGET_CAP, CLASSES, LOCALITIES, SUBJECTS, TEACHERS } from '../data/seed'
+import { BOARDS, BUDGET_CAP, CLASSES, LOCALITIES, TEACHERS } from '../data/seed'
 import { TeacherCard } from '../components/Cards'
-import { Button, Chip, Empty, FilterRow, OptionGroup, Promo, Sheet, TopBar } from '../components/UI'
-import { IcSliders } from '../components/Icons'
-import { budgetLabel, filterTeachers, inr, localityName, modesFor, scoreTeacherForRequirement } from '../lib/utils'
+import { Button, Chip, Empty, OptionGroup, Promo, SearchBar, Sheet, TopBar, Understood } from '../components/UI'
+import { budgetLabel, filterTeachers, inr, localityName, modesFor, parseSearch, scoreTeacherForRequirement } from '../lib/utils'
 
 const SORTS = [
   { id: 'fit', label: 'Best fit' },
@@ -16,7 +15,10 @@ const SORTS = [
 export default function FamilyDiscover() {
   const { state } = useApp()
   const f = state.family
-  const [subject, setSubject] = useState(f.subjects[0] ?? null)
+  const [q, setQ] = useState('')
+  // Chips the user struck out. Kept as keys rather than rewriting their words,
+  // so the sentence they typed stays intact in the box.
+  const [dropped, setDropped] = useState([])
   const [sort, setSort] = useState('fit')
   const [open, setOpen] = useState(false)
   const [adv, setAdv] = useState({
@@ -28,8 +30,29 @@ export default function FamilyDiscover() {
     openOnly: true,
   })
 
+  const parsed = useMemo(() => parseSearch(q), [q])
+  const chips = parsed.chips.filter((c) => !dropped.includes(c.k))
+  const live = useMemo(() => {
+    const out = {}
+    for (const c of chips) out[c.k] = parsed[c.k]
+    if (!dropped.includes('text')) out.text = parsed.text
+    return out
+  }, [parsed, dropped])
+
   const results = useMemo(() => {
-    const base = filterTeachers(TEACHERS, { ...adv, subject })
+    // What was typed wins over what was set, because it is the more recent and
+    // more deliberate statement of the same intent.
+    const base = filterTeachers(TEACHERS, {
+      ...adv,
+      subject: live.subject ?? null,
+      locality: live.locality ?? adv.locality,
+      city: live.city ?? null,
+      board: live.board ?? adv.board,
+      classLevel: live.classLevel ?? adv.classLevel,
+      mode: live.mode ?? adv.mode,
+      maxFee: live.maxFee ?? adv.maxFee,
+      text: live.text,
+    })
     const scored = base.map((t) => ({ t, ...scoreTeacherForRequirement(t, f) }))
     const by = {
       fit: (a, b) => b.score - a.score,
@@ -38,27 +61,26 @@ export default function FamilyDiscover() {
       rating: (a, b) => b.t.rating - a.t.rating,
     }[sort]
     return scored.sort(by)
-  }, [subject, adv, sort, f])
+  }, [live, adv, sort, f])
 
   const activeCount =
     Object.entries(adv).filter(([k, v]) => (k === 'openOnly' ? v === false : !!v)).length
 
   return (
     <>
-      <TopBar
-        title="Find Teachers"
-        right={
-          <button
-            className={`iconbtn${activeCount ? ' iconbtn--on' : ''}`}
-            onClick={() => setOpen(true)}
-            aria-label="Filters"
-          >
-            <IcSliders size={19} />
-          </button>
-        }
-      />
+      <TopBar title="Find Teachers" />
 
-      <FilterRow options={SUBJECTS} value={subject} onChange={setSubject} allLabel="All subjects" />
+      <SearchBar
+        value={q}
+        onChange={(v) => {
+          setQ(v)
+          setDropped([])
+        }}
+        placeholder="Try: maths teacher near me under 3000"
+        onFilters={() => setOpen(true)}
+        activeCount={activeCount}
+      />
+      <Understood chips={chips} onRemove={(k) => setDropped((d) => [...d, k])} />
       <div className="u-scroll-x chiprow">
         {SORTS.map((s) => (
           <button
@@ -99,6 +121,13 @@ export default function FamilyDiscover() {
                     body="Solved papers for CBSE and ICSE. Delivered anywhere in India."
                   />
                 )}
+                {i === 7 && (
+                  <Promo
+                    emoji="🎒"
+                    title="Doon Stationers · school supplies"
+                    body="Geometry boxes, lab records and chart paper, delivered across Dehradun."
+                  />
+                )}
               </Fragment>
             ))}
           </div>
@@ -110,7 +139,7 @@ export default function FamilyDiscover() {
             action={
               <Button
                 variant="quiet"
-                onClick={() =>
+                onClick={() => {
                   setAdv({
                     classLevel: null,
                     board: null,
@@ -119,7 +148,9 @@ export default function FamilyDiscover() {
                     maxFee: null,
                     openOnly: true,
                   })
-                }
+                  setQ('')
+                  setDropped([])
+                }}
               >
                 Clear filters
               </Button>
@@ -137,7 +168,7 @@ export default function FamilyDiscover() {
           <>
             <Button
               variant="quiet"
-              onClick={() =>
+              onClick={() => {
                 setAdv({
                   classLevel: null,
                   board: null,
@@ -146,7 +177,9 @@ export default function FamilyDiscover() {
                   maxFee: null,
                   openOnly: true,
                 })
-              }
+                setQ('')
+                setDropped([])
+              }}
             >
               Clear
             </Button>

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { IcBack, IcCheck, IcStar, IcX } from './Icons'
+import { IcBack, IcCheck, IcSearch, IcSliders, IcStar, IcX } from './Icons'
 import Doodle from './Doodle'
 import { initials, subjectCategory, tintFor } from '../lib/utils'
 import { ACADEMIC_SUBJECTS, ACTIVITY_SUBJECTS, CATEGORIES, SUBJECTS } from '../data/seed'
@@ -185,6 +185,57 @@ export function FilterRow({ options, value, onChange, allLabel = 'All' }) {
           </button>
         )
       })}
+    </div>
+  )
+}
+
+/* ---------------- Search ----------------
+   One field, with the filter beside it rather than hidden in the top bar. The
+   placeholder teaches the grammar by example, because nobody reads an
+   explanation of a search box. */
+export function SearchBar({ value, onChange, placeholder, onFilters, activeCount = 0 }) {
+  return (
+    <div className="searchbar">
+      <span className="searchbar__field">
+        <IcSearch size={17} />
+        <input
+          className="searchbar__input"
+          value={value}
+          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
+          enterKeyHint="search"
+        />
+        {value && (
+          <button className="searchbar__clear" aria-label="Clear search" onClick={() => onChange('')}>
+            <IcX size={15} />
+          </button>
+        )}
+      </span>
+      <button
+        className={`iconbtn${activeCount ? ' iconbtn--on' : ''}`}
+        onClick={onFilters}
+        aria-label="Filters"
+      >
+        <IcSliders size={19} />
+      </button>
+    </div>
+  )
+}
+
+/* What the search decided you meant, shown back to you and removable. A search
+   that silently reinterprets the question is the opaque matchmaker this product
+   exists to avoid; this is the same idea as the fit reasons on a card. */
+export function Understood({ chips, onRemove }) {
+  if (!chips.length) return null
+  return (
+    <div className="u-scroll-x chiprow understood">
+      <span className="understood__lead">Searching for</span>
+      {chips.map((c) => (
+        <button key={c.k} className="fchip fchip--on" onClick={() => onRemove(c.k)}>
+          {c.label}
+          <IcX size={12} />
+        </button>
+      ))}
     </div>
   )
 }

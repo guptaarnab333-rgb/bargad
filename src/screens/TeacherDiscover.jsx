@@ -1,10 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useApp } from '../store/AppContext'
-import { BOARDS, CLASSES, FORMATS, LOCALITIES, REQUIREMENTS, SUBJECTS } from '../data/seed'
+import { BOARDS, CLASSES, FORMATS, LOCALITIES, REQUIREMENTS } from '../data/seed'
 import { RequirementCard } from '../components/Cards'
-import { Button, Empty, FilterRow, OptionGroup, Sheet, TopBar } from '../components/UI'
-import { IcSliders } from '../components/Icons'
-import { filterRequirements, modesFor, scoreRequirementForTeacher } from '../lib/utils'
+import { Button, Empty, OptionGroup, SearchBar, Sheet, TopBar, Understood } from '../components/UI'
+import { filterRequirements, modesFor, parseSearch, scoreRequirementForTeacher } from '../lib/utils'
 
 const SORTS = [
   { id: 'fit', label: 'Best fit' },
@@ -16,7 +15,8 @@ const SORTS = [
 export default function TeacherDiscover() {
   const { state } = useApp()
   const t = state.teacher
-  const [subject, setSubject] = useState(t.subjects[0] ?? null)
+  const [q, setQ] = useState('')
+  const [dropped, setDropped] = useState([])
   const [sort, setSort] = useState('fit')
   const [open, setOpen] = useState(false)
   const [adv, setAdv] = useState({
@@ -31,8 +31,26 @@ export default function TeacherDiscover() {
     .filter((r) => r.from === 'me-teacher')
     .map((r) => r.toRequirement)
 
+  const parsed = useMemo(() => parseSearch(q), [q])
+  const chips = parsed.chips.filter((c) => !dropped.includes(c.k))
+  const live = useMemo(() => {
+    const out = {}
+    for (const c of chips) out[c.k] = parsed[c.k]
+    if (!dropped.includes('text')) out.text = parsed.text
+    return out
+  }, [parsed, dropped])
+
   const results = useMemo(() => {
-    const base = filterRequirements(REQUIREMENTS, { ...adv, subject })
+    const base = filterRequirements(REQUIREMENTS, {
+      ...adv,
+      subject: live.subject ?? null,
+      locality: live.locality ?? adv.locality,
+      city: live.city ?? null,
+      board: live.board ?? adv.board,
+      classLevel: live.classLevel ?? adv.classLevel,
+      mode: live.mode ?? adv.mode,
+      text: live.text,
+    })
     const scored = base.map((r) => ({
       r,
       ...scoreRequirementForTeacher(r, t),
@@ -45,26 +63,22 @@ export default function TeacherDiscover() {
       pay: (a, b) => b.r.budgetMax - a.r.budgetMax,
     }[sort]
     return scored.sort(by)
-  }, [subject, adv, sort, t, responded.join()])
+  }, [live, adv, sort, t, responded.join()])
 
   const activeCount = Object.values(adv).filter(Boolean).length
 
   return (
     <>
-      <TopBar
-        title="Find Students"
-        right={
-          <button
-            className={`iconbtn${activeCount ? ' iconbtn--on' : ''}`}
-            onClick={() => setOpen(true)}
-            aria-label="Filters"
-          >
-            <IcSliders size={19} />
-          </button>
-        }
-      />
+      <TopBar title="Find Students" />
 
-      <FilterRow options={SUBJECTS} value={subject} onChange={setSubject} allLabel="All subjects" />
+      <SearchBar
+        value={q}
+        onChange={(v) => { setQ(v); setDropped([]) }}
+        placeholder="Try: class 9 maths in Dalanwala"
+        onFilters={() => setOpen(true)}
+        activeCount={activeCount}
+      />
+      <Understood chips={chips} onRemove={(k) => setDropped((d) => [...d, k])} />
       <div className="u-scroll-x chiprow">
         {SORTS.map((s) => (
           <button

@@ -1,4 +1,4 @@
-import { AGE_BANDS, BUDGET_CAP, distanceKm, haversineKm, LOCALITIES, MODES, REQUIREMENTS, SLOTS, SUBJECT_CATEGORY, TEACHERS } from '../data/seed'
+import { AGE_BANDS, BOARDS, BUDGET_CAP, distanceKm, haversineKm, LOCALITIES, MODES, REQUIREMENTS, SLOTS, SUBJECT_CATEGORY, SUBJECTS, TEACHERS } from '../data/seed'
 
 export const uid = (p = 'x') => `${p}-${Math.random().toString(36).slice(2, 9)}`
 
@@ -223,6 +223,165 @@ export function scoreRequirementForTeacher(req, teacher) {
   return { score, reasons: reasons.slice(0, 3), km }
 }
 
+/* ------------------------------------------------------------------
+   Search
+   ------------------------------------------------------------------
+   The interpretation is shown back to the user as chips they can remove,
+   because a search that silently decides what you meant is the same opaque
+   matchmaker this product exists to avoid. Everything it understands is a
+   filter the user could have set by hand; the rest stays as free text.
+   ------------------------------------------------------------------ */
+
+/* What people actually type. Nobody searches for "Mathematics". */
+const SYNONYMS = {
+  'comp sci': 'Computer Science',
+  'computer sci': 'Computer Science',
+  'social science': 'History',
+  maths: 'Mathematics',
+  math: 'Mathematics',
+  algebra: 'Mathematics',
+  bio: 'Biology',
+  chem: 'Chemistry',
+  phy: 'Physics',
+  cs: 'Computer Science',
+  coding: 'Coding for Kids',
+  evs: 'Environmental Science',
+  eng: 'English',
+  eco: 'Economics',
+  accounts: 'Accountancy',
+  dance: 'Classical Dance',
+  singing: 'Vocal Music',
+  music: 'Vocal Music',
+  painting: 'Drawing and Painting',
+  drawing: 'Drawing and Painting',
+  art: 'Drawing and Painting',
+  speaking: 'Public Speaking',
+  writing: 'Creative Writing',
+}
+
+const STOPWORDS =
+  /\b(a|an|the|for|my|me|near|nearby|around|in|at|who|that|can|teach|teaches|teacher|teachers|tutor|tutors|tuition|class|classes|child|kid|son|daughter|please|need|want|looking|find)\b/g
+
+export function parseSearch(text) {
+  let rest = ` ${(text || '').toLowerCase().replace(/\s+/g, ' ').trim()} `
+  const out = {
+    subject: null, locality: null, city: null, board: null, classLevel: null,
+    maxFee: null, mode: null, slot: null, text: '',
+  }
+  const chips = []
+
+  /* Remove a phrase if present, so it cannot also be matched as free text. */
+  const eat = (phrase) => {
+    const p = ` ${String(phrase).toLowerCase()} `
+    const i = rest.indexOf(p)
+    if (i === -1) return false
+    rest = `${rest.slice(0, i)} ${rest.slice(i + p.length)}`
+    return true
+  }
+  const eatRe = (re) => {
+    const m = rest.match(re)
+    if (!m) return null
+    rest = rest.replace(m[0], ' ')
+    return m
+  }
+
+  // Longest names first, so "Computer Science" is not eaten by "Science".
+  for (const name of [...SUBJECTS].sort((a, b) => b.length - a.length)) {
+    if (eat(name)) {
+      out.subject = name
+      chips.push({ k: 'subject', label: name })
+      break
+    }
+  }
+  if (!out.subject) {
+    for (const word of Object.keys(SYNONYMS).sort((a, b) => b.length - a.length)) {
+      if (eat(word)) {
+        out.subject = SYNONYMS[word]
+        chips.push({ k: 'subject', label: SYNONYMS[word] })
+        break
+      }
+    }
+  }
+
+  // A neighbourhood is more specific than a city, so it wins. Matching the
+  // city must NOT pick one arbitrary neighbourhood inside it.
+  for (const l of [...LOCALITIES].sort((a, b) => b.name.length - a.name.length)) {
+    if (eat(l.name)) {
+      out.locality = l.id
+      chips.push({ k: 'locality', label: `in ${l.name}` })
+      break
+    }
+  }
+  if (!out.locality) {
+    for (const c of [...new Set(LOCALITIES.map((l) => l.city))].sort((a, b) => b.length - a.length)) {
+      if (eat(c)) {
+        out.city = c
+        chips.push({ k: 'city', label: `in ${c}` })
+        break
+      }
+    }
+  }
+  for (const b of BOARDS) {
+    if (eat(b)) {
+      out.board = b
+      chips.push({ k: 'board', label: b })
+      break
+    }
+  }
+
+  const cls = eatRe(/\bclass (\d{1,2})\b/) || eatRe(/\b(\d{1,2})(?:st|nd|rd|th)\b/)
+  if (cls) {
+    const n = Number(cls[1])
+    if (n >= 1 && n <= 12) {
+      out.classLevel = `Class ${n}`
+      chips.push({ k: 'classLevel', label: `Class ${n}` })
+    }
+  }
+
+  const feeK = eatRe(/\b(?:under|below|upto|up to|less than|within|max)\s*₹?\s*(\d{1,2})\s*k\b/)
+  const feeN = feeK || eatRe(/\b(?:under|below|upto|up to|less than|within|max)\s*₹?\s*(\d{3,5})\b/)
+  if (feeN) {
+    const v = feeK ? Number(feeK[1]) * 1000 : Number(feeN[1])
+    if (v > 0) {
+      out.maxFee = v
+      chips.push({ k: 'maxFee', label: `under ${inr(v)}` })
+    }
+  }
+
+  if (eat('online')) {
+    out.mode = 'online'
+    chips.push({ k: 'mode', label: 'Online' })
+  } else if (eat('at home') || eat('home tuition') || eat('at our home')) {
+    out.mode = 'home'
+    chips.push({ k: 'mode', label: 'At our home' })
+  }
+
+  for (const sl of SLOTS) {
+    if (eat(sl.label)) {
+      out.slot = sl.id
+      chips.push({ k: 'slot', label: sl.label })
+      break
+    }
+  }
+  if (!out.slot) {
+    const w = eatRe(/\b(weekend|weekday)s?\b/)
+    const t = eatRe(/\b(morning|afternoon|evening)s?\b/)
+    if (w || t) {
+      const part = t ? t[1] : 'evening'
+      const when = w && w[1] === 'weekend' ? 'we' : 'wd'
+      const id = `${when}-${part}`
+      const known = SLOTS.find((x) => x.id === id) || SLOTS.find((x) => x.id.endsWith(part))
+      if (known) {
+        out.slot = known.id
+        chips.push({ k: 'slot', label: known.label })
+      }
+    }
+  }
+
+  out.text = rest.replace(STOPWORDS, ' ').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim()
+  return { ...out, chips }
+}
+
 /** Reusable predicate so Discover filters and Home suggestions stay consistent. */
 export function filterTeachers(list, f) {
   return list.filter((t) => {
@@ -231,8 +390,14 @@ export function filterTeachers(list, f) {
     if (f.board && t.boards.length && !t.boards.includes(f.board)) return false
     if (f.mode && !t.modes.includes(f.mode)) return false
     if (f.locality && t.locality !== f.locality) return false
+    if (f.city && cityName(t.locality) !== f.city) return false
     if (f.maxFee && t.fee > f.maxFee) return false
     if (f.openOnly && t.capacity === 'full') return false
+    if (f.text) {
+      const hay = `${t.name} ${t.headline} ${t.intro} ${t.qualification} ${t.subjects.join(' ')}`
+        .toLowerCase()
+      if (!f.text.split(' ').every((w) => hay.includes(w))) return false
+    }
     return true
   })
 }
@@ -244,7 +409,12 @@ export function filterRequirements(list, f) {
     if (f.board && r.board !== f.board) return false
     if (f.mode && !r.modes.includes(f.mode)) return false
     if (f.locality && r.locality !== f.locality) return false
+    if (f.city && cityName(r.locality) !== f.city) return false
     if (f.format && r.format !== f.format) return false
+    if (f.text) {
+      const hay = `${r.family} ${r.need} ${r.subjects.join(' ')} ${r.classLevel} ${r.board}`.toLowerCase()
+      if (!f.text.split(' ').every((w) => hay.includes(w))) return false
+    }
     return true
   })
 }
