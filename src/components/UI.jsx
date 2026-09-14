@@ -46,9 +46,10 @@ export function Chip({ tone, children, lg, onTint, className = '', ...p }) {
 }
 
 /* ---------------- Avatar ----------------
-   Photograph in the signature arch shape, with an initials
-   fallback if the file is missing or the network is down. */
-export function Avatar({ name = '', size = 44, shape = 'arch', photo, className = '' }) {
+   Round, with an initials fallback if the file is missing or the network is
+   down. The arch shape from the reference poster survives on the welcome tiles,
+   but on a face it read as a headstone. */
+export function Avatar({ name = '', size = 44, shape = 'round', photo, className = '' }) {
   const [failed, setFailed] = useState(false)
   const showPhoto = photo && !failed
   const cls = [

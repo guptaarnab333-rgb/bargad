@@ -87,6 +87,18 @@ export const SUBJECT_CATEGORY = Object.fromEntries([
   ...ACTIVITY_SUBJECTS.map((s) => [s, 'activity']),
 ])
 
+/* An activity is taught by age, never by syllabus year. A guitar teacher
+   thinks "eight to ten year olds"; asking them for Class 4 is asking a question
+   from the wrong world. Families are not asked twice: the band is derived from
+   the class they already gave. */
+export const AGE_BANDS = [
+  { id: 'a5', label: '5–7 years', classes: ['Class 1', 'Class 2'] },
+  { id: 'a8', label: '8–10 years', classes: ['Class 3', 'Class 4', 'Class 5'] },
+  { id: 'a11', label: '11–13 years', classes: ['Class 6', 'Class 7', 'Class 8'] },
+  { id: 'a14', label: '14–16 years', classes: ['Class 9', 'Class 10', 'Class 11'] },
+  { id: 'a17', label: '17+ years', classes: ['Class 12'] },
+]
+
 export const CATEGORIES = [
   { id: 'academic', label: 'Academics' },
   { id: 'activity', label: 'Activities' },
@@ -416,7 +428,8 @@ export const TEACHERS = [
     qualification: 'Trinity College London, Grade 8 Guitar',
     experience: 6,
     subjects: ['Guitar', 'Keyboard'],
-    classes: ['Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'],
+    classes: [],
+    ageBands: ['a8', 'a11', 'a14', 'a17'],
     boards: [],
     modes: ['mine', 'home'],
     locality: 'rajpur-road',
@@ -442,7 +455,8 @@ export const TEACHERS = [
     qualification: 'FIDE rated 1860; district debate coach',
     experience: 5,
     subjects: ['Chess', 'Public Speaking'],
-    classes: ['Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10'],
+    classes: [],
+    ageBands: ['a8', 'a11', 'a14'],
     boards: [],
     modes: ['online', 'mine'],
     locality: 'dalanwala',
@@ -468,7 +482,8 @@ export const TEACHERS = [
     qualification: 'Kalakshetra diploma; 12 years teaching',
     experience: 12,
     subjects: ['Classical Dance', 'Vocal Music'],
-    classes: ['Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10'],
+    classes: [],
+    ageBands: ['a5', 'a8', 'a11', 'a14'],
     boards: [],
     modes: ['mine'],
     locality: 'saket',

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BOARDS, CLASSES, LOCALITIES, SLOTS, FORMATS } from '../data/seed'
+import { AGE_BANDS, BOARDS, CLASSES, FORMATS, LOCALITIES, SLOTS } from '../data/seed'
 import { Button, Field, OptionGroup, Progress, SubjectPicker, TopBar } from '../components/UI'
 import { useApp } from '../store/AppContext'
 import Doodle from '../components/Doodle'
@@ -19,6 +19,7 @@ export default function OnboardTeacher() {
     experience: 3,
     subjects: [],
     classes: [],
+    ageBands: [],
     boards: [],
     modes: [],
     locality: '',
@@ -44,6 +45,8 @@ export default function OnboardTeacher() {
    */
   const teachesAcademic =
     subjectsInCategory(d.subjects, 'academic', d.customSubjects).length > 0
+  const teachesActivity =
+    subjectsInCategory(d.subjects, 'activity', d.customSubjects).length > 0
 
   const missing = {
     1: [
@@ -52,7 +55,10 @@ export default function OnboardTeacher() {
     ],
     2: [
       [d.subjects.length > 0, 'at least one subject'],
-      [d.classes.length > 0, 'at least one class'],
+      // Academic teaching is measured in classes, an activity in age groups.
+      // Whichever half they are in, they must answer that half's question.
+      [!teachesAcademic || d.classes.length > 0, 'at least one class'],
+      [!teachesActivity || d.ageBands.length > 0, 'at least one age group'],
       // Boards only apply to academic teaching. Asking a guitar teacher for a
       // board would strand them on a requirement they cannot meet.
       [!teachesAcademic || d.boards.length > 0, 'at least one board'],
@@ -167,14 +173,26 @@ export default function OnboardTeacher() {
                 onCustomChange={(m) => set('customSubjects', m)}
               />
             </Field>
-            <Field label="Classes">
-              <OptionGroup
-                options={CLASSES}
-                value={d.classes}
-                onChange={(v) => set('classes', v)}
-                multi
-              />
-            </Field>
+            {teachesAcademic && (
+              <Field label="Classes">
+                <OptionGroup
+                  options={CLASSES}
+                  value={d.classes}
+                  onChange={(v) => set('classes', v)}
+                  multi
+                />
+              </Field>
+            )}
+            {teachesActivity && (
+              <Field label="Age groups" hint="Who you take for the activities you chose.">
+                <OptionGroup
+                  options={AGE_BANDS}
+                  value={d.ageBands}
+                  onChange={(v) => set('ageBands', v)}
+                  multi
+                />
+              </Field>
+            )}
             {teachesAcademic && (
               <Field label="Boards">
                 <OptionGroup

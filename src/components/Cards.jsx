@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { Avatar, Chip, Stars } from './UI'
 import { IcClock, IcPeople, IcPin, IcShield } from './Icons'
 import { CAPACITY } from '../data/seed'
-import { budgetUpTo, classRange, distLabel, inr, localityName, modesLine, slotShort, STATUS_META } from '../lib/utils'
+import { budgetUpTo, distLabel, inr, localityName, modesLine, slotShort, STATUS_META, teachesRange } from '../lib/utils'
 
 /* Capacity is shown wherever a teacher appears. It answers
    "why am I contacting someone who cannot take my child?" */
@@ -48,7 +48,7 @@ export function TeacherCard({ teacher: t, to, reasons = [], km, compact = false 
             </div>
           </div>
           <div className="tcard__meta">
-            {t.subjects.join(', ')} · {classRange(t.classes)}
+            {t.subjects.join(', ')} · {teachesRange(t)}
           </div>
           <div className="tcard__meta u-row" style={{ gap: 5, marginTop: 3 }}>
             <IcPin size={13} />

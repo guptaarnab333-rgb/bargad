@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../store/AppContext'
-import { BOARDS, CAPACITY, CLASSES, SLOTS } from '../data/seed'
+import { AGE_BANDS, BOARDS, CAPACITY, CLASSES, SLOTS } from '../data/seed'
 import { Avatar, Button, Chip, Field, KV, OptionGroup, SectionHead, Sheet, SubjectPicker, TopBar } from '../components/UI'
 import { CapacityChip } from '../components/Cards'
 import { IcArrow, IcCheck, IcInfo, IcShield, IcSwap } from '../components/Icons'
-import { cityName, classRange, inr, localityName, modeLabel, modesFor, slotLabel, subjectsInCategory } from '../lib/utils'
+import { cityName, inr, localityName, modeLabel, modesFor, slotLabel, subjectsInCategory, teachesRange } from '../lib/utils'
 
 export default function TeacherProfile() {
   const { state, dispatch, toast } = useApp()
@@ -31,7 +31,7 @@ export default function TeacherProfile() {
           <div className="u-grow" style={{ paddingTop: 4 }}>
             <h1 className="h1">{t.name}</h1>
             <p className="sm" style={{ marginTop: 4 }}>
-              {t.subjects.join(', ')} · {classRange(t.classes)}
+              {t.subjects.join(', ')} · {teachesRange(t)}
             </p>
             <p className="sm" style={{ marginTop: 2 }}>
               {localityName(t.locality)}, {cityName(t.locality)}
@@ -103,7 +103,7 @@ export default function TeacherProfile() {
         <KV
           items={[
             { k: 'Subjects', v: t.subjects.join(', ') },
-            { k: 'Classes', v: classRange(t.classes) },
+            { k: t.classes?.length ? 'Classes' : 'Age groups', v: teachesRange(t) },
             ...(t.boards.length ? [{ k: 'Boards', v: t.boards.join(', ') }] : []),
             { k: 'Monthly fee', v: inr(t.fee) },
             { k: 'Qualification', v: t.qualification },
@@ -353,14 +353,26 @@ export default function TeacherProfile() {
             onCustomChange={(m) => save({ customSubjects: m })}
           />
         </Field>
-        <Field label="Classes">
-          <OptionGroup
-            options={CLASSES}
-            value={t.classes}
-            onChange={(v) => save({ classes: v })}
-            multi
-          />
-        </Field>
+        {subjectsInCategory(t.subjects, 'academic', t.customSubjects).length > 0 && (
+          <Field label="Classes">
+            <OptionGroup
+              options={CLASSES}
+              value={t.classes}
+              onChange={(v) => save({ classes: v })}
+              multi
+            />
+          </Field>
+        )}
+        {subjectsInCategory(t.subjects, 'activity', t.customSubjects).length > 0 && (
+          <Field label="Age groups" hint="Who you take for the activities you chose.">
+            <OptionGroup
+              options={AGE_BANDS}
+              value={t.ageBands || []}
+              onChange={(v) => save({ ageBands: v })}
+              multi
+            />
+          </Field>
+        )}
         {subjectsInCategory(t.subjects, 'academic', t.customSubjects).length > 0 && (
           <Field label="Boards">
             <OptionGroup

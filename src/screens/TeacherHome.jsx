@@ -6,15 +6,7 @@ import { RequirementCard, RequestCard } from '../components/Cards'
 import { Button, Chip, Sheet, OptionGroup, SectionHead, Avatar } from '../components/UI'
 import { BannerDoodle, Logo } from '../components/Brand'
 import { IcArrow, IcSliders } from '../components/Icons'
-import {
-  classRange,
-  greeting,
-  inr,
-  localityName,
-  requirementById,
-  scoreRequirementForTeacher,
-  slotShort,
-} from '../lib/utils'
+import { greeting, inr, localityName, requirementById, scoreRequirementForTeacher, slotShort, teachesRange } from '../lib/utils'
 
 export default function TeacherHome() {
   const { state, dispatch, toast } = useApp()
@@ -73,7 +65,7 @@ export default function TeacherHome() {
           </span>
           <h2 className="intent__title">{cap.label}</h2>
           <p className="intent__sub">
-            {t.subjects.join(', ')} · {classRange(t.classes)}
+            {t.subjects.join(', ')} · {teachesRange(t)}
             <br />
             {localityName(t.locality)} · {t.slots.map(slotShort).join(', ')} · {inr(t.fee)}/month
           </p>

@@ -5,7 +5,7 @@ import { REVIEWS, SLOTS } from '../data/seed'
 import { Avatar, Button, Chip, KV, Sheet, Stars, TopBar, Field, OptionGroup } from '../components/UI'
 import { CapacityChip, VerifiedChip } from '../components/Cards'
 import { IcCheck, IcInfo, IcLock, IcPin, IcShield } from '../components/Icons'
-import { avgScore, budgetLabel, classRange, distanceFrom, distLabel, inr, localityName, modeLabel, modesFor, slotLabel, teacherById } from '../lib/utils'
+import { avgScore, budgetLabel, distanceFrom, distLabel, inr, localityName, modeLabel, modesFor, slotLabel, teacherById, teachesRange } from '../lib/utils'
 
 export default function TeacherDetail() {
   const { id } = useParams()
@@ -54,7 +54,7 @@ export default function TeacherDetail() {
           <div className="u-grow" style={{ paddingTop: 4 }}>
             <h1 className="h1">{t.name}</h1>
             <p className="sm" style={{ marginTop: 4 }}>
-              {t.subjects.join(', ')} · {classRange(t.classes)}
+              {t.subjects.join(', ')} · {teachesRange(t)}
             </p>
             <p className="sm u-row" style={{ gap: 5, marginTop: 5 }}>
               <IcPin size={13} />
@@ -112,7 +112,7 @@ export default function TeacherDetail() {
             { k: 'Qualification', v: t.qualification, wide: true },
             { k: 'Experience', v: `${t.experience} years` },
             { k: 'Boards', v: t.boards.join(', ') },
-            { k: 'Classes', v: classRange(t.classes) },
+            { k: t.classes?.length ? 'Classes' : 'Age groups', v: teachesRange(t) },
             { k: 'How classes happen', v: t.modes.map((m) => modeLabel(m, 'family')).join(' · ') },
             { k: 'Format', v: t.formats.includes('group') ? 'One-to-one or group' : 'One-to-one' },
             { k: 'Available', v: t.slots.map(slotLabel).join(' · ') },

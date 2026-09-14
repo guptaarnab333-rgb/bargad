@@ -1,13 +1,4 @@
-import {
-  BUDGET_CAP,
-  LOCALITIES,
-  TEACHERS,
-  REQUIREMENTS,
-  SLOTS,
-  MODES,
-  SUBJECT_CATEGORY,
-  distanceKm,
-} from '../data/seed'
+import { AGE_BANDS, BUDGET_CAP, distanceKm, LOCALITIES, MODES, REQUIREMENTS, SLOTS, SUBJECT_CATEGORY, TEACHERS } from '../data/seed'
 
 export const uid = (p = 'x') => `${p}-${Math.random().toString(36).slice(2, 9)}`
 
@@ -80,6 +71,22 @@ export const classRange = (classes = []) => {
   return nums.length === 1 ? `Class ${nums[0]}` : `Classes ${nums[0]}–${nums[nums.length - 1]}`
 }
 
+/* ---- Age groups ---- */
+export const ageBandForClass = (c) => AGE_BANDS.find((b) => b.classes.includes(c))?.id ?? null
+export const ageBandLabel = (id) => AGE_BANDS.find((b) => b.id === id)?.label ?? id
+
+export const ageRange = (bands = []) => {
+  const picked = AGE_BANDS.filter((b) => bands.includes(b.id))
+  if (!picked.length) return ''
+  const first = picked[0].label.split('–')[0].replace(/\D/g, '')
+  const last = picked[picked.length - 1].label
+  return picked.length === 1 ? last : `${first}–${last}`
+}
+
+/** What a teacher takes, worded for whichever half of the network they are in. */
+export const teachesRange = (t) =>
+  t?.classes?.length ? classRange(t.classes) : ageRange(t?.ageBands)
+
 export const teacherById = (id) => TEACHERS.find((t) => t.id === id)
 export const requirementById = (id) => REQUIREMENTS.find((r) => r.id === id)
 
@@ -90,6 +97,19 @@ export const distLabel = (km) =>
 
 /** Overlap helper used everywhere fit is computed. */
 const overlap = (a = [], b = []) => a.filter((x) => b.includes(x))
+
+/* A teacher declares either classes or age groups depending on what they teach;
+   a family only ever gives a class. The band is derived so a family is never
+   asked the same question twice in two vocabularies. */
+const matchesLevel = (teacher, req) => {
+  if (teacher.classes?.includes(req.classLevel)) return true
+  const band = ageBandForClass(req.classLevel)
+  return !!(band && teacher.ageBands?.includes(band))
+}
+const levelReason = (teacher, req) =>
+  teacher.classes?.includes(req.classLevel)
+    ? `Takes ${req.classLevel}`
+    : `Takes ${ageBandLabel(ageBandForClass(req.classLevel))}`
 
 /**
  * Fit is explainable on purpose: Bargad shows *why* something is being
@@ -105,9 +125,9 @@ export function scoreTeacherForRequirement(teacher, req) {
     score += 40
     reasons.push(`Teaches ${subj.join(' & ')}`)
   }
-  if (teacher.classes.includes(req.classLevel)) {
+  if (matchesLevel(teacher, req)) {
     score += 20
-    reasons.push(`Takes ${req.classLevel}`)
+    reasons.push(levelReason(teacher, req))
   }
   if (teacher.boards.length && teacher.boards.includes(req.board)) {
     score += 10
@@ -154,9 +174,9 @@ export function scoreRequirementForTeacher(req, teacher) {
     score += 40
     reasons.push(`You teach ${subj.join(' & ')}`)
   }
-  if (teacher.classes.includes(req.classLevel)) {
+  if (matchesLevel(teacher, req)) {
     score += 20
-    reasons.push(req.classLevel)
+    reasons.push(levelReason(teacher, req))
   }
   if (teacher.boards.length && teacher.boards.includes(req.board)) {
     score += 10
@@ -185,7 +205,7 @@ export function scoreRequirementForTeacher(req, teacher) {
 export function filterTeachers(list, f) {
   return list.filter((t) => {
     if (f.subject && !t.subjects.includes(f.subject)) return false
-    if (f.classLevel && !t.classes.includes(f.classLevel)) return false
+    if (f.classLevel && !matchesLevel(t, { classLevel: f.classLevel })) return false
     if (f.board && t.boards.length && !t.boards.includes(f.board)) return false
     if (f.mode && !t.modes.includes(f.mode)) return false
     if (f.locality && t.locality !== f.locality) return false

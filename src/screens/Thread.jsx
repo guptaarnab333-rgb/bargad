@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useApp } from '../store/AppContext'
 import { Avatar, Button, Chip, Field, OptionGroup, Sheet, TopBar } from '../components/UI'
 import { IcCal, IcCheck, IcPin, IcSend } from '../components/Icons'
+import { Link } from 'react-router-dom'
 import { localityName, requirementById, teacherById } from '../lib/utils'
 
 const DAYS = ['This Saturday', 'This Sunday', 'Next Tuesday', 'Next Thursday']
@@ -33,6 +34,10 @@ export default function Thread({ role }) {
       : teacherById(th.withId)
     : null
   const name = role === 'teacher' ? who?.family : who?.name
+  // A teacher reads a family through their requirement, which is the only
+  // profile a family has from the other side of the network.
+  const whoHref =
+    role === 'teacher' ? `/t/requirement/${th?.withRequirement}` : `/f/teacher/${th?.withId}`
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
@@ -90,7 +95,9 @@ export default function Thread({ role }) {
         back
         onBack={() => nav(`${base}/messages`)}
         title={
-          <span className="u-row" style={{ gap: 10 }}>
+          /* Tapping a name and photo that plainly belong to a person should
+             open that person. It looked tappable and did nothing. */
+          <Link className="u-row threadhead" style={{ gap: 10 }} to={whoHref}>
             <Avatar name={name ?? '—'} photo={role === 'family' ? who?.photo : undefined} size={44} />
             <span className="u-grow" style={{ minWidth: 0 }}>
               <span className="u-truncate" style={{ display: 'block' }}>
@@ -105,7 +112,7 @@ export default function Thread({ role }) {
                   : `${who.subjects.join(', ')} · ${localityName(who.locality)}`}
               </span>
             </span>
-          </span>
+          </Link>
         }
       />
 
