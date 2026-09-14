@@ -23,7 +23,7 @@ export function BargadMark({ size = 34, className = '' }) {
   )
 }
 
-export function Logo({ size = 34, showWord = true }) {
+export function Logo({ size = 34, showWord = true, wordStyle }) {
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 9 }}>
       <BargadMark size={size * 0.82} />
@@ -35,6 +35,7 @@ export function Logo({ size = 34, showWord = true }) {
             fontWeight: 800,
             fontSize: size * 0.53,
             letterSpacing: '-0.045em',
+            ...wordStyle,
           }}
         >
           Bargad

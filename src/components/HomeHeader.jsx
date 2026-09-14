@@ -6,16 +6,27 @@ import { Avatar } from './UI'
 /**
  * The bar at the top of Home.
  *
- * At rest it reads as a masthead: the mark and the wordmark on the left, the
- * person's own face on the right. Once the page moves, the wordmark drops away
- * and the mark slides to the centre and stays there, so the thing that tells
- * you which app you are in survives the scroll. Instagram does this and it is
- * the reason you always know where you are.
+ * At rest it reads as a masthead: the mark and the wordmark together on the
+ * left, the person's own face on the right. Once the page moves, the wordmark
+ * detaches and slides to the centre, leaving the mark in the corner. So the
+ * scrolled state is mark left, name centred, face right, and the thing that
+ * tells you which app you are in survives the scroll.
  *
- * The slide is a transform, measured rather than guessed: the wordmark keeps
- * its space while fading, so the distance is whatever it takes to put the MARK
- * on the centre line, and the browser can composite it without touching layout.
+ * Only the wordmark moves, and it moves on a transform, so the mark never
+ * shifts and the browser composites the travel without touching layout.
  */
+
+/** Horizontal distance from an ancestor's left edge, ignoring any transform. */
+function offsetWithin(el, ancestor) {
+  let x = 0
+  let node = el
+  while (node && node !== ancestor) {
+    x += node.offsetLeft
+    node = node.offsetParent
+  }
+  return x
+}
+
 export function HomeHeader({ name, photo, profileTo, greeting }) {
   const bar = useRef(null)
   const logo = useRef(null)
@@ -24,23 +35,23 @@ export function HomeHeader({ name, photo, profileTo, greeting }) {
 
   useLayoutEffect(() => {
     const measure = () => {
-      const mark = logo.current?.querySelector('.mark')
-      if (!bar.current || !mark) return
-      const b = bar.current.getBoundingClientRect()
-      const m = mark.getBoundingClientRect()
-      // Distance from the mark's current centre to the bar's centre.
-      setShift(Math.round(b.left + b.width / 2 - (m.left + m.width / 2)))
+      const word = logo.current?.querySelector('.logo__word')
+      if (!bar.current || !word) return
+      // offsetLeft and offsetWidth are layout values, so they report the
+      // wordmark's resting position even while it is translated away.
+      const from = offsetWithin(word, bar.current) + word.offsetWidth / 2
+      setShift(Math.round(bar.current.offsetWidth / 2 - from))
     }
     measure()
     window.addEventListener('resize', measure)
     return () => window.removeEventListener('resize', measure)
-  }, [])
+  }, [name])
 
   useEffect(() => {
     const scroller = bar.current?.closest('.shell__scroll')
     if (!scroller) return
-    // A little hysteresis, so a header that sits near the threshold cannot
-    // flicker between the two states while a finger rests on the screen.
+    // A little hysteresis, so a header resting near the threshold cannot
+    // flicker between the two states under a stationary finger.
     const onScroll = () => {
       const y = scroller.scrollTop
       setCondensed((was) => (was ? y > 18 : y > 40))
@@ -53,12 +64,8 @@ export function HomeHeader({ name, photo, profileTo, greeting }) {
   return (
     <>
       <div ref={bar} className={`appbar${condensed ? ' appbar--in' : ''}`}>
-        <span
-          ref={logo}
-          className="appbar__logo"
-          style={{ transform: condensed ? `translateX(${shift}px)` : 'none' }}
-        >
-          <Logo size={30} />
+        <span ref={logo} className="appbar__logo">
+          <Logo size={30} wordStyle={{ transform: condensed ? `translateX(${shift}px)` : 'none' }} />
         </span>
         <Link to={profileTo} className="appbar__me" aria-label="Your profile">
           <Avatar name={name} photo={photo} size={44} />

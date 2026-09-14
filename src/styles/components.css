@@ -2042,17 +2042,13 @@ a.card:active {
 }
 .appbar__logo {
   display: inline-flex;
-  /* Transform only: the browser composites this without running layout. */
-  transition: transform var(--dur-3) var(--ease);
 }
-/* The wordmark keeps its space while fading, so the mark's travel to the centre
-   line is one fixed distance rather than a moving target. Selected by name:
-   "span:last-child" matched the logo WRAPPER and faded out the mark with it. */
+/* The wordmark is the only thing that travels, so the mark never leaves the
+   corner. Transform only: layout is untouched, so the mark cannot be nudged by
+   the wordmark moving away from it. */
 .logo__word {
-  transition: opacity var(--dur-2) var(--ease);
-}
-.appbar--in .logo__word {
-  opacity: 0;
+  transition: transform var(--dur-3) var(--ease);
+  will-change: transform;
 }
 .appbar__me,
 .appbar__greet {
