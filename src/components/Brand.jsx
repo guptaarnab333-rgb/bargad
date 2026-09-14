@@ -29,6 +29,7 @@ export function Logo({ size = 34, showWord = true }) {
       <BargadMark size={size * 0.82} />
       {showWord && (
         <span
+          className="logo__word"
           style={{
             fontFamily: 'var(--font-display)',
             fontWeight: 800,

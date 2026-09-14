@@ -2021,3 +2021,49 @@ a.card:active {
 .catrow {
   padding: 4px var(--s-5) 0;
 }
+
+/* ---------------- Home masthead ---------------- */
+.appbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Bleeds past the page gutter so the backdrop reaches the screen edges. */
+  margin: 0 calc(var(--s-5) * -1) 22px;
+  padding: 6px var(--s-5) 10px;
+  background: transparent;
+  transition: background var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
+}
+.appbar--in {
+  background: var(--bg);
+  box-shadow: 0 6px 18px -12px rgba(39, 39, 39, 0.5);
+}
+.appbar__logo {
+  display: inline-flex;
+  /* Transform only: the browser composites this without running layout. */
+  transition: transform var(--dur-3) var(--ease);
+}
+/* The wordmark keeps its space while fading, so the mark's travel to the centre
+   line is one fixed distance rather than a moving target. Selected by name:
+   "span:last-child" matched the logo WRAPPER and faded out the mark with it. */
+.logo__word {
+  transition: opacity var(--dur-2) var(--ease);
+}
+.appbar--in .logo__word {
+  opacity: 0;
+}
+.appbar__me,
+.appbar__greet {
+  display: block;
+  color: inherit;
+}
+.appbar__greet:active {
+  opacity: 0.65;
+}
+@media (prefers-reduced-motion: reduce) {
+  .appbar__logo {
+    transition: none;
+  }
+}

@@ -1,3 +1,4 @@
+import { HomeHeader } from '../components/HomeHeader'
 import { Link } from 'react-router-dom'
 import { useMemo, useState } from 'react'
 import { useApp } from '../store/AppContext'
@@ -31,17 +32,12 @@ export default function FamilyHome() {
 
   return (
     <div className="page" style={{ paddingTop: 'calc(var(--safe-t) + 20px)' }}>
-      <div className="u-spread" style={{ marginBottom: 22 }}>
-        <Logo size={30} />
-        <Link to="/f/profile">
-          <Avatar name={f.parentName} size={44} />
-        </Link>
-      </div>
-
-      <p className="eyebrow">{greeting()}</p>
-      <h1 className="h1" style={{ marginTop: 4 }}>
-        {f.parentName.split(' ')[0]}
-      </h1>
+      <HomeHeader
+        name={f.parentName}
+        photo={f.photo}
+        profileTo="/f/profile"
+        greeting={greeting()}
+      />
 
       {/* ---- Intent banner ---- */}
       <div

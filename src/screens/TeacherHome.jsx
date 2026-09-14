@@ -1,3 +1,4 @@
+import { HomeHeader } from '../components/HomeHeader'
 import { Link, useNavigate } from 'react-router-dom'
 import { useMemo, useState } from 'react'
 import { useApp } from '../store/AppContext'
@@ -41,17 +42,12 @@ export default function TeacherHome() {
 
   return (
     <div className="page" style={{ paddingTop: 'calc(var(--safe-t) + 20px)' }}>
-      <div className="u-spread" style={{ marginBottom: 22 }}>
-        <Logo size={30} />
-        <Link to="/t/profile">
-          <Avatar name={t.name} size={44} />
-        </Link>
-      </div>
-
-      <p className="eyebrow">{greeting()}</p>
-      <h1 className="h1" style={{ marginTop: 4 }}>
-        {t.name.split(' ')[0]}
-      </h1>
+      <HomeHeader
+        name={t.name}
+        photo={t.photo}
+        profileTo="/t/profile"
+        greeting={greeting()}
+      />
 
       {/* ---- Intent banner: the product's centre of gravity ---- */}
       <div className={`intent ${bannerClass}`} style={{ marginTop: 18 }}>
