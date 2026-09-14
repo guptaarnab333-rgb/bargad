@@ -1753,23 +1753,83 @@ a.card:active {
 }
 
 /* ---------------- Locality picker ---------------- */
-/* Areas are grouped by city, so the city name sits on its own line above its
-   pills rather than being repeated on every one of them. */
-.lpick__city {
-  display: contents;
+/* Collapsed, it reads as a search field rather than a form control, because
+   that is the affordance people already know from ordering food. */
+.lpick__field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px var(--s-4);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--ink-3);
+  text-align: left;
 }
-.lpick__cityname {
-  flex: 0 0 100%;
-  margin: 6px 0 2px;
+.lpick__ph {
+  flex: 1;
+  font-size: 1rem;
+}
+.lpick__value {
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.lpick__change {
   font-size: var(--t-xs);
   font-weight: 700;
+  color: var(--indigo-ink);
+}
+.lpick__gps {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px var(--s-4);
+  border-radius: var(--r-md);
+  background: var(--green-t);
+  color: var(--green-ink);
+  font-size: var(--t-sm);
+  font-weight: 700;
+  text-align: left;
+}
+.lpick__gps[disabled] {
+  opacity: 0.6;
+}
+.lpick__list {
+  list-style: none;
+  margin: 12px 0;
+}
+.lpick__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 4px;
+  text-align: left;
   color: var(--ink-3);
 }
-.lpick__city:first-child .lpick__cityname {
-  margin-top: 0;
+.lpick__row strong {
+  display: block;
+  font-size: var(--t-body);
+  font-weight: 600;
+  color: var(--ink);
+}
+.lpick__row:hover {
+  background: var(--sunk);
+  border-radius: var(--r-md);
+}
+.lpick__city {
+  display: block;
+  font-size: var(--t-xs);
+  color: var(--ink-3);
 }
 .lmap {
-  height: 300px;
+  height: 320px;
+  margin-top: 12px;
   width: 100%;
   border-radius: var(--r-lg);
   overflow: hidden;
