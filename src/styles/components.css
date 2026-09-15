@@ -37,7 +37,10 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
+  /* -webkit-overflow-scrolling: touch is deliberately absent. Momentum
+     scrolling has been the default since iOS 13, and the property turns this
+     column into a containing block and a stacking context, which is what took
+     the sheets out of position and put the tab bar over the scrim. */
   scrollbar-width: none;
 }
 .shell__scroll::-webkit-scrollbar {

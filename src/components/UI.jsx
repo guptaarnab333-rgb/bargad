@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
 import { IcBack, IcCamera, IcCheck, IcSearch, IcSliders, IcStar, IcX } from './Icons'
 import Doodle from './Doodle'
@@ -574,7 +575,19 @@ export function Sheet({ open, onClose, title, subtitle, children, footer }) {
   }, [open])
 
   if (!mounted) return null
-  return (
+
+  /* The sheet and its scrim are absolutely positioned against the shell, and
+     they were rendered wherever the screen happened to sit: inside the
+     scrolling column. On iOS that scroller is a containing block, so "bottom:
+     0" meant the bottom of the SCROLLED CONTENT rather than the bottom of the
+     phone. The further down the page you were when you opened a sheet, the
+     higher the sheet sat, and on a long screen its footer was pushed off the
+     display entirely: the offer form had no Send offer button.
+
+     A modal does not belong inside the thing it covers. It is mounted on the
+     shell, so no scroll position can move it again. */
+  const host = document.querySelector('.shell') ?? document.body
+  return createPortal(
     <>
       <div className={`scrim${closing ? ' scrim--out' : ''}`} onClick={onClose} />
       <div
@@ -602,7 +615,8 @@ export function Sheet({ open, onClose, title, subtitle, children, footer }) {
         <div className="sheet__body">{children}</div>
         {footer && <div className="sheet__foot">{footer}</div>}
       </div>
-    </>
+    </>,
+    host
   )
 }
 
