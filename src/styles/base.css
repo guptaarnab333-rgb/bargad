@@ -18,7 +18,10 @@ body {
   font-size: var(--t-body);
   line-height: 1.5;
   color: var(--ink);
-  background: var(--bg);
+  /* The ground behind the phone's own toolbars, set by useThemeColor to
+     whatever surface the current screen ends on. Falls back to the page ground
+     before any screen has had its say. */
+  background: var(--page-ground, var(--bg));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overscroll-behavior-y: none;

@@ -4,6 +4,7 @@ import { useApp } from '../store/AppContext'
 import { Button, Field, TopBar } from '../components/UI'
 import { IcCheck, IcInfo, IcLock } from '../components/Icons'
 import Doodle from '../components/Doodle'
+import { useThemeColor } from '../lib/useThemeColor'
 
 /**
  * The account, designed rather than built.
@@ -62,6 +63,7 @@ export default function Auth() {
   const nav = useNavigate()
   const [params] = useSearchParams()
   const { state, dispatch, toast } = useApp()
+  useThemeColor('--bg')
   // Where to go once an account exists. Set by whoever sent the user here.
   const next = params.get('next') || '/'
   const returning = params.get('mode') === 'login'

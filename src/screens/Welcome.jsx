@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { Logo } from '../components/Brand'
 import Doodle from '../components/Doodle'
 import { useApp } from '../store/AppContext'
+import { useThemeColor } from '../lib/useThemeColor'
 
 /**
  * The whole point of this screen is one choice. So the choice is the biggest
@@ -26,6 +27,8 @@ const ROLES = [
 export default function Welcome() {
   const nav = useNavigate()
   const { state } = useApp()
+  // This screen ends on the page ground, so the phone's toolbars do too.
+  useThemeColor('--bg')
 
   const go = (role) => {
     const done = role === 'teacher' ? state.teacher : state.family

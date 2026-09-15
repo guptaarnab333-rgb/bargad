@@ -4,6 +4,7 @@ import { LocalityPicker } from '../components/LocalityPicker'
 import { BOARDS, BUDGET_CAP, CLASSES, FORMATS, LOCALITIES, SLOTS } from '../data/seed'
 import { Button, Field, OptionGroup, Progress, SubjectPicker, TopBar } from '../components/UI'
 import { useApp } from '../store/AppContext'
+import { useThemeColor } from '../lib/useThemeColor'
 import Doodle from '../components/Doodle'
 import { budgetLabel, inr, isNoBudgetLimit, modesFor } from '../lib/utils'
 
@@ -13,6 +14,7 @@ export default function OnboardFamily() {
   const nav = useNavigate()
   const { state, dispatch, toast } = useApp()
   const account = state.account
+  useThemeColor('--bg')
   const [step, setStep] = useState(1)
   const [d, setD] = useState({
     parentName: '',
