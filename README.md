@@ -71,9 +71,14 @@ record in `seed.js`.
 ## Design system
 
 Palette, typography, shape and motion rules live in [DESIGN.md](DESIGN.md). The short version:
-five committed colours on a cream ground, each owning one product state; no borders anywhere
-except the focus ring; Bricolage Grotesque for headings, Plus Jakarta Sans for everything a user
-reads or acts on.
+four brand colours, each owning one product state; no borders anywhere except the focus ring;
+Bricolage Grotesque for headings, Plus Jakarta Sans for everything a user reads or acts on.
+
+Light is a whiteboard and dark is a blackboard. That is not a metaphor bolted on afterwards: the
+doodle pack the illustrations come from is published twice in its source file, once as marker on
+white and once as chalk on black. Switching theme swaps tokens only, never components.
+
+What changed between versions, and why, is in [CHANGELOG.md](CHANGELOG.md).
 
 Teacher portraits are Pexels photographs stored in `public/portraits/` (free licence, no
 attribution required) so the installed PWA works offline. Each falls back to an initials tile if
@@ -82,8 +87,10 @@ the file is missing.
 ## Notes
 
 - Two accounts can exist on one device (teacher and family). Switch between them from **Profile → This device**.
-- Where the flow needs the *other* person to act, a clearly labelled **prototype control**
-  (“Reply as Ananya”) stands in for them. It is marked as such in the UI rather than pretending to be real.
+- Where the flow needs the *other* person to act, they act by themselves: a request is answered
+  about 30 seconds later and a proposed demo confirmed about 20 seconds later, each with an in-app
+  notification that opens the chat. A labelled “Reply as Ananya” button used to stand here, and it
+  told every tester they were looking at a puppet.
 - Verification is shown as an honest state: documents *seen*, not independently verified. There is no
   fake “100% verified” claim anywhere.
 - **Teachers never pay.** No listing fee, no charge to view a requirement, no charge to reply, no
