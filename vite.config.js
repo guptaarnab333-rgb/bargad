@@ -18,8 +18,10 @@ export default defineConfig({
         scope: '/',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#F5F1EA',
-        theme_color: '#F5F1EA',
+        // The launch screen is the app's own ground. These were the cream of the
+        // original palette, left behind when it moved to the cool whiteboard.
+        background_color: '#f4f6f7',
+        theme_color: '#f4f6f7',
         lang: 'en-IN',
         categories: ['education', 'social'],
         icons: [
