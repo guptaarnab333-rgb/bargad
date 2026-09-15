@@ -119,7 +119,7 @@ export function RequirementCard({ req, to, reasons = [], km, hot = false }) {
       {reasons.length > 0 && (
         <div className="u-wrap" style={{ marginTop: 12 }}>
           {reasons.map((r) => (
-            <Chip key={r} tone="ink">
+            <Chip key={r} tone="fit">
               {r}
             </Chip>
           ))}

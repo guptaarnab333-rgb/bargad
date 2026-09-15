@@ -37,13 +37,16 @@
   /* ---------- Chalk ----------
      --ink   14.6:1 on the board
      --ink-2  9.1:1
-     --ink-3  5.9:1 on the board, and it must also clear 4.5:1 on the
-              tinted notices, because .sm keeps this colour inside them
-     --ink-4  decoration only */
+     --ink-3  7.2:1 on the board, and at least 4.6:1 on every tint below,
+              because .sm and .kv dt keep this colour inside them. It was
+              #99a39a, which cleared the board but not a tint that had been
+              lifted far enough to read as a colour. Raising the tints without
+              raising this would have traded muddy panels for illegible ones.
+     --ink-4  decoration only, lifted to stay a step below --ink-3 */
   --ink: #eef1ea;
   --ink-2: #c2cbc2;
-  --ink-3: #99a39a;
-  --ink-4: #6a746c;
+  --ink-3: #a8b3ad;
+  --ink-4: #7e8881;
 
   /* The ink block is chalk-pale now, so what sits on it goes board-dark. */
   --on-ink: #1c2622;
@@ -62,20 +65,40 @@
   /* Lighter than the bar, not darker: on a board the lit tab comes forward. */
   --hilite: #35443d;
 
+  /* Chalk dust, not white paint. 0.10 lifts a panel off its tint by 1.3:1 and
+     still carries --ink-2 at 4.6:1; 0.20 lifts by 1.7:1 under full chalk at
+     5.1:1. Light emphasises with a solid ink block, dark with a lift, because
+     the two boards do not behave the same way: a marker block on a whiteboard
+     is ordinary, a chalk block on a blackboard is a glare. */
+  --on-tint: rgba(238, 241, 234, 0.1);
+  --on-tint-ink: var(--ink-2);
+  --on-tint-hi: rgba(238, 241, 234, 0.2);
+  --on-tint-hi-ink: var(--ink);
+
   /* ---------- Chalk written on the board's own tints ---------- */
   --green-ink: #a8e8c4;
   --orange-ink: #ffe3ae;
   --indigo-ink: #c2cdff;
   --blush-ink: #ffd0d7;
 
-  /* ---------- Tints: chalk rubbed into the board, not paint ---------- */
-  --green-t: #1e332b;
-  --green-t2: #274536;
-  --indigo-t: #232a3f;
-  --indigo-t2: #2d3754;
-  --orange-t: #33291a;
-  --orange-t2: #453723;
-  --blush-t: #33232a;
+  /* ---------- Tints: chalk rubbed into the board ----------
+     These were made by pulling each light tint DOWN towards the board, which
+     is the wrong direction. It left all four within 1.05 to 1.16:1 of the
+     ground, so no card lifted off the board and every hue collapsed into the
+     same brown-grey: the muddiness.
+
+     Chalk rubbed into a board is lighter than the board, never darker. So
+     each tint is now built up from the board instead, at a uniform 1.55:1
+     lift and an even 32% saturation, which is what makes the four read as one
+     family and as four distinct colours at the same time. Every one carries
+     --ink at 8.7:1 or better and its own coloured chalk at 6.4:1 or better. */
+  --green-t: #26493c;
+  --green-t2: #2c5c49;
+  --indigo-t: #344166;
+  --indigo-t2: #3f5186;
+  --orange-t: #4f4029;
+  --orange-t2: #654f2f;
+  --blush-t: #623347;
 
   /* ---------- Chalk dust, heavier than a whiteboard's tooth ---------- */
   --board-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/><feColorMatrix type='saturate' values='0'/></filter><rect width='180' height='180' filter='url(%23g)' opacity='0.07'/></svg>");

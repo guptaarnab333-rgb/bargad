@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApp } from '../store/AppContext'
 import { SLOTS } from '../data/seed'
@@ -29,6 +29,12 @@ export default function RequirementDetail() {
     formats: sharedFormats.length ? sharedFormats : asList(t.formats).slice(0, 1),
     note: '',
   })
+
+  /* An id that no longer resolves used to render an empty page with a tab bar
+     and no way back. Every other screen in the app returns you somewhere. */
+  useEffect(() => {
+    if (!r) nav('/t/discover', { replace: true })
+  }, [r])
 
   if (!r) return null
   const set = (k, v) => setPayload((s) => ({ ...s, [k]: v }))

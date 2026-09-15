@@ -66,6 +66,7 @@ export default function FamilyDiscover() {
       classLevel: live.classLevel ?? adv.classLevel,
       mode: live.mode ?? adv.mode,
       maxFee: live.maxFee ?? adv.maxFee,
+      slot: live.slot ?? null,
       text: live.text,
     })
     const scored = base.map((t) => ({ t, ...scoreTeacherForRequirement(t, f) }))

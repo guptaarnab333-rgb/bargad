@@ -13,12 +13,15 @@ export const initials = (name = '') =>
     .join('')
     .toUpperCase()
 
-/** Deterministic warm tint per person so avatars feel designed, not random. */
+/* Deterministic tint per person so avatars feel designed, not random.
+   Every entry is a TINT, because .avatar prints initials in --ink on it.
+   --blush sat in this list: a fill, not a tint, which in light is pale enough
+   to pass and in dark is a bright pastel carrying chalk at 1.46:1. */
 const AVATAR_TINTS = [
   "var(--green-t)",
   "var(--indigo-t)",
   "var(--orange-t)",
-  "var(--blush)",
+  "var(--blush-t)",
   "var(--green-t2)",
   "var(--indigo-t2)",
 ]
@@ -466,17 +469,28 @@ export function parseSearch(text) {
     }
   }
   if (!out.slot) {
-    const w = eatRe(/\b(weekend|weekday)s?\b/)
-    const t = eatRe(/\b(morning|afternoon|evening)s?\b/)
-    if (w || t) {
-      const part = t ? t[1] : 'evening'
-      const when = w && w[1] === 'weekend' ? 'we' : 'wd'
-      const id = `${when}-${part}`
-      const known = SLOTS.find((x) => x.id === id) || SLOTS.find((x) => x.id.endsWith(part))
-      if (known) {
-        out.slot = known.id
-        chips.push({ k: 'slot', label: known.label })
-      }
+    /* A day name is how people actually say which half of the week they mean,
+       and it was not recognised at all: "sunday morning" looked for the literal
+       words "weekend" and "weekday", found neither, and fell back to WEEKDAY.
+       So a Sunday request came back confidently labelled "Weekday mornings".
+
+       Nothing is guessed now. Both halves of the answer have to be present, and
+       the words are only eaten if they produced a real slot, so a period on its
+       own stays in the free text instead of vanishing into a wrong chip. */
+    const WEEKEND = /\b(sat|saturday|sun|sunday|weekend)s?\b/
+    const WEEKDAY =
+      /\b(mon|monday|tue|tues|tuesday|wed|wednesday|thu|thur|thurs|thursday|fri|friday|weekday)s?\b/
+    const PERIOD = /\b(morning|afternoon|evening)s?\b/
+
+    const half = WEEKEND.test(rest) ? 'we' : WEEKDAY.test(rest) ? 'wd' : null
+    const period = (rest.match(PERIOD) || [])[1] ?? null
+    const known = half && period ? SLOTS.find((x) => x.id === `${half}-${period}`) : null
+    if (known) {
+      eatRe(WEEKEND)
+      eatRe(WEEKDAY)
+      eatRe(PERIOD)
+      out.slot = known.id
+      chips.push({ k: 'slot', label: known.label })
     }
   }
 
@@ -494,6 +508,10 @@ export function filterTeachers(list, f) {
     if (f.locality && t.locality !== f.locality) return false
     if (f.city && cityName(t.locality) !== f.city) return false
     if (f.maxFee && t.fee > f.maxFee) return false
+    // The search understood a time and showed a chip for it, and then nothing
+    // filtered by it: the result set was identical with and without. A chip
+    // that states what was understood has to be the thing that was done.
+    if (f.slot && !(t.slots || []).includes(f.slot)) return false
     // Academics and activities are separate halves of the network, not two
     // values of one filter: a family browsing guitar teachers should never be
     // shown a Maths tutor because the subject chip happened to be clear.
@@ -518,6 +536,10 @@ export function filterRequirements(list, f) {
     if (f.mode && !r.modes.includes(f.mode)) return false
     if (f.locality && r.locality !== f.locality) return false
     if (f.city && cityName(r.locality) !== f.city) return false
+    if (f.slot && !(r.slots || []).includes(f.slot)) return false
+    // Same promise on this side: "under 3000" means families whose budget tops
+    // out under 3000, and it used to be parsed, shown, and then ignored.
+    if (f.maxFee && r.budgetMax > f.maxFee) return false
     if (f.category && !(r.subjects || []).some((x) => subjectCategory(x) === f.category))
       return false
     // A family only ever gives a class, so the band is derived rather than asked.
@@ -529,6 +551,42 @@ export function filterRequirements(list, f) {
     }
     return true
   })
+}
+
+/**
+ * "5 hours ago" as a number of hours.
+ *
+ * Newest used to sort on posted.length, so it ordered by how long the sentence
+ * was: "1 week ago" (10 characters) came out newer than "5 hours ago" (11).
+ */
+export const postedAgoHours = (s = '') => {
+  const txt = String(s).toLowerCase().trim()
+  if (!txt || txt === 'just now') return 0
+  const m = txt.match(/(\d+)\s*(minute|min|hour|hr|day|week|month)/)
+  if (!m) return Number.MAX_SAFE_INTEGER
+  const per = { minute: 1 / 60, min: 1 / 60, hour: 1, hr: 1, day: 24, week: 168, month: 720 }
+  return Number(m[1]) * (per[m[2]] ?? 1)
+}
+
+/** Is this day and time already behind us? */
+export const isPastSlot = (iso, time) => {
+  const [h, m] = String(time || '00:00').split(':').map(Number)
+  const d = dateFromISO(iso)
+  d.setHours(h || 0, m || 0, 0, 0)
+  return d.getTime() < Date.now()
+}
+
+/**
+ * What the demo sheet opens on: four in the afternoon, today while that is
+ * still ahead and tomorrow once it is not. The default used to be today at
+ * 16:00 unconditionally, so anyone arranging a demo after four in the
+ * afternoon was offered a class that had already happened.
+ */
+export const defaultDemoSlot = () => {
+  const today = isoDate()
+  return isPastSlot(today, '16:00')
+    ? { date: addDays(today, 1), time: '16:00' }
+    : { date: today, time: '16:00' }
 }
 
 export const greeting = () => {
@@ -557,7 +615,9 @@ export const avgScore = (reviews = []) => {
   const keys = ['teaching', 'knowledge', 'punctuality', 'communication']
   const out = {}
   keys.forEach((k) => {
-    out[k] = (reviews.reduce((s, r) => s + r.scores[k], 0) / reviews.length).toFixed(1)
+    // One review without a score printed "NaN" across the whole panel.
+    const vals = reviews.map((r) => r.scores?.[k]).filter((n) => typeof n === 'number')
+    out[k] = vals.length ? (vals.reduce((s, n) => s + n, 0) / vals.length).toFixed(1) : null
   })
   return out
 }

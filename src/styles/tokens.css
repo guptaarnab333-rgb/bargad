@@ -22,6 +22,23 @@
   --on-brand: #ffffff;
   /* The lit circle behind the tab you are on. */
   --hilite: #e8ebee;
+
+  /* ---------- Raised on a tinted card ----------
+     A tint is already a colour, so a panel sitting on one cannot be another
+     colour: it is the same board, lifted. Light lifts with white. Dark lifts
+     with chalk dust, because a solid white block is the one thing a
+     blackboard never does, and painting one there is what made the fit chips
+     the brightest object on a dark screen.
+
+     Each lift carries its own ink, so a theme can never flip the text and
+     leave the surface behind. That is exactly how the old hardcoded
+     rgba(255,255,255,.72) went invisible: the white stayed, the ink turned to
+     chalk, and the two met at 1.05:1. */
+  --on-tint: rgba(255, 255, 255, 0.72);
+  --on-tint-ink: var(--ink-2);
+  /* The emphasised one, for the reasons a card matched. */
+  --on-tint-hi: var(--ink);
+  --on-tint-hi-ink: var(--on-ink);
   /* Chalk dust and marker tooth. A board is never perfectly flat. */
   --board-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/><feColorMatrix type='saturate' values='0'/></filter><rect width='180' height='180' filter='url(%23g)' opacity='0.035'/></svg>");
   /* The ground behind the phone on a wide screen, and the dimming behind a

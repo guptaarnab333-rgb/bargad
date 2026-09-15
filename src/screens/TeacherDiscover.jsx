@@ -3,7 +3,7 @@ import { useApp } from '../store/AppContext'
 import { AGE_BANDS, BOARDS, CATEGORIES, CLASSES, FORMATS, LOCALITIES, REQUIREMENTS } from '../data/seed'
 import { RequirementCard } from '../components/Cards'
 import { Button, Empty, OptionGroup, SearchBar, Segmented, Sheet, TopBar, Understood } from '../components/UI'
-import { filterRequirements, modesFor, parseSearch, scoreRequirementForTeacher, subjectCategory } from '../lib/utils'
+import { filterRequirements, modesFor, parseSearch, postedAgoHours, scoreRequirementForTeacher, subjectCategory } from '../lib/utils'
 
 const SORTS = [
   { id: 'fit', label: 'Best fit' },
@@ -67,6 +67,8 @@ export default function TeacherDiscover() {
       board: live.board ?? adv.board,
       classLevel: live.classLevel ?? adv.classLevel,
       mode: live.mode ?? adv.mode,
+      slot: live.slot ?? null,
+      maxFee: live.maxFee ?? null,
       text: live.text,
     })
     const scored = base.map((r) => ({
@@ -77,7 +79,7 @@ export default function TeacherDiscover() {
     const by = {
       fit: (a, b) => b.score - a.score,
       near: (a, b) => (a.km ?? 99) - (b.km ?? 99),
-      new: (a, b) => a.r.posted.length - b.r.posted.length,
+      new: (a, b) => postedAgoHours(a.r.posted) - postedAgoHours(b.r.posted),
       pay: (a, b) => b.r.budgetMax - a.r.budgetMax,
     }[sort]
     return scored.sort(by)

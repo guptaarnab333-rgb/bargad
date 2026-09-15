@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApp } from '../store/AppContext'
 import { REVIEWS, SLOTS } from '../data/seed'
@@ -32,6 +32,12 @@ export default function TeacherDetail() {
     budgetMax: f.budgetMax,
     note: f.need,
   })
+
+  /* An id that no longer resolves used to render an empty page with a tab bar
+     and no way back. Every other screen in the app returns you somewhere. */
+  useEffect(() => {
+    if (!t) nav('/f/discover', { replace: true })
+  }, [t])
 
   if (!t) return null
 

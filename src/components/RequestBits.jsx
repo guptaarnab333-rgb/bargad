@@ -7,6 +7,7 @@ const STEP_LABELS = {
   sent: 'Sent',
   received: 'Received',
   clarify: 'Question asked',
+  answered: 'You answered',
   accepted: 'Accepted',
   declined: 'Declined',
   expired: 'Expired',

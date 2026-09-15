@@ -5,7 +5,7 @@ import { Avatar, Button, Chip, CONTACT_FIELDS, ContactFields, Field, OptionGroup
 import { IcCal, IcCheck, IcPin, IcSend } from '../components/Icons'
 import { Link } from 'react-router-dom'
 import { DayPicker, PickerRow, TimeWheel } from '../components/Scheduler'
-import { dayLabel, dayLong, demoWhen, isoDate, localityName, requirementById, teacherById, timeLabel } from '../lib/utils'
+import { dayLabel, dayLong, defaultDemoSlot, demoWhen, isPastSlot, isoDate, localityName, requirementById, teacherById, timeLabel } from '../lib/utils'
 
 /* A few grounded replies so the prototype feels alive without pretending to be AI. */
 const REPLIES = [
@@ -26,7 +26,7 @@ export default function Thread({ role }) {
   // Which detail the user is about to share but has not saved yet.
   const [asking, setAsking] = useState(null)
   const [entry, setEntry] = useState({})
-  const [demo, setDemo] = useState({ date: isoDate(), time: '16:00', wheres: ['home'] })
+  const [demo, setDemo] = useState(() => ({ ...defaultDemoSlot(), wheres: ['home'] }))
   // Which row is open. One at a time, and none to begin with, so the sheet
   // opens showing every answer rather than one huge calendar.
   const [openRow, setOpenRow] = useState(null)
@@ -119,6 +119,9 @@ export default function Thread({ role }) {
 
   const propose = () => {
     if (!demo.wheres.length) return toast('Choose at least one place')
+    /* The calendar disables past days but the wheel cannot know the hour, so
+       today plus an hour gone by was a proposal for a class in the past. */
+    if (isPastSlot(demo.date, demo.time)) return toast('Pick a time still ahead')
     dispatch({ type: 'PROPOSE_DEMO', threadId: th.id, by: role, demo })
     setProposing(false)
     toast('Demo proposed')

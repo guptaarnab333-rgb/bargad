@@ -32,12 +32,18 @@ export default function TeacherHome() {
   const live = state.threads.filter((th) => th.withRequirement)
 
   const cap = CAPACITY[t.capacity] ?? CAPACITY.open
-  const bannerClass =
+  /* The tint behind the banner and the ink on it are the same decision, so
+     they are made once. They used to be made twice, and the second one was
+     written `var(--)`: an empty variable name, which the browser throws away
+     whole. The status dot, its label and the doodle behind them have been
+     inheriting plain ink since the first version, on the one banner whose
+     entire job is to show the status as a colour. */
+  const [bannerClass, bannerInk] =
     t.capacity === 'open'
-      ? 'intent--green'
+      ? ['intent--green', 'var(--green-ink)']
       : t.capacity === 'limited'
-        ? 'intent--orange'
-        : 'intent--off'
+        ? ['intent--orange', 'var(--orange-ink)']
+        : ['intent--off', 'var(--ink-3)']
   const isOn = t.capacity === 'open' || t.capacity === 'limited'
 
   return (
@@ -51,11 +57,11 @@ export default function TeacherHome() {
 
       {/* ---- Intent banner: the product's centre of gravity ---- */}
       <div className={`intent ${bannerClass}`} style={{ marginTop: 18 }}>
-        <span style={{ color: `var(--)` }}>
+        <span style={{ color: bannerInk }}>
           <BannerDoodle name="book" />
         </span>
         <div style={{ position: 'relative' }}>
-          <span className="intent__label" style={{ color: `var(--)` }}>
+          <span className="intent__label" style={{ color: bannerInk }}>
             <span className={`dot${t.capacity === 'open' ? ' dot--pulse' : ''}`} />
             Your status
           </span>

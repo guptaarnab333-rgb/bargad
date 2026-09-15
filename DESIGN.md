@@ -63,17 +63,39 @@ surface lighter than the page and a sunk one darker. Dark is near-white ink on a
 warm near-black, and a raised surface is still lighter than the page. So
 "raised" and "sunk" keep meaning the same thing in both.
 
-**A brand colour used as a fill keeps its hue; used as text it flips.** White
-still clears 4.5:1 on green-deep, indigo, orange and the arch, so fills are
-untouched. But the tints those colours print on are dark now, so `--green-ink`
-and its siblings come up rather than down.
+**A brand colour used as a fill keeps its hue; used as text it flips.** A brand
+fill stays the colour it is, so what prints on one reads `--on-brand`: white in
+light, board-dark in dark, because chalk colours are pastels and white vanishes
+on them. The colour-ink tokens (`--green-ink` and its siblings) are for text on
+that colour's TINT, never on its fill. Putting one on a fill is how the Decline
+button became pale pink on pale pink at 1.21:1.
 
-The ground stays warm. Bargad's light mode is cream, and a cold grey dark mode
-reads as a different product.
+**Chalk is lighter than the board.** A tint in light is its colour mixed towards
+the page; in dark the instinct is to mix it towards the board, and that is
+wrong. It leaves every tint within about 1.1:1 of the ground, so no card lifts
+off the board and all four hues collapse into the same brown-grey. Dark tints
+are built UP from the board instead: a uniform 1.55:1 lift at an even 32%
+saturation, which is what lets the four read as one family and as four distinct
+colours at once.
+
+**A tint carries no second colour, only a lift.** What sits on a tinted card is
+the same board raised: `--on-tint` for a quiet panel, `--on-tint-hi` for the
+emphasised one, each with its own ink. Light lifts with white, dark lifts with
+chalk dust, because a marker block on a whiteboard is ordinary and a chalk block
+on a blackboard is a glare.
 
 Anything painted on an ink block reads `--on-ink`, never `#fff`. Ink is the one
 token that inverts, so a hardcoded white on it is a bug waiting for dark mode:
-white text on a near-white button.
+white text on a near-white button. The same trap caught the fit chips and the
+requirement note, which were literal `rgba(255,255,255,…)` on a tint: the white
+stayed put, the ink turned to chalk, and the two met at 1.05:1. If a surface is
+themed, its colour is a token. No exceptions except the map, which is somebody
+else's photograph.
+
+**Every pair is measured, not eyeballed.** Body text clears 4.5:1 and large text
+3:1 on the surface it actually sits on, composited through any translucency
+above it. `--ink-3` is the binding case: it has to clear 4.5:1 on the board and
+on all four tints, which is why raising the tints meant raising it too.
 
 ## Typography
 

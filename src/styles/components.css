@@ -217,9 +217,13 @@
   --btn-bg: transparent;
   --btn-fg: var(--ink-2);
 }
+/* --blush-ink belongs on the blush TINT. On the blush FILL it was pale pink
+   on pale pink, 1.21:1 once the fill became chalk. Anything printed on a brand
+   fill reads --on-brand, which is the rule the rest of the theme already
+   follows. */
 .btn--blush {
   --btn-bg: var(--blush);
-  --btn-fg: var(--blush-ink);
+  --btn-fg: var(--on-brand);
 }
 .btn--sm {
   min-height: 40px;
@@ -339,9 +343,11 @@
   background: var(--blush);
   color: var(--blush-ink);
 }
-.chip--ink {
-  background: var(--ink);
-  color: var(--on-ink);
+/* The reasons a card matched. Loud enough to separate from the facts above
+   it, quiet enough not to outshine the card's own state. */
+.chip--fit {
+  background: var(--on-tint-hi);
+  color: var(--on-tint-hi-ink);
 }
 /* Quiet neutral, for a chip that reports rather than signals. Every brand
    colour in this system owns a product state, so spending indigo on "CBSE
@@ -355,10 +361,10 @@
   padding: 9px 15px;
   font-size: var(--t-sm);
 }
-/* On an already-tinted parent, chips use white so they stay legible */
+/* On an already-tinted parent, a chip is the same board lifted. */
 .chip--onTint {
-  background: rgba(255, 255, 255, 0.72);
-  color: var(--ink-2);
+  background: var(--on-tint);
+  color: var(--on-tint-ink);
 }
 
 /* Filter chips */
@@ -591,10 +597,10 @@ a.card:active {
 }
 .rcard__need {
   font-size: var(--t-sm);
-  color: var(--ink-2);
+  color: var(--on-tint-ink);
   line-height: 1.5;
   margin-top: var(--s-3);
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--on-tint);
   padding: var(--s-3) var(--s-4);
   border-radius: var(--r-md);
 }
@@ -633,7 +639,8 @@ a.card:active {
   background: var(--blush-t);
 }
 .kv--onTint > div {
-  background: rgba(255, 255, 255, 0.62);
+  background: var(--on-tint);
+  color: var(--on-tint-ink);
 }
 
 /* ---------------- Intent banner ---------------- */
@@ -1977,7 +1984,7 @@ a.card:active {
   margin-top: 14px;
   padding: 12px;
   border-radius: var(--r-md);
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--on-tint);
 }
 .sharerow .fchip {
   background: var(--surface);

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useApp } from '../store/AppContext'
-import { Avatar, Button, Chip, Empty, Segmented, TopBar } from '../components/UI'
+import { Avatar, Button, Chip, Empty, Field, Segmented, Sheet, TopBar } from '../components/UI'
 import { Timeline } from '../components/RequestBits'
 import { IcQuestion } from '../components/Icons'
 import { inr, localityName, STATUS_META, teacherById } from '../lib/utils'
@@ -10,6 +10,9 @@ export default function FamilyRequests() {
   const { state, dispatch, toast } = useApp()
   const nav = useNavigate()
   const [tab, setTab] = useState('open')
+  // The request whose question is being answered, and the answer so far.
+  const [answering, setAnswering] = useState(null)
+  const [answer, setAnswer] = useState('')
 
   const mine = state.requests.filter((r) => r.from === 'me-family')
   // An accepted request is the most live thing a family has, so it belongs in
@@ -79,8 +82,8 @@ export default function FamilyRequests() {
                     </div>
                   </div>
 
-                  {/* Their question, if any */}
-                  {req.status === 'clarify' && req.clarifyNote && (
+                  {/* Their question, and your answer once you have given one */}
+                  {req.clarifyNote && (
                     <div
                       className="card card--sunk"
                       style={{ background: 'var(--indigo-t)', marginTop: 14, padding: 16 }}
@@ -92,6 +95,14 @@ export default function FamilyRequests() {
                       <p className="body" style={{ marginTop: 7, color: 'var(--ink)' }}>
                         “{req.clarifyNote}”
                       </p>
+                      {req.answerNote && (
+                        <>
+                          <p className="eyebrow" style={{ marginTop: 14 }}>You answered</p>
+                          <p className="body" style={{ marginTop: 5, color: 'var(--ink)' }}>
+                            “{req.answerNote}”
+                          </p>
+                        </>
+                      )}
                     </div>
                   )}
 
@@ -130,16 +141,11 @@ export default function FamilyRequests() {
                       <Button
                         block
                         onClick={() => {
-                          dispatch({
-                            type: 'RESOLVE_REQUEST',
-                            id: req.id,
-                            outcome: 'accepted',
-                            sysText: `${t.name} accepted your request. Chat is open.`,
-                          })
-                          toast('Chat is open', 'green')
+                          setAnswer('')
+                          setAnswering(req)
                         }}
                       >
-                        Answer in chat
+                        Answer
                       </Button>
                     </div>
                   )}
@@ -160,6 +166,43 @@ export default function FamilyRequests() {
         )}
       </div>
 
+      {/* ---- Answering their question ---- */}
+      <Sheet
+        open={!!answering}
+        onClose={() => setAnswering(null)}
+        title="Answer their question"
+        subtitle="They decide once they have read it."
+        footer={
+          <Button
+            block
+            aria-disabled={!answer.trim()}
+            onClick={() => {
+              if (!answer.trim()) return toast('Write your answer first')
+              dispatch({ type: 'ANSWER_CLARIFY', id: answering.id, note: answer.trim() })
+              setAnswering(null)
+              toast('Answer sent', 'green')
+            }}
+          >
+            Send answer
+          </Button>
+        }
+      >
+        {answering?.clarifyNote && (
+          <div className="notice notice--indigo" style={{ marginBottom: 18 }}>
+            <IcQuestion size={18} />
+            <span>{answering.clarifyNote}</span>
+          </div>
+        )}
+        <Field label="Your answer" hint="No contact details are shared.">
+          <textarea
+            className="textarea"
+            autoFocus
+            value={answer}
+            onChange={(e) => setAnswer(e.target.value)}
+            placeholder="Sunday mornings work for us."
+          />
+        </Field>
+      </Sheet>
     </>
   )
 }

@@ -221,6 +221,27 @@ function reducer(state, a) {
       return { ...state, requests, threads, toasts }
     }
 
+    /* Answering the question hands the decision back to whoever asked it.
+       This used to dispatch an acceptance on their behalf, with a system line
+       reading "<teacher> accepted your request", when all they had done was
+       ask something. The prototype answers for the other side on a timer
+       everywhere else; it should not answer for them on a button press. */
+    case 'ANSWER_CLARIFY':
+      return {
+        ...state,
+        requests: state.requests.map((r) =>
+          r.id === a.id
+            ? {
+                ...r,
+                status: 'pending',
+                answerNote: a.note,
+                replyAt: Date.now() + REPLY_AFTER_MS,
+                events: [...r.events, { k: 'answered', t: 'Just now' }],
+              }
+            : r
+        ),
+      }
+
     case 'SEEN_THREAD':
       return {
         ...state,
