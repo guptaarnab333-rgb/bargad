@@ -4,6 +4,9 @@ import 'leaflet/dist/leaflet.css'
 import { LOCALITIES, localityById } from '../data/seed'
 import { nearestLocality } from '../lib/utils'
 import { Button, Sheet } from './UI'
+
+/** Where "Use my location" lands when the device will not share one. */
+const HERE_WHEN_REFUSED = 'doon-university'
 import { IcPin, IcSearch } from './Icons'
 
 /* Leaflet's default marker is a PNG resolved from its own stylesheet, which
@@ -90,7 +93,8 @@ export function LocalityPicker({ value, coords, onChange, radiusKm }) {
   const [q, setQ] = useState('')
   const [draft, setDraft] = useState(null)
   const [locating, setLocating] = useState(false)
-  const [problem, setProblem] = useState('')
+  const [asking, setAsking] = useState(false)
+  const [stoodIn, setStoodIn] = useState(false)
 
   const chosen = localityById(value)
   const current = coords ?? chosen ?? LOCALITIES[0]
@@ -105,19 +109,29 @@ export function LocalityPicker({ value, coords, onChange, radiusKm }) {
     return LOCALITIES.filter((l) => `${l.name} ${l.city}`.toLowerCase().includes(term))
   }, [q])
 
+  /* A device that will not share a location used to leave a red line and no
+     way forward, which is the one thing this sheet must never do: it exists to
+     answer "where are you". So the ask is explicit, and a refusal lands on the
+     campus this prototype is demonstrated from instead of on a dead end. It
+     says so, the way every other stand-in here does. */
+  const standIn = () => {
+    const here = localityById(HERE_WHEN_REFUSED)
+    setLocating(false)
+    setDraft({ lat: here.lat, lng: here.lng })
+    setStoodIn(true)
+  }
+
   const locate = () => {
-    if (!navigator.geolocation) return setProblem('This device cannot share a location.')
+    setAsking(false)
+    setStoodIn(false)
+    if (!navigator.geolocation) return standIn()
     setLocating(true)
-    setProblem('')
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setDraft({ lat: pos.coords.latitude, lng: pos.coords.longitude })
         setLocating(false)
       },
-      () => {
-        setLocating(false)
-        setProblem('Could not read your location. Search or drop a pin instead.')
-      },
+      standIn,
       { timeout: 8000 }
     )
   }
@@ -126,7 +140,8 @@ export function LocalityPicker({ value, coords, onChange, radiusKm }) {
     setOpen(false)
     setDraft(null)
     setQ('')
-    setProblem('')
+    setAsking(false)
+    setStoodIn(false)
   }
   const confirm = () => {
     if (draft) onChange(nearestLocality(draft.lat, draft.lng), draft)
@@ -147,28 +162,53 @@ export function LocalityPicker({ value, coords, onChange, radiusKm }) {
         open={open}
         onClose={close}
         title="Where are you?"
-        subtitle="Only the area name is ever shown to anyone else."
+        subtitle="Only the area name is shown to others."
         footer={
           <Button block onClick={confirm} aria-disabled={!draft}>
-            {draft ? `Confirm ${snappedName}` : 'Pick a spot to continue'}
+            {draft ? `Confirm ${snappedName}` : 'Pick a spot'}
           </Button>
         }
       >
         <input
           className="input"
           autoFocus
-          placeholder="Search for an area or city"
+          placeholder="Search area or city"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
 
-        <button type="button" className="lpick__gps" onClick={locate} disabled={locating}>
+        <button
+          type="button"
+          className="lpick__gps"
+          onClick={() => setAsking(true)}
+          disabled={locating}
+        >
           <IcPin size={16} />
-          {locating ? 'Finding you…' : 'Use my current location'}
+          {locating ? 'Finding you…' : 'Use my location'}
         </button>
-        {problem && (
-          <p className="xs" style={{ color: 'var(--blush-ink)', marginTop: 6 }}>
-            {problem}
+
+        {/* Asked before the device asks, so the reason is on screen while the
+            decision is being made rather than behind a system prompt. */}
+        {asking && (
+          <div className="card" style={{ marginTop: 10 }}>
+            <span className="h3">Use your location?</span>
+            <p className="sm" style={{ marginTop: 4 }}>
+              Read once to find your area.
+            </p>
+            <div className="u-row" style={{ gap: 10, marginTop: 14 }}>
+              <Button block size="sm" variant="quiet" onClick={() => setAsking(false)}>
+                Not now
+              </Button>
+              <Button block size="sm" onClick={locate}>
+                Allow
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {stoodIn && (
+          <p className="xs" style={{ marginTop: 8 }}>
+            Prototype: using Doon University, Dehradun.
           </p>
         )}
 
@@ -196,15 +236,15 @@ export function LocalityPicker({ value, coords, onChange, radiusKm }) {
         )}
         {searching && hits.length === 0 && (
           <p className="xs" style={{ margin: '12px 0' }}>
-            No area by that name. Drop a pin on the map instead.
+            No match. Drop a pin instead.
           </p>
         )}
 
         <MapCanvas start={start} radiusKm={radiusKm} onPick={setDraft} />
         <p className="xs" style={{ marginTop: 10 }}>
           {draft
-            ? `Nearest area: ${snappedName}. That is the name teachers and families see.`
-            : 'Tap the map to drop a pin anywhere.'}
+            ? `Nearest area: ${snappedName}. This is what others see.`
+            : 'Tap the map to drop a pin.'}
         </p>
       </Sheet>
     </>

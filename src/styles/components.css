@@ -11,7 +11,10 @@
   max-width: var(--shell-max);
   margin: 0 auto;
   height: 100dvh;
-  background: var(--bg);
+  /* The grain paints over the colour, under everything else, so the whole
+     board has tooth without a single extra element in the tree. */
+  background-color: var(--bg);
+  background-image: var(--board-grain);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -24,6 +27,10 @@
     border-radius: 44px;
     box-shadow: var(--e-3), 0 0 0 10px var(--ink);
   }
+}
+
+.shell__scroll--tabbed {
+  padding-bottom: calc(88px + var(--safe-b));
 }
 
 .shell__scroll {
@@ -142,7 +149,7 @@
 /* ---------------- Buttons ---------------- */
 .btn {
   --btn-bg: var(--ink);
-  --btn-fg: #fff;
+  --btn-fg: var(--on-ink);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -192,9 +199,11 @@
 }
 .btn--green {
   --btn-bg: var(--green-deep);
+  --btn-fg: var(--on-brand);
 }
 .btn--indigo {
   --btn-bg: var(--indigo);
+  --btn-fg: var(--on-brand);
 }
 .btn--quiet {
   --btn-bg: var(--surface);
@@ -241,7 +250,7 @@
 }
 .iconbtn--solid {
   background: var(--ink);
-  color: #fff;
+  color: var(--on-ink);
 }
 .iconbtn--solid:hover {
   background: var(--ink);
@@ -258,7 +267,7 @@
 }
 .iconbtn--on {
   background: var(--ink);
-  color: #fff;
+  color: var(--on-ink);
 }
 
 .threadhead {
@@ -332,7 +341,15 @@
 }
 .chip--ink {
   background: var(--ink);
-  color: #fff;
+  color: var(--on-ink);
+}
+/* Quiet neutral, for a chip that reports rather than signals. Every brand
+   colour in this system owns a product state, so spending indigo on "CBSE
+   board" made a fact look like an intent and put four loud pills on a card
+   whose actual state was the green one underneath. */
+.chip--quiet {
+  background: var(--sunk);
+  color: var(--ink-2);
 }
 .chip--lg {
   padding: 9px 15px;
@@ -368,7 +385,7 @@
 }
 .fchip[aria-pressed='true'] {
   background: var(--ink);
-  color: #fff;
+  color: var(--on-ink);
 }
 
 /* ---------------- Status dot ---------------- */
@@ -508,7 +525,7 @@ a.card:active {
 }
 .card--ink {
   background: var(--ink);
-  color: #fff;
+  color: var(--on-ink);
 }
 
 .cardlist {
@@ -840,7 +857,7 @@ a.card:active {
 }
 .opt[aria-pressed='true'] {
   background: var(--ink);
-  color: #fff;
+  color: var(--on-ink);
 }
 .opt--wide {
   flex: 1 1 46%;
@@ -903,29 +920,55 @@ a.card:active {
 }
 
 /* ---------------- Bottom navigation ---------------- */
+/* A bar that floats over the board rather than sitting on its edge. Opaque,
+   not glass: the board has grain and a translucent bar would smear it. */
+/* Floats over the board, but spans it. A centred pill left a strip of page
+   showing down each side, and cards scrolling through those strips read as
+   clutter rather than as depth. Equal margins instead: the gap is now a
+   margin, which is a decision, rather than a void. */
 .tabbar {
-  position: relative;
+  position: absolute;
+  left: var(--s-4);
+  right: var(--s-4);
+  bottom: calc(var(--safe-b) + 12px);
   z-index: var(--z-nav);
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 2px;
-  padding: var(--s-2) var(--s-3) calc(var(--s-2) + var(--safe-b));
+  padding: 6px;
+  border-radius: var(--r-pill);
   background: var(--surface);
+  box-shadow: var(--e-3);
+}
+/* The lit marker wraps the whole tab, name included, so the thing being
+   marked is the place you are in rather than its icon. It is one element that
+   slides, so it sits behind the tabs and they carry no background of their
+   own. Duration comes from the token, which means reduced-motion already
+   flattens it to an instant move. */
+.tabbar__marker {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 0;
+  border-radius: var(--r-pill);
+  background: var(--hilite);
+  pointer-events: none;
+  transition: transform var(--dur-2) var(--ease), width var(--dur-2) var(--ease);
 }
 .tab {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 8px 0 6px;
-  border-radius: var(--r-md);
+  gap: 3px;
+  padding: 7px 0 8px;
+  border-radius: var(--r-pill);
   color: var(--ink-3);
   font-size: 10.5px;
   font-weight: 700;
   white-space: nowrap;
-  transition: color var(--dur-1);
-  position: relative;
+  transition: color var(--dur-1), background var(--dur-1);
 }
 .tab[aria-current='page'] {
   color: var(--ink);
@@ -957,7 +1000,7 @@ a.card:active {
   position: absolute;
   inset: 0;
   z-index: var(--z-scrim);
-  background: rgba(39, 39, 39, 0.46);
+  background: var(--scrim);
   animation: fade var(--dur-2) var(--ease-out);
 }
 @keyframes fade {
@@ -1020,9 +1063,14 @@ a.card:active {
   padding: var(--s-3) var(--s-5) var(--s-4);
   flex: none;
 }
+/* overflow-y makes this a clipping box, and a focused field paints its ring
+   OUTSIDE its own border box. With no vertical padding the first and last
+   controls sat flush against that clip edge and had their rings sliced off
+   flat, which read as the sheet cutting its own content. The padding is the
+   room the ring needs, not decoration. */
 .sheet__body {
   overflow-y: auto;
-  padding: 0 var(--s-5);
+  padding: var(--s-2) var(--s-5);
   scrollbar-width: none;
 }
 .sheet__body::-webkit-scrollbar {
@@ -1037,7 +1085,10 @@ a.card:active {
 }
 
 /* ---------------- Toast ---------------- */
+/* The strip spans the screen, so it must not swallow taps meant for the page
+   underneath. Only a toast that is actually an action takes them back. */
 .toastwrap {
+  pointer-events: none;
   position: absolute;
   left: 0;
   right: 0;
@@ -1058,10 +1109,16 @@ a.card:active {
   padding: 14px var(--s-5);
   border-radius: var(--r-pill);
   background: var(--ink);
-  color: #fff;
+  color: var(--on-ink);
   font-size: var(--t-sm);
   font-weight: 700;
   animation: toastin var(--dur-3) var(--ease);
+}
+.toast--tap {
+  pointer-events: auto;
+}
+.toast--tap:active {
+  transform: scale(0.975);
 }
 .toast--green {
   background: var(--green-deep);
@@ -1159,11 +1216,11 @@ a.card:active {
 }
 .tl--done .tl__dot {
   background: var(--green-deep);
-  color: #fff;
+  color: var(--on-brand);
 }
 .tl--now .tl__dot {
   background: var(--ink);
-  color: #fff;
+  color: var(--on-ink);
 }
 .tl--stop .tl__dot {
   background: var(--blush);
@@ -1207,7 +1264,7 @@ a.card:active {
 .bub--me {
   align-self: flex-end;
   background: var(--ink);
-  color: #fff;
+  color: var(--on-ink);
   border-bottom-right-radius: 7px;
 }
 .bub__time {
@@ -1398,17 +1455,17 @@ a.card:active {
 .dtile--arch {
   border-radius: 999px 999px 22px 22px;
   background: var(--green-deep);
-  color: #fff;
+  color: var(--on-brand);
 }
 .dtile--pill {
   border-radius: var(--r-pill);
   background: var(--orange);
-  color: var(--ink);
+  color: var(--on-brand);
 }
 .dtile--circle {
   border-radius: 50%;
   background: var(--indigo);
-  color: #fff;
+  color: var(--on-brand);
   aspect-ratio: 1;
   align-self: end;
 }
@@ -1429,11 +1486,18 @@ a.card:active {
 .welcome {
   position: relative;
   min-height: 100%;
-  padding: calc(var(--safe-t) + 26px) var(--s-5) var(--s-8);
+  padding: calc(var(--safe-t) + 48px) var(--s-5) calc(var(--s-4) + var(--safe-b));
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: var(--s-6);
   overflow: hidden;
+  text-align: center;
+}
+.welcome__top,
+.welcome__choice,
+.welcome__foot {
+  width: 100%;
 }
 .welcome__bg {
   position: absolute;
@@ -1504,8 +1568,9 @@ a.card:active {
 }
 
 .welcome__head {
-  margin-top: var(--s-5);
-  font-size: 2.05rem;
+  margin-top: var(--s-6);
+  font-size: 2.35rem;
+  text-wrap: balance;
 }
 .welcome__sub {
   margin-top: var(--s-3);
@@ -1516,83 +1581,67 @@ a.card:active {
 
 /* The choice */
 .welcome__choice {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-3);
-}
-.welcome__prompt {
-  font-family: var(--font-display);
-  font-size: var(--t-h2);
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  margin-bottom: var(--s-1);
-}
-.rolecard {
-  position: relative;
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: var(--s-6) var(--s-6) var(--s-5);
-  border-radius: var(--r-2xl);
-  overflow: hidden;
-  transition: transform var(--dur-1) var(--ease), filter var(--dur-1);
-}
-.rolecard:hover {
-  filter: brightness(0.97);
-}
-.rolecard:active {
-  transform: scale(0.985);
-}
-.rolecard--teach {
-  background: var(--green-deep);
-  color: #fff;
-}
-.rolecard--find {
-  background: var(--indigo);
-  color: #fff;
-}
-.rolecard__art {
-  position: absolute;
-  right: -14px;
-  bottom: -18px;
-  color: #fff;
-  opacity: 0.28;
-  pointer-events: none;
-}
-.rolecard__title {
-  display: block;
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 800;
-  letter-spacing: -0.032em;
-  line-height: 1.1;
-}
-.rolecard__body {
-  display: block;
-  margin-top: var(--s-2);
-  font-size: var(--t-sm);
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.86);
-  max-width: 30ch;
-}
-
-.welcome__foot {
   margin-top: auto;
   display: flex;
   flex-direction: column;
   gap: var(--s-3);
-  padding-top: var(--s-4);
 }
-.welcome__note {
-  font-size: var(--t-sm);
-  line-height: 1.5;
-  color: var(--ink-2);
+/* The two answers to "Which are you?" are actions, so they wear the only
+   shape in this system that means "tap me": the solid pill every other primary
+   action uses. They used to be saturated blocks holding a left-aligned title
+   above a paragraph, which is card anatomy, and so they read as something to
+   read rather than something to press. */
+.rolepick {
+  display: block;
 }
-.welcome__note strong {
-  color: var(--ink);
+.rolecard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 68px;
+  padding: 0 var(--s-6);
+  border-radius: var(--r-pill);
+  font-family: var(--font-display);
+  font-size: 1.375rem;
   font-weight: 800;
+  letter-spacing: -0.032em;
+  line-height: 1.1;
+  color: var(--on-brand);
+  text-align: center;
+  transition: transform var(--dur-1) var(--ease), filter var(--dur-1);
+}
+.rolecard:hover {
+  filter: brightness(1.08);
+}
+.rolecard:active {
+  transform: scale(0.975);
+  filter: brightness(0.95);
+}
+.rolecard--teach {
+  background: var(--green-deep);
+}
+.rolecard--find {
+  background: var(--indigo);
+}
+/* Underneath the button, not inside it. Inside, it was the paragraph that
+   turned a button back into a card. */
+.rolecard__body {
+  display: block;
+  margin-top: var(--s-2);
+  padding: 0 var(--s-4);
+  font-size: var(--t-sm);
+  line-height: 1.45;
+  color: var(--ink-2);
+  text-align: center;
 }
 
+.welcome__foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding-top: var(--s-6);
+}
 @media (prefers-reduced-motion: reduce) {
   .rolecard {
     transition: none;
@@ -2007,7 +2056,7 @@ a.card:active {
   height: 32px;
   border-radius: var(--r-pill);
   background: var(--ink);
-  color: #fff;
+  color: var(--on-ink);
   box-shadow: 0 0 0 3px var(--bg);
 }
 .avatarin__clear {
@@ -2062,4 +2111,213 @@ a.card:active {
   .appbar__logo {
     transition: none;
   }
+}
+
+/* ---------------- Scheduler: day and time ----------------
+   Both controls borrow the shape language already in the app: flat blocks on
+   the sunk tint, pills for anything pressable, ink for what is chosen. No
+   borders anywhere, so separation is fill contrast and spacing as everywhere
+   else. */
+.daypick__quick {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-2);
+  margin-bottom: var(--s-3);
+}
+
+.cal {
+  background: var(--sunk);
+  border-radius: var(--r-lg);
+  padding: var(--s-2) var(--s-2) var(--s-3);
+}
+.cal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  padding: 0 var(--s-1) var(--s-2);
+}
+.cal__month {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--t-h3);
+  letter-spacing: -0.02em;
+}
+.cal__nav {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 20px;
+  line-height: 1;
+  flex: none;
+}
+.cal__nav[disabled] {
+  background: transparent;
+  color: var(--ink-4);
+}
+.cal__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.cal__grid--dow {
+  margin-bottom: 2px;
+}
+.cal__dow {
+  text-align: center;
+  font-size: var(--t-xs);
+  font-weight: 700;
+  color: var(--ink-3);
+  padding-bottom: 4px;
+}
+.cal__day {
+  position: relative;
+  aspect-ratio: 1;
+  min-height: 34px;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ink);
+  font-size: var(--t-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition: background var(--dur-1), color var(--dur-1);
+}
+.cal__day:hover:not([disabled]) {
+  background: var(--surface);
+}
+.cal__day[disabled] {
+  color: var(--ink-4);
+  pointer-events: none;
+}
+.cal__day[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--on-ink);
+}
+/* A dot under today, so the grid has an anchor even when the choice is elsewhere. */
+.cal__today {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--indigo);
+}
+.cal__day[aria-pressed='true'] .cal__today {
+  background: var(--on-ink);
+}
+
+/* ---------------- Time wheels ----------------
+   The alarm-clock picker: three columns that scroll, one lit band across the
+   middle, and the rows above and below fading away the way a physical wheel
+   turns out of view. */
+.wheels {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  gap: var(--s-1);
+  width: fit-content;
+  margin: 0 auto;
+  padding: 0 var(--s-3);
+  height: calc(var(--wheel-row) * 5);
+  -webkit-mask-image: linear-gradient(transparent, #000 26%, #000 74%, transparent);
+  mask-image: linear-gradient(transparent, #000 26%, #000 74%, transparent);
+}
+.wheels__band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--wheel-pad);
+  height: var(--wheel-row);
+  border-radius: var(--r-sm);
+  background: var(--sunk);
+  pointer-events: none;
+}
+.wheel {
+  position: relative;
+  width: 58px;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+  touch-action: pan-y;
+}
+.wheel--wide {
+  width: 66px;
+}
+.wheel::-webkit-scrollbar {
+  display: none;
+}
+.wheel:focus-visible {
+  outline: none;
+}
+.wheel__pad {
+  display: block;
+  height: var(--wheel-pad);
+}
+.wheel__item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--wheel-row);
+  scroll-snap-align: center;
+  background: transparent;
+  color: var(--ink-3);
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  transition: color var(--dur-1);
+}
+.wheel__item--on {
+  color: var(--ink);
+}
+
+/* ---------------- A row that states its answer and opens on tap ---------- */
+.prow {
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+.prow + .prow {
+  margin-top: var(--s-2);
+}
+.prow__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  min-height: 56px;
+  padding: 0 var(--s-4);
+  text-align: left;
+  background: transparent;
+}
+.prow__label {
+  flex: 1;
+  font-size: var(--t-body);
+  font-weight: 700;
+  color: var(--ink);
+}
+.prow__value {
+  font-size: var(--t-body);
+  font-weight: 700;
+  color: var(--indigo-ink);
+}
+.prow__chev {
+  display: grid;
+  place-items: center;
+  color: var(--ink-3);
+  transition: transform var(--dur-1) var(--ease);
+}
+.prow--open .prow__chev {
+  transform: rotate(90deg);
+}
+.prow__body {
+  padding: 0 var(--s-2) var(--s-3);
 }

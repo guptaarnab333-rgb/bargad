@@ -4,7 +4,7 @@ import { useApp } from '../store/AppContext'
 import { BOARDS, BUDGET_CAP, CLASSES, FORMATS, LOCALITIES, SLOTS } from '../data/seed'
 import { Avatar, AvatarInput, Button, CONTACT_FIELDS, Chip, ContactFields, Field, KV, OptionGroup, SectionHead, Segmented, Sheet, SubjectPicker, Switch, TopBar } from '../components/UI'
 import { IcArrow, IcInfo, IcLock, IcSwap } from '../components/Icons'
-import { budgetLabel, budgetUpTo, cityName, inr, localityName, modeLabel, modesFor, slotLabel } from '../lib/utils'
+import { budgetLabel, budgetUpTo, cityName, formatLabel, formatsOf, inr, localityName, modeLabel, modesFor, slotLabel } from '../lib/utils'
 
 export default function FamilyProfile() {
   const { state, dispatch, toast } = useApp()
@@ -63,15 +63,15 @@ export default function FamilyProfile() {
           <div className="notice notice--orange" style={{ marginTop: 16 }}>
             <IcLock size={19} />
             <span className="sm">
-              Teachers see <strong className="strong">“{f.classLevel} · {f.board}”</strong> and
-              your locality. {f.learner}’s name reaches a teacher only when you accept them.
+              Teachers see <strong className="strong">{f.classLevel} · {f.board}</strong> and
+              your area. Not {f.learner}’s name, until you accept.
             </span>
           </div>
         </div>
 
         {/* ---- Requirement ---- */}
         <SectionHead
-          title="What you are looking for"
+          title="What you need"
           action={
             <button className="sechead__link" onClick={() => setSheet('req')}>
               Edit
@@ -85,7 +85,7 @@ export default function FamilyProfile() {
             { k: 'Board', v: f.board },
             { k: 'Budget', v: budgetUpTo(f.budgetMax) },
             { k: 'Mode', v: f.modes.map((m) => modeLabel(m, 'family')).join(' · ') },
-            { k: 'Format', v: f.format === 'group' ? 'Small group' : 'One-to-one' },
+            { k: 'Format', v: formatLabel(formatsOf(f)) },
             { k: 'When', v: f.slots.map(slotLabel).join(' · ') },
             { k: 'Area', v: localityName(f.locality) },
           ]}
@@ -108,8 +108,8 @@ export default function FamilyProfile() {
               <span className="h3">Looking for a Teacher</span>
               <p className="sm" style={{ marginTop: 3 }}>
                 {f.looking
-                  ? 'Teachers nearby can see this requirement and offer to teach.'
-                  : 'Hidden from teachers. You can still browse and send requests yourself.'}
+                  ? 'Teachers nearby can see this and offer.'
+                  : 'Hidden. You can still browse and send requests.'}
               </p>
             </div>
             <Switch
@@ -117,7 +117,7 @@ export default function FamilyProfile() {
               label="Looking for a teacher"
               onChange={(v) => {
                 dispatch({ type: 'SET_LOOKING', looking: v })
-                toast(v ? 'Teachers can see your requirement' : 'Your search is paused')
+                toast(v ? 'Teachers can see this' : 'Search paused')
               }}
             />
           </div>
@@ -143,22 +143,21 @@ export default function FamilyProfile() {
           </div>
         </div>
 
-        {/* ---- Appearance: two complete designs, one build ---- */}
+        {/* ---- Appearance: one design, two grounds ---- */}
         <SectionHead title="Appearance" />
         <div className="card">
-          <span className="h3">Design style</span>
+          <span className="h3">Light or dark</span>
           <p className="sm" style={{ marginTop: 6 }}>
-            Both are complete. Switching is instant and changes nothing about how the app
-            works, so either can be the one you keep.
+            Instant, and changes nothing else.
           </p>
           <div style={{ marginTop: 12 }}>
             <Segmented
               items={[
-                { id: 'original', label: 'Original' },
-                { id: 'soft', label: 'Soft' },
+                { id: 'light', label: 'Light' },
+                { id: 'dark', label: 'Dark' },
               ]}
-              value={state.skin ?? 'original'}
-              onChange={(v) => dispatch({ type: 'SET_SKIN', skin: v })}
+              value={state.theme ?? 'light'}
+              onChange={(v) => dispatch({ type: 'SET_THEME', theme: v })}
             />
           </div>
         </div>
@@ -169,8 +168,8 @@ export default function FamilyProfile() {
           <span className="h3">{state.account ? state.account.value : 'No account yet'}</span>
           <p className="sm" style={{ marginTop: 6 }}>
             {state.account
-              ? 'Your profile comes back on any phone you log in from.'
-              : 'Everything is on this device only. An account means it survives a new phone or a cleared browser.'}
+              ? 'Your profile follows you to any phone.'
+              : 'Without one, everything is lost if this browser clears.'}
           </p>
           <Button
             block
@@ -180,19 +179,19 @@ export default function FamilyProfile() {
             onClick={() => {
               if (state.account) {
                 dispatch({ type: 'SIGN_OUT' })
-                toast('Signed out of this device')
+                toast('Signed out')
               } else {
                 nav('/auth?next=/f/profile')
               }
             }}
           >
-            {state.account ? 'Sign out' : 'Add an account'}
+            {state.account ? 'Sign out' : 'Add account'}
           </Button>
         </div>
 
         {/* ---- Contact details, private until shared ---- */}
         <SectionHead
-          title="Your contact details"
+          title="Contact details"
           action={
             <button className="sechead__link" onClick={() => setSheet('contact')}>
               Edit
@@ -208,8 +207,7 @@ export default function FamilyProfile() {
         <div className="notice" style={{ marginTop: 12 }}>
           <IcLock size={18} />
           <span>
-            Never shown on your profile and never used for matching. Saving them here only
-            means that sharing one later is a single tap.
+            Never shown on your profile. Saving makes sharing one tap.
           </span>
         </div>
 
@@ -233,10 +231,10 @@ export default function FamilyProfile() {
             </span>
             <div className="u-grow">
               <span className="h3">
-                {state.teacher ? 'Switch to your teacher account' : 'Set up a teacher account'}
+                {state.teacher ? 'Switch to teacher account' : 'Set up teacher account'}
               </span>
               <p className="sm" style={{ marginTop: 2 }}>
-                See the other side of the same network.
+                See the other side.
               </p>
             </div>
             <IcArrow size={18} />
@@ -264,9 +262,9 @@ export default function FamilyProfile() {
               <IcInfo size={19} />
             </span>
             <div className="u-grow">
-              <span className="h3">What Bargad does differently</span>
+              <span className="h3">How Bargad works</span>
               <p className="sm" style={{ marginTop: 2 }}>
-                The three screens you saw when you first opened the app.
+                Replay the three intro screens.
               </p>
             </div>
             <IcArrow size={18} />
@@ -275,18 +273,19 @@ export default function FamilyProfile() {
 
         <div className="notice" style={{ marginTop: 14 }}>
           <IcInfo size={18} />
-          <span>Prototype: everything stays on this device. Nothing is sent anywhere.</span>
+          <span>Prototype: everything stays on this device.</span>
         </div>
 
         <Button
           block
           variant="ghost"
           style={{ marginTop: 12, color: 'var(--blush-ink)' }}
+          /* A prototype gets reset constantly, and there is nothing here worth
+             protecting: the data is fictional and the demo is one tap away
+             from being rebuilt. A confirmation step would only be friction. */
           onClick={() => {
-            if (confirm('Clear all prototype data on this device?')) {
-              dispatch({ type: 'RESET' })
-              nav('/', { replace: true })
-            }
+            dispatch({ type: 'RESET' })
+            nav('/', { replace: true })
           }}
         >
           Reset the prototype
@@ -297,8 +296,8 @@ export default function FamilyProfile() {
       <Sheet
         open={sheet === 'contact'}
         onClose={() => setSheet(null)}
-        title="Your contact details"
-        subtitle="Private. Shared only when you tap to share, after both sides have agreed to meet."
+        title="Contact details"
+        subtitle="Shared only when you tap to share."
         footer={
           <Button block onClick={() => setSheet(null)}>
             Done
@@ -312,15 +311,15 @@ export default function FamilyProfile() {
       <Sheet
         open={sheet === 'req'}
         onClose={() => setSheet(null)}
-        title="What you are looking for"
-        subtitle="Teachers read this before deciding whether to offer."
+        title="What you need"
+        subtitle="Teachers read this before offering."
         footer={
           <Button block onClick={() => setSheet(null)}>
             Done
           </Button>
         }
       >
-        <Field label="Subjects">
+        <Field group label="Subjects">
           <SubjectPicker
             value={f.subjects}
             onChange={(v) => save({ subjects: v })}
@@ -328,11 +327,23 @@ export default function FamilyProfile() {
             onCustomChange={(m) => save({ customSubjects: m })}
           />
         </Field>
-        <Field label="Class">
-          <OptionGroup options={CLASSES} value={f.classLevel} onChange={(v) => save({ classLevel: v })} />
+        <Field group label="Class">
+          <OptionGroup
+            options={CLASSES}
+            value={f.classLevel}
+            onChange={(v) => save({ classLevel: v })}
+            allowOther
+            otherPlaceholder="Nursery"
+          />
         </Field>
-        <Field label="Board">
-          <OptionGroup options={BOARDS} value={f.board} onChange={(v) => save({ board: v })} />
+        <Field group label="Board">
+          <OptionGroup
+            options={BOARDS}
+            value={f.board}
+            onChange={(v) => save({ board: v })}
+            allowOther
+            otherPlaceholder="Bihar Board"
+          />
         </Field>
         <Field label="Area">
           <select
@@ -347,14 +358,19 @@ export default function FamilyProfile() {
             ))}
           </select>
         </Field>
-        <Field label="Mode">
+        <Field group label="Mode">
           <OptionGroup options={modesFor('family')} value={f.modes} onChange={(v) => save({ modes: v })} multi wide />
         </Field>
-        <Field label="When">
+        <Field group label="When">
           <OptionGroup options={SLOTS} value={f.slots} onChange={(v) => save({ slots: v })} multi wide />
         </Field>
-        <Field label="Format">
-          <OptionGroup options={FORMATS} value={f.format} onChange={(v) => save({ format: v })} />
+        <Field group label="Format">
+          <OptionGroup
+            options={FORMATS}
+            value={formatsOf(f)}
+            onChange={(v) => save({ formats: v })}
+            multi
+          />
         </Field>
         <Field label={`Monthly budget: ${budgetLabel(f.budgetMax)}`}>
           <input
@@ -367,14 +383,17 @@ export default function FamilyProfile() {
             onChange={(e) => saveQuiet({ budgetMax: +e.target.value })}
           />
           <span className="xs" style={{ display: 'block', marginTop: 6 }}>
-            The most you can pay each month. Slide to the end for no limit.
+            Slide to the end for no limit.
           </span>
         </Field>
         <Field label="What is going wrong">
+          {/* The same field as onboarding, so the same example. A different one
+              here would read as a different question. */}
           <textarea
             className="textarea"
             value={f.need}
             onChange={(e) => saveQuiet({ need: e.target.value })}
+            placeholder="Fine with algebra, loses marks in geometry. Boards in February."
           />
         </Field>
         <div style={{ height: 16 }} />

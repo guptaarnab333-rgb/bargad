@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LocalityPicker } from '../components/LocalityPicker'
-import { AGE_BANDS, BOARDS, CLASSES, FORMATS, LOCALITIES, SLOTS } from '../data/seed'
+import { AGE_BANDS, BOARDS, CLASSES, FORMATS, LOCALITIES, SEATS_CAP, SLOTS } from '../data/seed'
 import { Button, Field, OptionGroup, Progress, SubjectPicker, TopBar } from '../components/UI'
 import { useApp } from '../store/AppContext'
 import Doodle from '../components/Doodle'
-import { inr, modesFor, subjectsInCategory } from '../lib/utils'
+import { inr, modesFor, seatsLabel, subjectsInCategory } from '../lib/utils'
 
 const STEPS = 5
 
@@ -53,7 +53,7 @@ export default function OnboardTeacher() {
   const missing = {
     1: [
       [d.name.trim().length > 1, 'your name'],
-      [d.qualification.trim().length > 1, 'your highest qualification'],
+      [d.qualification.trim().length > 1, 'your qualification'],
     ],
     2: [
       [d.subjects.length > 0, 'at least one subject'],
@@ -66,12 +66,12 @@ export default function OnboardTeacher() {
       [!teachesAcademic || d.boards.length > 0, 'at least one board'],
     ],
     3: [
-      [!!d.locality, 'your locality'],
+      [!!d.locality, 'your area'],
       [d.modes.length > 0, 'how you teach'],
     ],
     4: [
       [d.slots.length > 0, 'when you are free'],
-      [d.formats.length > 0, 'one-to-one, small group, or both'],
+      [d.formats.length > 0, 'a class format'],
     ],
     5: [],
   }[step]
@@ -85,11 +85,20 @@ export default function OnboardTeacher() {
     setStep(n)
   }
 
+  /* A step is not a route, so the app's ScrollReset never sees it. Without
+     this the next step inherits the last one's scroll position, clamped to
+     whatever the shorter page allows, and its first field renders sliced in
+     half under the sticky top bar. */
+  useEffect(() => {
+    document.querySelector('.shell__scroll')?.scrollTo({ top: 0 })
+  }, [step])
+
+
   const next = () => {
     if (missing.length) return setShowMissing(true)
     if (step < STEPS) return go(step + 1)
     dispatch({ type: 'SAVE_TEACHER', data: d })
-    toast('Your teaching profile is live', 'green')
+    toast('Your profile is live', 'green')
     nav(account ? '/t' : '/auth?next=/t', { replace: true })
   }
 
@@ -107,7 +116,7 @@ export default function OnboardTeacher() {
         <Doodle name="book" size={120} weight={1.2} className="wdood wdood--2" />
       </div>
       <TopBar
-        title="Set up your profile"
+        title="Your profile"
         back
         onBack={() => (step === 1 ? nav('/welcome') : go(step - 1))}
       />
@@ -118,14 +127,14 @@ export default function OnboardTeacher() {
           <>
             <h1 className="h1">Who are you?</h1>
             <p className="body" style={{ marginTop: 8, marginBottom: 26 }}>
-              Families see this first. Write it the way you would say it, not like a CV.
+              Families see this first, so write it the way you speak.
             </p>
             <Field label="Full name">
               <input
                 className="input"
                 value={d.name}
                 onChange={(e) => set('name', e.target.value)}
-                placeholder="e.g. Ananya Rawat"
+                placeholder="Ananya Rawat"
                 autoFocus
               />
             </Field>
@@ -134,10 +143,10 @@ export default function OnboardTeacher() {
                 className="input"
                 value={d.qualification}
                 onChange={(e) => set('qualification', e.target.value)}
-                placeholder="e.g. M.Sc Mathematics, Doon University"
+                placeholder="M.Sc Mathematics, Doon University"
               />
             </Field>
-            <Field label={`Years of teaching experience: ${d.experience}`}>
+            <Field label={`Experience: ${d.experience} years`}>
               <input
                 className="range"
                 type="range"
@@ -148,8 +157,8 @@ export default function OnboardTeacher() {
               />
             </Field>
             <Field
-              label="A short introduction"
-              hint="Two or three sentences. What is it actually like to be taught by you?"
+              label="Short introduction"
+              hint="What is a class with you like?"
             >
               <textarea
                 className="textarea"
@@ -165,9 +174,9 @@ export default function OnboardTeacher() {
           <>
             <h1 className="h1">What do you teach?</h1>
             <p className="body" style={{ marginTop: 8, marginBottom: 26 }}>
-              This is what families search by, so only pick what you would genuinely take on.
+              Families search by this, so pick only what you will take.
             </p>
-            <Field label="Subjects">
+            <Field group label="Subjects">
               <SubjectPicker
                 value={d.subjects}
                 onChange={(v) => set('subjects', v)}
@@ -176,17 +185,19 @@ export default function OnboardTeacher() {
               />
             </Field>
             {teachesAcademic && (
-              <Field label="Classes">
+              <Field group label="Classes">
                 <OptionGroup
                   options={CLASSES}
                   value={d.classes}
                   onChange={(v) => set('classes', v)}
                   multi
+                  allowOther
+                  otherPlaceholder="Nursery"
                 />
               </Field>
             )}
             {teachesActivity && (
-              <Field label="Age groups" hint="Who you take for the activities you chose.">
+              <Field group label="Age groups" hint="For the activities you picked.">
                 <OptionGroup
                   options={AGE_BANDS}
                   value={d.ageBands}
@@ -196,12 +207,14 @@ export default function OnboardTeacher() {
               </Field>
             )}
             {teachesAcademic && (
-              <Field label="Boards">
+              <Field group label="Boards">
                 <OptionGroup
                   options={BOARDS}
                   value={d.boards}
                   onChange={(v) => set('boards', v)}
                   multi
+                  allowOther
+                  otherPlaceholder="Bihar Board"
                 />
               </Field>
             )}
@@ -212,9 +225,9 @@ export default function OnboardTeacher() {
           <>
             <h1 className="h1">Where do you teach?</h1>
             <p className="body" style={{ marginTop: 8, marginBottom: 26 }}>
-              Only your locality is ever shown publicly, never your address.
+              Only your area is shown, never your address.
             </p>
-            <Field label="Your locality">
+            <Field group label="Your area">
               <LocalityPicker
                 value={d.locality}
                 coords={d.coords}
@@ -222,7 +235,7 @@ export default function OnboardTeacher() {
                 onChange={(id, coords) => setD((x) => ({ ...x, locality: id, coords }))}
               />
             </Field>
-            <Field label="How you teach">
+            <Field group label="How you teach">
               <OptionGroup
                 options={modesFor('teacher')}
                 value={d.modes}
@@ -232,8 +245,8 @@ export default function OnboardTeacher() {
               />
             </Field>
             <Field
-              label={`How far will you travel: ${d.radiusKm} km`}
-              hint="Families outside this will still see you, but you will be ranked lower for them."
+              label={`Travel radius: ${d.radiusKm} km`}
+              hint="Families further away still see you, ranked lower."
             >
               <input
                 className="range"
@@ -249,12 +262,11 @@ export default function OnboardTeacher() {
 
         {step === 4 && (
           <>
-            <h1 className="h1">When, and for how much?</h1>
+            <h1 className="h1">When and how much</h1>
             <p className="body" style={{ marginTop: 8, marginBottom: 26 }}>
-              Your fee is yours to set and it is shown openly. Families can talk to you about it
-              in chat, once you have both agreed to connect.
+              You set your fee, and it is shown openly.
             </p>
-            <Field label="Availability">
+            <Field group label="Availability">
               <OptionGroup
                 options={SLOTS}
                 value={d.slots}
@@ -263,7 +275,7 @@ export default function OnboardTeacher() {
                 wide
               />
             </Field>
-            <Field label="Format">
+            <Field group label="Format">
               <OptionGroup
                 options={FORMATS}
                 value={d.formats}
@@ -271,7 +283,7 @@ export default function OnboardTeacher() {
                 multi
               />
             </Field>
-            <Field label="Monthly fee" hint="Per student, per month, for your usual weekly pattern.">
+            <Field label="Monthly fee" hint="Per student, per month.">
               <div
                 className="h1"
                 style={{ margin: '2px 0 10px', fontSize: '2rem', color: 'var(--indigo-ink)' }}
@@ -300,12 +312,11 @@ export default function OnboardTeacher() {
 
         {step === 5 && (
           <>
-            <h1 className="h1">Are you taking students right now?</h1>
+            <h1 className="h1">Taking students now?</h1>
             <p className="body" style={{ marginTop: 8, marginBottom: 26 }}>
-              This is the switch that matters. You can change it any time. When you are full,
-              families stop seeing you at the top and stop sending requests you cannot accept.
+              When you are full, families stop sending requests.
             </p>
-            <Field label="Your current state">
+            <Field group label="Your status">
               <OptionGroup
                 options={[
                   { id: 'open', label: 'Open to Teach' },
@@ -319,12 +330,12 @@ export default function OnboardTeacher() {
               />
             </Field>
             {(d.capacity === 'open' || d.capacity === 'limited') && (
-              <Field label={`How many new students can you take: ${d.seatsLeft}`}>
+              <Field label={`Seats open: ${seatsLabel(d.seatsLeft)}`}>
                 <input
                   className="range"
                   type="range"
                   min="1"
-                  max="10"
+                  max={SEATS_CAP}
                   value={d.seatsLeft}
                   onChange={(e) => set('seatsLeft', +e.target.value)}
                 />
@@ -333,8 +344,7 @@ export default function OnboardTeacher() {
             <div className="notice" style={{ marginTop: 8 }}>
               <span style={{ flex: 'none', fontSize: 17 }}>🔒</span>
               <span>
-                Your phone number and address are never shown on your profile. They stay private
-                until you accept a request.
+                Your number and address stay private until you accept a request.
               </span>
             </div>
           </>
@@ -348,7 +358,7 @@ export default function OnboardTeacher() {
             style={{ marginTop: 24 }}
           >
             <span>
-              Still needed on this step: <strong>{listMissing(missing)}</strong>.
+              Still needed: <strong>{listMissing(missing)}</strong>.
             </span>
           </div>
         )}
@@ -360,7 +370,7 @@ export default function OnboardTeacher() {
           aria-describedby={showMissing && missing.length ? 'onboard-missing' : undefined}
           style={{ marginTop: showMissing && missing.length ? 12 : 28 }}
         >
-          {step === STEPS ? 'Go live on Bargad' : 'Continue'}
+          {step === STEPS ? 'Go live' : 'Continue'}
         </Button>
       </div>
     </div>

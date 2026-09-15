@@ -26,7 +26,7 @@ body {
 
 @media (min-width: 900px) {
   body {
-    background: #e7e1d5;
+    background: var(--frame);
   }
 }
 

@@ -4,10 +4,8 @@ import { useApp } from '../store/AppContext'
 import { Avatar, Button, Chip, CONTACT_FIELDS, ContactFields, Field, OptionGroup, Sheet, TopBar } from '../components/UI'
 import { IcCal, IcCheck, IcPin, IcSend } from '../components/Icons'
 import { Link } from 'react-router-dom'
-import { localityName, requirementById, teacherById } from '../lib/utils'
-
-const DAYS = ['This Saturday', 'This Sunday', 'Next Tuesday', 'Next Thursday']
-const TIMES = ['4:00 pm', '5:00 pm', '6:00 pm', '7:00 pm']
+import { DayPicker, PickerRow, TimeWheel } from '../components/Scheduler'
+import { dayLabel, dayLong, demoWhen, isoDate, localityName, requirementById, teacherById, timeLabel } from '../lib/utils'
 
 /* A few grounded replies so the prototype feels alive without pretending to be AI. */
 const REPLIES = [
@@ -28,7 +26,10 @@ export default function Thread({ role }) {
   // Which detail the user is about to share but has not saved yet.
   const [asking, setAsking] = useState(null)
   const [entry, setEntry] = useState({})
-  const [demo, setDemo] = useState({ day: DAYS[0], time: TIMES[1], where: '' })
+  const [demo, setDemo] = useState({ date: isoDate(), time: '16:00', wheres: ['home'] })
+  // Which row is open. One at a time, and none to begin with, so the sheet
+  // opens showing every answer rather than one huge calendar.
+  const [openRow, setOpenRow] = useState(null)
 
   const base = role === 'teacher' ? '/t' : '/f'
   const me = role === 'teacher' ? state.teacher : state.family
@@ -72,6 +73,11 @@ export default function Thread({ role }) {
     if (!th && id) nav(`${base}/messages`, { replace: true })
   }, [th, id])
 
+  // Being here is what reads it, so the tab bar badge clears on arrival.
+  useEffect(() => {
+    if (th?.unread) dispatch({ type: 'SEEN_THREAD', id: th.id })
+  }, [th?.id, th?.unread])
+
   if (!th || !who) return null
 
   const whereOptions =
@@ -87,6 +93,14 @@ export default function Thread({ role }) {
           { id: 'online', label: 'Online' },
         ]
 
+  /* A place is stored as an id, never as a sentence, because the two sides
+     word the same place differently: one person's "At my place" is the other
+     person's "At your place". Storing the proposer's wording showed the other
+     side a sentence written from the wrong chair. */
+  const placeName = (id) => whereOptions.find((w) => w.id === id)?.label ?? id
+  const placeLine = (d) =>
+    d?.where ? placeName(d.where) : (d?.wheres ?? []).map(placeName).join(' or ')
+
   const send = () => {
     const v = text.trim()
     if (!v) return
@@ -101,16 +115,13 @@ export default function Thread({ role }) {
     }, 1400)
   }
 
+  const ackReminder = () => dispatch({ type: 'ACK_DEMO_REMINDER', threadId: th.id })
+
   const propose = () => {
-    const label = whereOptions.find((w) => w.id === (demo.where || 'home'))?.label ?? 'At home'
-    dispatch({
-      type: 'PROPOSE_DEMO',
-      threadId: th.id,
-      by: role,
-      demo: { ...demo, where: label },
-    })
+    if (!demo.wheres.length) return toast('Choose at least one place')
+    dispatch({ type: 'PROPOSE_DEMO', threadId: th.id, by: role, demo })
     setProposing(false)
-    toast('Demo class proposed')
+    toast('Demo proposed')
   }
 
   return (
@@ -144,7 +155,7 @@ export default function Thread({ role }) {
       <div className="shell__scroll">
         <div className="chat">
           <div className="chatsys">
-            Contact details are yours to share. Bargad does not pass on numbers or addresses.
+            Contact details are yours to share. Bargad shares nothing.
           </div>
 
           {th.messages.map((m) =>
@@ -167,10 +178,10 @@ export default function Thread({ role }) {
                 <IcCal size={19} />
                 <span className="h3 u-grow">
                   {th.demo.status === 'confirmed'
-                    ? 'Demo class confirmed'
+                    ? 'Demo confirmed'
                     : th.demo.status === 'done'
-                      ? 'Demo class done'
-                      : 'Demo class proposed'}
+                      ? 'Demo done'
+                      : 'Demo proposed'}
                 </span>
                 {th.demo.status === 'confirmed' && (
                   <Chip tone="indigo">
@@ -180,27 +191,32 @@ export default function Thread({ role }) {
                 )}
               </div>
               <p className="body" style={{ marginTop: 10, color: 'var(--ink)' }}>
-                {th.demo.day} · {th.demo.time}
+                {demoWhen(th.demo)}
                 <br />
-                {th.demo.where}
+                {placeLine(th.demo)}
               </p>
-              {th.demo.status === 'proposed' && (
+              {/* Confirming is the other person's move. When they are the one
+                  waiting on you, you get the button; when you are waiting on
+                  them, you get the truth instead of a button that pretends. */}
+              {th.demo.status === 'proposed' && th.demo.by === role && (
+                <div style={{ marginTop: 14 }}>
+                  <Button block variant="quiet" size="sm" onClick={() => setProposing(true)}>
+                    Suggest another
+                  </Button>
+                  <p className="xs" style={{ textAlign: 'center', marginTop: 10 }}>
+                    Waiting for them to confirm.
+                  </p>
+                </div>
+              )}
+              {th.demo.status === 'proposed' && th.demo.by !== role && (
                 <div className="u-row" style={{ gap: 10, marginTop: 14 }}>
-                  <Button
-                    block
-                    variant="quiet"
-                    size="sm"
-                    onClick={() => setProposing(true)}
-                  >
+                  <Button block variant="quiet" size="sm" onClick={() => setProposing(true)}>
                     Suggest another
                   </Button>
                   <Button
                     block
                     size="sm"
-                    onClick={() => {
-                      dispatch({ type: 'CONFIRM_DEMO', threadId: th.id })
-                      toast('Demo confirmed', 'green')
-                    }}
+                    onClick={() => dispatch({ type: 'CONFIRM_DEMO', threadId: th.id })}
                   >
                     Confirm
                   </Button>
@@ -210,7 +226,7 @@ export default function Thread({ role }) {
                 <>
                   <div className="sharerow">
                     <span className="sm" style={{ display: 'block', marginBottom: 8 }}>
-                      A demo is fixed, so you can hand over what they need to reach you.
+                      Demo is fixed. Share what they need.
                     </span>
                     <div className="u-row" style={{ gap: 8, flexWrap: 'wrap' }}>
                       {CONTACT_FIELDS.map((f) => (
@@ -229,7 +245,7 @@ export default function Thread({ role }) {
                       toast('Tuition started', 'green')
                     }}
                   >
-                    The demo went well, start tuition
+                    Start tuition
                   </Button>
                 </>
               )}
@@ -240,9 +256,7 @@ export default function Thread({ role }) {
             <div className="chatcard" style={{ background: 'var(--green-t)' }}>
               <span className="h3">Tuition is running</span>
               <p className="sm" style={{ marginTop: 8, color: 'var(--ink-2)' }}>
-                Bargad steps back from here. Fees, timings and everything else are between the
-                two of you. When it ends, {role === 'teacher' ? 'the family' : 'you'} can leave a
-                review.
+                Fees and timings are between you two now.
               </p>
             </div>
           )}
@@ -257,7 +271,10 @@ export default function Thread({ role }) {
           <button
             className="iconbtn"
             aria-label="Propose a demo class"
-            onClick={() => setProposing(true)}
+            onClick={() => {
+              setOpenRow(null)
+              setProposing(true)
+            }}
           >
             <IcCal size={19} />
           </button>
@@ -266,7 +283,7 @@ export default function Thread({ role }) {
           className="composer__input"
           rows={1}
           value={text}
-          placeholder="Write a message…"
+          placeholder="Message"
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -293,7 +310,7 @@ export default function Thread({ role }) {
           setEntry({})
         }}
         title={`Share your ${CONTACT_FIELDS.find((f) => f.k === asking)?.share.toLowerCase() ?? ''}`}
-        subtitle="Saved on this device so the next time is one tap. Never shown on your profile."
+        subtitle="Saved on this device. Never shown on your profile."
         footer={
           <Button block onClick={saveAndShare} aria-disabled={!(entry[asking] ?? '').trim()}>
             Save and send
@@ -303,40 +320,88 @@ export default function Thread({ role }) {
         {asking && <ContactFields value={entry} onChange={setEntry} only={asking} />}
       </Sheet>
 
-      {/* ---- Propose demo ---- */}
+      {/* ---- Confirmed, and what Bargad does next ---- */}
       <Sheet
-        open={proposing}
-        onClose={() => setProposing(false)}
-        title="Propose a demo class"
-        subtitle="One free class so both sides can decide before committing to a month."
+        open={th.demo?.status === 'confirmed' && !th.demo?.reminded}
+        onClose={ackReminder}
+        title="Demo confirmed"
+        subtitle={`${dayLong(th.demo?.date)}, ${timeLabel(th.demo?.time)}`}
         footer={
-          <Button block onClick={propose}>
-            Propose it
+          <Button block onClick={ackReminder}>
+            Got it
           </Button>
         }
       >
-        <Field label="Day">
-          <OptionGroup options={DAYS} value={demo.day} onChange={(v) => setDemo((s) => ({ ...s, day: v }))} />
-        </Field>
-        <Field label="Time">
-          <OptionGroup options={TIMES} value={demo.time} onChange={(v) => setDemo((s) => ({ ...s, time: v }))} />
-        </Field>
+        <div className="card card--sunk">
+          <p className="eyebrow">Where</p>
+          <p className="h3" style={{ marginTop: 6 }}>
+            {placeLine(th.demo)}
+          </p>
+        </div>
+        <div className="notice notice--green" style={{ margin: '14px 0 24px' }}>
+          <IcCal size={19} />
+          <span>Bargad will remind you both a day before.</span>
+        </div>
+      </Sheet>
+
+      {/* ---- Propose demo ---- */}
+      <Sheet
+        open={proposing}
+        onClose={() => {
+          setOpenRow(null)
+          setProposing(false)
+        }}
+        title="Propose a demo"
+        subtitle="One free class before either side commits."
+        footer={
+          <Button block onClick={propose}>
+            Propose
+          </Button>
+        }
+      >
+        <PickerRow
+          label="Day"
+          value={dayLabel(demo.date)}
+          open={openRow === 'day'}
+          onToggle={() => setOpenRow((o) => (o === 'day' ? null : 'day'))}
+        >
+          {/* Picking a day answers the question, so the row folds itself away
+              and Time and Where come back into view. Leaving a whole calendar
+              open after the one tap that finished with it is what buried the
+              rest of the sheet in the first place. */}
+          <DayPicker
+            value={demo.date}
+            onChange={(v) => {
+              setDemo((s) => ({ ...s, date: v }))
+              setOpenRow(null)
+            }}
+          />
+        </PickerRow>
+        <PickerRow
+          label="Time"
+          value={timeLabel(demo.time)}
+          open={openRow === 'time'}
+          onToggle={() => setOpenRow((o) => (o === 'time' ? null : 'time'))}
+        >
+          <TimeWheel value={demo.time} onChange={(v) => setDemo((s) => ({ ...s, time: v }))} />
+        </PickerRow>
         <Field
+          group
           label="Where"
-          hint="The exact address is shared by you, in chat, only once a demo is confirmed."
+          hint="Offer any that work. They pick one."
         >
           <OptionGroup
             options={whereOptions}
-            value={demo.where || 'home'}
-            onChange={(v) => setDemo((s) => ({ ...s, where: v }))}
+            value={demo.wheres}
+            onChange={(v) => setDemo((s) => ({ ...s, wheres: v }))}
+            multi
             wide
           />
         </Field>
         <div className="notice" style={{ marginBottom: 24 }}>
           <span style={{ flex: 'none', fontSize: 17 }}>🤝</span>
           <span>
-            Bargad does not take a fee for the demo or for anything after it. What you agree is
-            between the two of you.
+            Bargad takes no fee for the demo or after.
           </span>
         </div>
       </Sheet>

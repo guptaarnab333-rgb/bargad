@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useApp } from '../store/AppContext'
 import { Avatar, Button, Chip, Empty, Segmented, TopBar } from '../components/UI'
-import { RespondSheet, SimulateBar, Timeline } from '../components/RequestBits'
+import { Timeline } from '../components/RequestBits'
 import { IcQuestion } from '../components/Icons'
 import { inr, localityName, STATUS_META, teacherById } from '../lib/utils'
 
@@ -10,7 +10,6 @@ export default function FamilyRequests() {
   const { state, dispatch, toast } = useApp()
   const nav = useNavigate()
   const [tab, setTab] = useState('open')
-  const [respondTo, setRespondTo] = useState(null)
 
   const mine = state.requests.filter((r) => r.from === 'me-family')
   // An accepted request is the most live thing a family has, so it belongs in
@@ -22,33 +21,11 @@ export default function FamilyRequests() {
   const list = tab === 'open' ? openOnes : settled
   const awaiting = mine.filter((r) => ['pending', 'clarify'].includes(r.status)).length
 
-  const resolve = (outcome, extra) => {
-    const req = respondTo
-    const t = teacherById(req.toTeacher)
-    dispatch({
-      type: 'RESOLVE_REQUEST',
-      id: req.id,
-      outcome,
-      note: extra.note,
-      reason: extra.reason,
-      sysText: `${t.name} accepted your request. You can now message each other.`,
-    })
-    setRespondTo(null)
-    toast(
-      outcome === 'accepted'
-        ? `${t.name.split(' ')[0]} accepted, chat is open`
-        : outcome === 'clarify'
-          ? `${t.name.split(' ')[0]} asked you a question`
-          : `${t.name.split(' ')[0]} declined`,
-      outcome === 'accepted' ? 'green' : outcome === 'declined' ? 'blush' : undefined
-    )
-  }
-
   const threadFor = (reqId) => state.threads.find((t) => t.requestId === reqId)
 
   return (
     <>
-      <TopBar title="My Requests" />
+      <TopBar title="Requests" />
       <div style={{ padding: '4px 20px 8px' }}>
         <Segmented
           items={[
@@ -64,11 +41,11 @@ export default function FamilyRequests() {
         {list.length === 0 ? (
           <Empty
             doodle="plane"
-            title={tab === 'open' ? 'No requests out there yet' : 'Nothing closed yet'}
+            title={tab === 'open' ? 'No requests yet' : 'Nothing closed yet'}
             body={
               tab === 'open'
-                ? 'When you send a request to a teacher, you can follow it here: sent, accepted, declined or expired.'
-                : 'Requests that were declined or expired without a reply collect here.'
+                ? 'Requests you send appear here.'
+                : 'Declined and expired requests collect here.'
             }
             action={
               tab === 'open' ? (
@@ -120,7 +97,7 @@ export default function FamilyRequests() {
 
                   {req.status === 'declined' && req.declineReason && (
                     <p className="sm" style={{ marginTop: 12 }}>
-                      Reason given: <strong className="strong">{req.declineReason}</strong>
+                      Reason: <strong className="strong">{req.declineReason}</strong>
                     </p>
                   )}
 
@@ -157,9 +134,9 @@ export default function FamilyRequests() {
                             type: 'RESOLVE_REQUEST',
                             id: req.id,
                             outcome: 'accepted',
-                            sysText: `${t.name} accepted your request. You can now message each other.`,
+                            sysText: `${t.name} accepted your request. Chat is open.`,
                           })
-                          toast('Answered, chat is open', 'green')
+                          toast('Chat is open', 'green')
                         }}
                       >
                         Answer in chat
@@ -176,13 +153,6 @@ export default function FamilyRequests() {
                     </Link>
                   )}
 
-                  {/* Prototype: act as the teacher so both sides can be shown */}
-                  {req.status === 'pending' && (
-                    <SimulateBar
-                      label={`Reply as ${t.name.split(' ')[0]}`}
-                      onClick={() => setRespondTo(req)}
-                    />
-                  )}
                 </div>
               )
             })}
@@ -190,13 +160,6 @@ export default function FamilyRequests() {
         )}
       </div>
 
-      <RespondSheet
-        open={!!respondTo}
-        onClose={() => setRespondTo(null)}
-        who={respondTo ? teacherById(respondTo.toTeacher)?.name : ''}
-        onResolve={resolve}
-        asOther
-      />
     </>
   )
 }

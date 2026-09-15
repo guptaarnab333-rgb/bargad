@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useApp } from '../store/AppContext'
 import { Avatar, Chip, Empty, TopBar } from '../components/UI'
-import { localityName, requirementById, teacherById } from '../lib/utils'
+import { dayLabel, localityName, requirementById, teacherById } from '../lib/utils'
 
 export default function Messages({ role }) {
   const { state } = useApp()
@@ -16,21 +16,17 @@ export default function Messages({ role }) {
       <TopBar title="Messages" />
       <div className="page" style={{ paddingTop: 8 }}>
         <p className="sm" style={{ marginBottom: 16 }}>
-          Chats open only after both sides have agreed to connect.
+          Chats open after both sides agree.
         </p>
 
         {threads.length === 0 ? (
           <Empty
             doodle="plane"
             title="No chats yet"
-            body={
-              role === 'teacher'
-                ? 'Once you accept a family’s request, or one accepts your offer, the conversation appears here.'
-                : 'Once a teacher accepts your request, you can message them here.'
-            }
+            body="Accepted requests open a chat here."
             action={
               <Link to={`${base}/requests`} className="btn btn--quiet">
-                See your requests
+                See requests
               </Link>
             }
           />
@@ -84,7 +80,7 @@ export default function Messages({ role }) {
                           ) : (
                             <Chip tone="indigo">
                               {th.demo.status === 'confirmed'
-                                ? `Demo confirmed · ${th.demo.day}`
+                                ? `Demo confirmed · ${dayLabel(th.demo.date)}`
                                 : 'Demo proposed'}
                             </Chip>
                           )}

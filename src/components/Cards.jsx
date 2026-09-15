@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { Avatar, Chip, Stars } from './UI'
 import { IcClock, IcPeople, IcPin, IcShield } from './Icons'
 import { CAPACITY } from '../data/seed'
-import { budgetUpTo, distLabel, inr, localityName, modesLine, slotShort, STATUS_META, teachesRange } from '../lib/utils'
+import { budgetUpTo, distLabel, formatLabel, formatsOf, inr, localityName, modesLine, seatsLine, slotShort, STATUS_META, teachesRange } from '../lib/utils'
 
 /* Capacity is shown wherever a teacher appears. It answers
    "why am I contacting someone who cannot take my child?" */
@@ -10,9 +10,9 @@ export function CapacityChip({ capacity, seatsLeft, onTint = false }) {
   const c = CAPACITY[capacity] ?? CAPACITY.open
   const label =
     capacity === 'open' && seatsLeft
-      ? `Open to Teach · ${seatsLeft} ${seatsLeft === 1 ? 'seat' : 'seats'}`
+      ? `Open to Teach · ${seatsLine(seatsLeft)}`
       : capacity === 'limited'
-        ? `Limited · ${seatsLeft ?? 1} seat left`
+        ? `Limited · ${seatsLine(seatsLeft ?? 1)} left`
         : c.label
   return (
     <Chip tone={c.tone || undefined} onTint={!c.tone && onTint}>
@@ -63,7 +63,7 @@ export function TeacherCard({ teacher: t, to, reasons = [], km, compact = false 
       {reasons.length > 0 && (
         <div className="u-wrap" style={{ marginTop: 14 }}>
           {reasons.map((r) => (
-            <Chip key={r} tone="indigo">
+            <Chip key={r} tone="quiet">
               {r}
             </Chip>
           ))}
@@ -94,7 +94,7 @@ export function RequirementCard({ req, to, reasons = [], km, hot = false }) {
         </div>
         <div className="tcard__price">
           {budgetUpTo(req.budgetMax)}
-          <span>budget / month</span>
+          <span>budget</span>
         </div>
       </div>
 
@@ -109,8 +109,8 @@ export function RequirementCard({ req, to, reasons = [], km, hot = false }) {
           {req.slots.map(slotShort).join(', ')}
         </Chip>
         <Chip onTint>
-          {req.format === 'group' ? <IcPeople size={12} /> : null}
-          {req.format === 'group' ? 'Small group' : 'One-to-one'} · {modesLine(req.modes)}
+          {formatsOf(req).includes('group') ? <IcPeople size={12} /> : null}
+          {formatLabel(formatsOf(req))} · {modesLine(req.modes)}
         </Chip>
       </div>
 
@@ -129,7 +129,7 @@ export function RequirementCard({ req, to, reasons = [], km, hot = false }) {
       <div className="rcard__foot">
         <span className="xs strong">Posted {req.posted}</span>
         <span className="xs" style={{ color: 'var(--ink-2)' }}>
-          {req.responses} {req.responses === 1 ? 'teacher has' : 'teachers have'} responded
+          {req.responses} {req.responses === 1 ? 'response' : 'responses'}
         </span>
       </div>
     </Link>

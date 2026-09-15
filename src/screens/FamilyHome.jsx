@@ -7,7 +7,7 @@ import { TeacherCard, RequestCard } from '../components/Cards'
 import { Avatar, Button, Sheet, SectionHead, Switch } from '../components/UI'
 import { BannerDoodle, Logo } from '../components/Brand'
 import { IcArrow, IcSliders } from '../components/Icons'
-import { budgetUpTo, greeting, inr, localityName, scoreTeacherForRequirement, slotShort, teacherById } from '../lib/utils'
+import { budgetUpTo, dayLabel, formatLabel, formatsOf, greeting, inr, localityName, scoreTeacherForRequirement, slotShort, teacherById } from '../lib/utils'
 
 export default function FamilyHome() {
   const { state, dispatch, toast } = useApp()
@@ -64,7 +64,7 @@ export default function FamilyHome() {
             {f.board} · {localityName(f.locality)} · {f.slots.map(slotShort).join(', ')}
             <br />
             {budgetUpTo(f.budgetMax)}/month ·{' '}
-            {f.format === 'group' ? 'Small group' : 'One-to-one'}
+            {formatLabel(formatsOf(f))}
           </p>
           <div className="intent__foot">
             <span className="sm strong">
@@ -82,8 +82,8 @@ export default function FamilyHome() {
       <SectionHead
         title={
           matches.length
-            ? `${matches.length} ${matches.length === 1 ? 'teacher' : 'teachers'} near you can take ${f.learner}`
-            : 'No close matches today'
+            ? `${matches.length} ${matches.length === 1 ? 'teacher' : 'teachers'} near you`
+            : 'No matches today'
         }
         action={
           matches.length > 3 ? (
@@ -109,8 +109,7 @@ export default function FamilyHome() {
         <div className="notice">
           <span style={{ flex: 'none', fontSize: 17 }}>🌱</span>
           <span>
-            Nobody open in {localityName(f.locality)} matches all of what you asked for. Try
-            widening the budget or adding Online in Find Teachers.
+            Nothing in {localityName(f.locality)} matches everything. Try widening your budget.
           </span>
         </div>
       )}
@@ -139,8 +138,8 @@ export default function FamilyHome() {
                   sub={`${t.subjects.join(', ')} · ${localityName(t.locality)}`}
                   meta={
                     req.status === 'clarify'
-                      ? 'They asked you a question'
-                      : `Sent ${req.createdAt} · usually replies in ${t.responseHrs}h`
+                      ? 'They asked a question'
+                      : `Sent ${req.createdAt} · replies in ${t.responseHrs}h`
                   }
                   status={req.status}
                 />
@@ -167,7 +166,7 @@ export default function FamilyHome() {
                         {th.active
                           ? 'Tuition running'
                           : th.demo?.status === 'confirmed'
-                            ? `Demo confirmed · ${th.demo.day}`
+                            ? `Demo confirmed · ${dayLabel(th.demo.date)}`
                             : th.messages[th.messages.length - 1]?.text}
                       </p>
                     </div>
@@ -185,7 +184,7 @@ export default function FamilyHome() {
         open={editing}
         onClose={() => setEditing(false)}
         title="Looking for a teacher?"
-        subtitle="When this is on, nearby teachers can see your requirement and offer to teach."
+        subtitle="Nearby teachers can see this and offer to teach."
         footer={
           <Button block onClick={() => setEditing(false)}>
             Done
@@ -198,8 +197,8 @@ export default function FamilyHome() {
               <span className="h3">Looking for a Teacher</span>
               <p className="sm" style={{ marginTop: 3 }}>
                 {f.looking
-                  ? 'Teachers in your area can see this requirement.'
-                  : 'Your requirement is hidden. You can still browse teachers.'}
+                  ? 'Teachers nearby can see this.'
+                  : 'Hidden. You can still browse teachers.'}
               </p>
             </div>
             <Switch
@@ -207,7 +206,7 @@ export default function FamilyHome() {
               label="Looking for a teacher"
               onChange={(v) => {
                 dispatch({ type: 'SET_LOOKING', looking: v })
-                toast(v ? 'Teachers can now see your requirement' : 'Your search is paused')
+                toast(v ? 'Teachers can see this' : 'Search paused')
               }}
             />
           </div>
@@ -216,11 +215,11 @@ export default function FamilyHome() {
           <span style={{ flex: 'none', fontSize: 17 }}>🔒</span>
           <span>
             Teachers see <strong className="strong">{f.classLevel} · {f.board}</strong> and your
-            locality, never {f.learner}’s full name, your address or your phone number.
+            area. Not {f.learner}’s name, your address or your number.
           </span>
         </div>
         <Link to="/f/profile" className="btn btn--quiet btn--block" style={{ marginBottom: 24 }}>
-          Edit the requirement
+          Edit requirement
         </Link>
       </Sheet>
     </div>

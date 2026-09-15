@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { IcBack, IcCamera, IcCheck, IcSearch, IcSliders, IcStar, IcX } from './Icons'
 import Doodle from './Doodle'
 import { initials, subjectCategory, tintFor } from '../lib/utils'
@@ -189,41 +189,145 @@ export function Switch({ checked, onChange, label }) {
 }
 
 /* ---------------- Fields ---------------- */
-export function Field({ label, hint, children }) {
-  return (
-    <label className="field">
+/**
+ * A labelled field.
+ *
+ * A <label> wrapping one input is right: tapping the words focuses the input.
+ * A <label> wrapping a GROUP of controls is a trap. Clicking anywhere inside a
+ * label that is not itself a control forwards the click to the label's first
+ * labelable descendant, so a tap on the field's heading, its padding, or the
+ * gap between two chips silently selected the first chip. Pick "Online", miss
+ * the chip by four pixels on the way back, and the answer quietly became "At
+ * our home".
+ *
+ * So a field that holds a group says so, and is a group rather than a label.
+ */
+export function Field({ label, hint, children, group = false }) {
+  const inner = (
+    <>
       {label && <span className="field__label">{label}</span>}
       {children}
       {hint && <span className="field__hint">{hint}</span>}
-    </label>
+    </>
+  )
+  return group ? (
+    <div className="field" role="group" aria-label={typeof label === 'string' ? label : undefined}>
+      {inner}
+    </div>
+  ) : (
+    <label className="field">{inner}</label>
   )
 }
 
-export function OptionGroup({ options, value, onChange, multi = false, wide = false }) {
+/**
+ * A group of choices, optionally with a way out of the list.
+ *
+ * India has around sixty school boards and plenty of children who are not in
+ * Class 1 to 12 at all, so a closed list of four boards and twelve classes is a
+ * wall for a real family. `allowOther` opens the same escape hatch the subject
+ * picker already has.
+ *
+ * What is typed becomes the value itself, not a flag meaning "other". That is
+ * what keeps it matchable: a family on "Bihar Board" matches a teacher on
+ * "Bihar Board", while a shared "Other" bucket would have matched a family on
+ * Bihar to a teacher on IB and called it a result.
+ */
+export function OptionGroup({
+  options,
+  value,
+  onChange,
+  multi = false,
+  wide = false,
+  allowOther = false,
+  otherPlaceholder = 'Something else',
+}) {
+  const [adding, setAdding] = useState(false)
+  const [draft, setDraft] = useState('')
+  /* Typed names stay on screen even after being deselected. Deriving the chips
+     from the value alone meant one mis-tap deleted what you had just typed, and
+     you had to type it again. */
+  const [extras, setExtras] = useState([])
+
   const isOn = (v) => (multi ? (value || []).includes(v) : value === v)
   const toggle = (v) => {
     if (!multi) return onChange(v)
     const cur = value || []
     onChange(cur.includes(v) ? cur.filter((x) => x !== v) : [...cur, v])
   }
+
+  const known = options.map((o) => (typeof o === 'string' ? o : o.id))
+  /* Something typed in earlier is a choice like any other, so it keeps a chip
+     rather than vanishing the moment the field is reopened. */
+  const chosen = multi ? value || [] : value ? [value] : []
+  const typed = [...new Set([...extras, ...chosen])].filter((v) => v && !known.includes(v))
+
+  const commit = () => {
+    const clean = draft.trim().replace(/\s+/g, ' ').slice(0, 28)
+    if (!clean) return setAdding(false)
+    // A typed name that already exists is that one, not a near-identical twin.
+    const match = known.find((k) => String(k).toLowerCase() === clean.toLowerCase())
+    const name = match ?? clean.replace(/\b\w/g, (c) => c.toUpperCase())
+    if (!match) setExtras((e) => (e.includes(name) ? e : [...e, name]))
+    if (multi) {
+      const cur = value || []
+      if (!cur.includes(name)) onChange([...cur, name])
+    } else {
+      onChange(name)
+    }
+    setDraft('')
+    setAdding(false)
+  }
+
   return (
-    <div className="optgrid">
-      {options.map((o) => {
-        const val = typeof o === 'string' ? o : o.id
-        const lbl = typeof o === 'string' ? o : o.label
-        return (
-          <button
-            key={val}
-            type="button"
-            className={`opt${wide ? ' opt--wide' : ''}`}
-            aria-pressed={isOn(val)}
-            onClick={() => toggle(val)}
-          >
-            {lbl}
+    <>
+      <div className="optgrid">
+        {[...options, ...typed].map((o) => {
+          const val = typeof o === 'string' ? o : o.id
+          const lbl = typeof o === 'string' ? o : o.label
+          return (
+            <button
+              key={val}
+              type="button"
+              className={`opt${wide ? ' opt--wide' : ''}`}
+              aria-pressed={isOn(val)}
+              onClick={() => toggle(val)}
+            >
+              {lbl}
+            </button>
+          )
+        })}
+        {allowOther && !adding && (
+          <button type="button" className="opt opt--add" onClick={() => setAdding(true)}>
+            + Something else
           </button>
-        )
-      })}
-    </div>
+        )}
+      </div>
+      {allowOther && adding && (
+        <div className="picker__add">
+          <input
+            className="input"
+            autoFocus
+            maxLength={28}
+            placeholder={otherPlaceholder}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                commit()
+              }
+              if (e.key === 'Escape') {
+                setDraft('')
+                setAdding(false)
+              }
+            }}
+          />
+          <Button size="sm" onClick={commit}>
+            Add
+          </Button>
+        </div>
+      )}
+    </>
   )
 }
 
@@ -413,7 +517,7 @@ export function SubjectPicker({ value = [], onChange, custom = {}, onCustomChang
 
       {elsewhere.length > 0 && (
         <button type="button" className="picker__other" onClick={() => setCat(otherCat)}>
-          Also chosen in {otherLabel}: <strong>{elsewhere.join(', ')}</strong>
+          Also in {otherLabel}: <strong>{elsewhere.join(', ')}</strong>
         </button>
       )}
     </div>
@@ -452,10 +556,22 @@ export function Sheet({ open, onClose, title, subtitle, children, footer }) {
     if (!open) return
     const onKey = (e) => e.key === 'Escape' && onClose()
     document.addEventListener('keydown', onKey)
-    // Without preventScroll, focusing the dialog yanks the page behind it.
-    ref.current?.focus({ preventScroll: true })
     return () => document.removeEventListener('keydown', onKey)
   }, [open, onClose])
+
+  /* Move focus into the dialog once, on opening, and never again.
+
+     This used to live in the effect above, which also depends on onClose. Every
+     screen passes onClose as an inline arrow, so it is a new function on every
+     render: one keystroke in a field re-ran the effect and pulled focus back to
+     the dialog. On a phone the keyboard closed each time, and a textarea could
+     only ever take one character before you had to tap it again.
+
+     Without preventScroll, focusing the dialog yanks the page behind it. */
+  useEffect(() => {
+    if (!open) return
+    ref.current?.focus({ preventScroll: true })
+  }, [open])
 
   if (!mounted) return null
   return (
@@ -511,12 +627,25 @@ export function Toasts({ toasts }) {
   if (!toasts.length) return null
   return (
     <div className="toastwrap">
-      {toasts.map((t) => (
-        <div key={t.id} className={`toast${t.tone ? ` toast--${t.tone}` : ''}`} role="status">
-          <IcCheck size={17} />
-          <span>{t.text}</span>
-        </div>
-      ))}
+      {toasts.map((t) => {
+        const cls = `toast${t.tone ? ` toast--${t.tone}` : ''}`
+        const body = (
+          <>
+            <IcCheck size={17} />
+            <span>{t.text}</span>
+          </>
+        )
+        /* A notification you cannot open is only half a notification. */
+        return t.to ? (
+          <Link key={t.id} to={t.to} className={`${cls} toast--tap`} role="status">
+            {body}
+          </Link>
+        ) : (
+          <div key={t.id} className={cls} role="status">
+            {body}
+          </div>
+        )
+      })}
     </div>
   )
 }

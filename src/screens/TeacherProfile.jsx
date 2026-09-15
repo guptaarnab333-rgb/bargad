@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../store/AppContext'
-import { AGE_BANDS, BOARDS, CAPACITY, CLASSES, SLOTS } from '../data/seed'
+import { AGE_BANDS, BOARDS, CAPACITY, CLASSES, SEATS_CAP, SLOTS } from '../data/seed'
 import { Avatar, AvatarInput, Button, CONTACT_FIELDS, Chip, ContactFields, Field, KV, OptionGroup, SectionHead, Segmented, Sheet, SubjectPicker, TopBar } from '../components/UI'
 import { CapacityChip } from '../components/Cards'
 import { IcArrow, IcCheck, IcInfo, IcLock, IcShield, IcSwap } from '../components/Icons'
-import { cityName, inr, localityName, modeLabel, modesFor, slotLabel, subjectsInCategory, teachesRange } from '../lib/utils'
+import { cityName, formatLabel, inr, localityName, modeLabel, modesFor, seatsLabel, slotLabel, subjectsInCategory, teachesRange } from '../lib/utils'
 
 export default function TeacherProfile() {
   const { state, dispatch, toast } = useApp()
@@ -80,7 +80,7 @@ export default function TeacherProfile() {
 
         {/* ---- Availability ---- */}
         <SectionHead
-          title="Your availability"
+          title="Availability"
           action={
             <button className="sechead__link" onClick={() => setSheet('avail')}>
               Edit
@@ -90,11 +90,11 @@ export default function TeacherProfile() {
         <KV
           items={[
             { k: 'Status', v: CAPACITY[t.capacity].label },
-            { k: 'Seats open', v: t.capacity === 'full' ? '0' : `${t.seatsLeft}` },
+            { k: 'Seats open', v: t.capacity === 'full' ? '0' : seatsLabel(t.seatsLeft) },
             { k: 'When', v: t.slots.map(slotLabel).join(' · ') },
             { k: 'Travels up to', v: `${t.radiusKm} km` },
             { k: 'How', v: t.modes.map((m) => modeLabel(m, 'teacher')).join(' · ') },
-            { k: 'Format', v: t.formats.includes('group') ? 'One-to-one + group' : 'One-to-one' },
+            { k: 'Format', v: formatLabel(t.formats) },
           ]}
         />
 
@@ -126,7 +126,7 @@ export default function TeacherProfile() {
             <div className="u-grow">
               <span className="h3">Not yet submitted</span>
               <p className="sm" style={{ marginTop: 3 }}>
-                Families see whether a teacher has shown ID and qualification documents.
+                Families see which documents you have shown.
               </p>
             </div>
           </div>
@@ -134,19 +134,18 @@ export default function TeacherProfile() {
             block
             variant="quiet"
             style={{ marginTop: 14 }}
-            onClick={() => toast('Document upload is out of scope for this prototype')}
+            onClick={() => toast('Not in this prototype')}
           >
-            Upload ID and documents
+            Upload documents
           </Button>
           <p className="xs" style={{ marginTop: 12, lineHeight: 1.5 }}>
-            Bargad records that a document was seen. It does not confirm degrees with
-            institutions and does not run police checks, and it says so on your public profile
-            rather than implying more.
+            Bargad records that a document was seen, nothing more. Your profile says exactly
+            that.
           </p>
         </div>
 
         {/* ---- Privacy ---- */}
-        <SectionHead title="What families can see" />
+        <SectionHead title="What families see" />
         <div className="card">
           <ul style={{ display: 'grid', gap: 12 }}>
             {[
@@ -167,17 +166,17 @@ export default function TeacherProfile() {
         </div>
 
         {/* ---- The money question, answered plainly ---- */}
-        <SectionHead title="What Bargad costs you" />
+        <SectionHead title="What this costs you" />
         <div className="card card--green">
           <p className="h1" style={{ fontSize: '2rem', color: 'var(--green-ink)' }}>
             Nothing.
           </p>
           <ul style={{ display: 'grid', gap: 9, marginTop: 14 }}>
             {[
-              'No charge to list your profile',
-              'No charge to see a family’s requirement',
-              'No charge to reply, ever',
-              'No commission on your fee',
+              'No listing fee',
+              'No charge to view requirements',
+              'No charge to reply',
+              'No commission',
             ].map((line) => (
               <li key={line} className="u-row" style={{ gap: 10 }}>
                 <IcCheck size={16} style={{ color: 'var(--green-ink)', flex: 'none' }} />
@@ -188,27 +187,25 @@ export default function TeacherProfile() {
             ))}
           </ul>
           <p className="xs" style={{ marginTop: 14, color: 'var(--ink-2)', lineHeight: 1.5 }}>
-            Families pay you directly, outside the app. Bargad pays for itself with advertising, so
-            no teacher is ever ranked higher for spending money.
+            Families pay you directly. Advertising pays for Bargad, so nobody buys ranking.
           </p>
         </div>
 
-        {/* ---- Appearance: two complete designs, one build ---- */}
+        {/* ---- Appearance: one design, two grounds ---- */}
         <SectionHead title="Appearance" />
         <div className="card">
-          <span className="h3">Design style</span>
+          <span className="h3">Light or dark</span>
           <p className="sm" style={{ marginTop: 6 }}>
-            Both are complete. Switching is instant and changes nothing about how the app
-            works, so either can be the one you keep.
+            Instant, and changes nothing else.
           </p>
           <div style={{ marginTop: 12 }}>
             <Segmented
               items={[
-                { id: 'original', label: 'Original' },
-                { id: 'soft', label: 'Soft' },
+                { id: 'light', label: 'Light' },
+                { id: 'dark', label: 'Dark' },
               ]}
-              value={state.skin ?? 'original'}
-              onChange={(v) => dispatch({ type: 'SET_SKIN', skin: v })}
+              value={state.theme ?? 'light'}
+              onChange={(v) => dispatch({ type: 'SET_THEME', theme: v })}
             />
           </div>
         </div>
@@ -219,8 +216,8 @@ export default function TeacherProfile() {
           <span className="h3">{state.account ? state.account.value : 'No account yet'}</span>
           <p className="sm" style={{ marginTop: 6 }}>
             {state.account
-              ? 'Your profile comes back on any phone you log in from.'
-              : 'Everything is on this device only. An account means it survives a new phone or a cleared browser.'}
+              ? 'Your profile follows you to any phone.'
+              : 'Without one, everything is lost if this browser clears.'}
           </p>
           <Button
             block
@@ -230,19 +227,19 @@ export default function TeacherProfile() {
             onClick={() => {
               if (state.account) {
                 dispatch({ type: 'SIGN_OUT' })
-                toast('Signed out of this device')
+                toast('Signed out')
               } else {
                 nav('/auth?next=/t/profile')
               }
             }}
           >
-            {state.account ? 'Sign out' : 'Add an account'}
+            {state.account ? 'Sign out' : 'Add account'}
           </Button>
         </div>
 
         {/* ---- Contact details, private until shared ---- */}
         <SectionHead
-          title="Your contact details"
+          title="Contact details"
           action={
             <button className="sechead__link" onClick={() => setSheet('contact')}>
               Edit
@@ -258,8 +255,7 @@ export default function TeacherProfile() {
         <div className="notice" style={{ marginTop: 12 }}>
           <IcLock size={18} />
           <span>
-            Never shown on your profile and never used for matching. Saving them here only
-            means that sharing one later is a single tap.
+            Never shown on your profile. Saving makes sharing one tap.
           </span>
         </div>
 
@@ -283,10 +279,10 @@ export default function TeacherProfile() {
             </span>
             <div className="u-grow">
               <span className="h3">
-                {state.family ? 'Switch to your family account' : 'Set up a family account'}
+                {state.family ? 'Switch to family account' : 'Set up family account'}
               </span>
               <p className="sm" style={{ marginTop: 2 }}>
-                See the other side of the same network.
+                See the other side.
               </p>
             </div>
             <IcArrow size={18} />
@@ -314,9 +310,9 @@ export default function TeacherProfile() {
               <IcInfo size={19} />
             </span>
             <div className="u-grow">
-              <span className="h3">What Bargad does differently</span>
+              <span className="h3">How Bargad works</span>
               <p className="sm" style={{ marginTop: 2 }}>
-                The three screens you saw when you first opened the app.
+                Replay the three intro screens.
               </p>
             </div>
             <IcArrow size={18} />
@@ -326,7 +322,7 @@ export default function TeacherProfile() {
         <div className="notice" style={{ marginTop: 14 }}>
           <IcInfo size={18} />
           <span>
-            Prototype: everything is stored on this device only. Nothing is sent anywhere.
+            Prototype: everything stays on this device.
           </span>
         </div>
 
@@ -334,11 +330,12 @@ export default function TeacherProfile() {
           block
           variant="ghost"
           style={{ marginTop: 12, color: 'var(--blush-ink)' }}
+          /* A prototype gets reset constantly, and there is nothing here worth
+             protecting: the data is fictional and the demo is one tap away
+             from being rebuilt. A confirmation step would only be friction. */
           onClick={() => {
-            if (confirm('Clear all prototype data on this device?')) {
-              dispatch({ type: 'RESET' })
-              nav('/', { replace: true })
-            }
+            dispatch({ type: 'RESET' })
+            nav('/', { replace: true })
           }}
         >
           Reset the prototype
@@ -349,8 +346,8 @@ export default function TeacherProfile() {
       <Sheet
         open={sheet === 'contact'}
         onClose={() => setSheet(null)}
-        title="Your contact details"
-        subtitle="Private. Shared only when you tap to share, after both sides have agreed to meet."
+        title="Contact details"
+        subtitle="Shared only when you tap to share."
         footer={
           <Button block onClick={() => setSheet(null)}>
             Done
@@ -367,15 +364,15 @@ export default function TeacherProfile() {
       <Sheet
         open={sheet === 'avail'}
         onClose={() => setSheet(null)}
-        title="Your availability"
-        subtitle="This is what decides whether families can find and contact you."
+        title="Availability"
+        subtitle="This decides whether families can find you."
         footer={
           <Button block onClick={() => setSheet(null)}>
             Done
           </Button>
         }
       >
-        <Field label="Current status">
+        <Field group label="Current status">
           <OptionGroup
             options={[
               { id: 'open', label: 'Open to Teach' },
@@ -389,18 +386,18 @@ export default function TeacherProfile() {
           />
         </Field>
         {t.capacity !== 'full' && t.capacity !== 'paused' && (
-          <Field label={`Seats open: ${t.seatsLeft}`}>
+          <Field label={`Seats open: ${seatsLabel(t.seatsLeft)}`}>
             <input
               className="range"
               type="range"
               min="1"
-              max="10"
+              max={SEATS_CAP}
               value={t.seatsLeft}
               onChange={(e) => dispatch({ type: 'SET_SEATS', seats: +e.target.value })}
             />
           </Field>
         )}
-        <Field label="When you teach">
+        <Field group label="When you teach">
           <OptionGroup
             options={SLOTS}
             value={t.slots}
@@ -409,11 +406,11 @@ export default function TeacherProfile() {
             wide
           />
         </Field>
-        <Field label="How you teach">
+        <Field group label="How you teach">
           <OptionGroup options={modesFor('teacher')} value={t.modes} onChange={(v) => save({ modes: v })} multi wide />
         </Field>
         <Field
-          label={`How far you travel: ${t.radiusKm} km`}
+          label={`Travel radius: ${t.radiusKm} km`}
           hint="Families beyond this still see you, ranked lower."
         >
           <input
@@ -433,14 +430,14 @@ export default function TeacherProfile() {
         open={sheet === 'fee'}
         onClose={() => setSheet(null)}
         title="What you teach"
-        subtitle="Families search by exactly this. Your fee is shown openly, and only you change it."
+        subtitle="Families search by exactly this."
         footer={
           <Button block onClick={() => setSheet(null)}>
             Done
           </Button>
         }
       >
-        <Field label="Subjects">
+        <Field group label="Subjects">
           <SubjectPicker
             value={t.subjects}
             onChange={(v) => save({ subjects: v })}
@@ -449,17 +446,19 @@ export default function TeacherProfile() {
           />
         </Field>
         {subjectsInCategory(t.subjects, 'academic', t.customSubjects).length > 0 && (
-          <Field label="Classes">
+          <Field group label="Classes">
             <OptionGroup
               options={CLASSES}
               value={t.classes}
               onChange={(v) => save({ classes: v })}
               multi
+              allowOther
+              otherPlaceholder="Nursery"
             />
           </Field>
         )}
         {subjectsInCategory(t.subjects, 'activity', t.customSubjects).length > 0 && (
-          <Field label="Age groups" hint="Who you take for the activities you chose.">
+          <Field group label="Age groups" hint="For the activities you picked.">
             <OptionGroup
               options={AGE_BANDS}
               value={t.ageBands || []}
@@ -469,12 +468,14 @@ export default function TeacherProfile() {
           </Field>
         )}
         {subjectsInCategory(t.subjects, 'academic', t.customSubjects).length > 0 && (
-          <Field label="Boards">
+          <Field group label="Boards">
             <OptionGroup
               options={BOARDS}
               value={t.boards}
               onChange={(v) => save({ boards: v })}
               multi
+              allowOther
+              otherPlaceholder="Bihar Board"
             />
           </Field>
         )}
@@ -500,7 +501,7 @@ export default function TeacherProfile() {
         <div className="notice" style={{ margin: '18px 0 24px' }}>
           <IcInfo size={18} />
           <span>
-            Bargad takes nothing from this. Families pay you directly, outside the app.
+            Bargad takes nothing. Families pay you directly.
           </span>
         </div>
       </Sheet>

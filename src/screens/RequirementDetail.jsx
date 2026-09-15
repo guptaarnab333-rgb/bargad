@@ -4,7 +4,7 @@ import { useApp } from '../store/AppContext'
 import { SLOTS } from '../data/seed'
 import { Avatar, Button, Chip, Field, KV, OptionGroup, Sheet, TopBar } from '../components/UI'
 import { IcCheck, IcInfo, IcLock, IcPin, IcX } from '../components/Icons'
-import { budgetLabel, budgetUpTo, distanceFrom, distLabel, inr, localityName, modeLabel, modesFor, requirementById, scoreRequirementForTeacher, slotLabel } from '../lib/utils'
+import { asList, budgetLabel, budgetUpTo, distanceFrom, distLabel, formatLabel, formatsOf, inr, localityName, modeLabel, modesFor, requirementById, scoreRequirementForTeacher, shares, slotLabel } from '../lib/utils'
 
 export default function RequirementDetail() {
   const { id } = useParams()
@@ -18,11 +18,15 @@ export default function RequirementDetail() {
   const km = distanceFrom(t.locality, r?.locality)
   const fit = scoreRequirementForTeacher(r ?? {}, t)
 
+  /* Both sides can do more than one arrangement, so an offer starts from
+     everything they already share rather than from one arbitrary pick. */
+  const sharedModes = t.modes.filter((m) => (r?.modes ?? []).includes(m))
+  const sharedFormats = asList(t.formats).filter((x) => formatsOf(r).includes(x))
   const [payload, setPayload] = useState({
-    mode: t.modes.find((m) => r?.modes.includes(m)) ?? t.modes[0],
+    modes: sharedModes.length ? sharedModes : t.modes.slice(0, 1),
     slots: t.slots.filter((s) => r?.slots.includes(s)),
     fee: t.fee,
-    format: r?.format ?? 'one',
+    formats: sharedFormats.length ? sharedFormats : asList(t.formats).slice(0, 1),
     note: '',
   })
 
@@ -32,7 +36,7 @@ export default function RequirementDetail() {
   const send = () => {
     dispatch({ type: 'SEND_RESPONSE', requirementId: r.id, payload })
     setOffering(false)
-    toast('Your offer has been sent', 'green')
+    toast('Offer sent', 'green')
     nav('/t/requests')
   }
 
@@ -41,10 +45,10 @@ export default function RequirementDetail() {
     ['Subject', r.subjects.some((s) => t.subjects.includes(s))],
     ['Class level', t.classes.includes(r.classLevel)],
     ['Board', t.boards.includes(r.board)],
-    ['Within your travel radius', km != null && km <= t.radiusKm],
-    ['Time overlap', t.slots.some((s) => r.slots.includes(s))],
-    ['Your fee is inside their budget', t.fee <= r.budgetMax],
-    ['Format you offer', t.formats.includes(r.format)],
+    ['In your travel radius', km != null && km <= t.radiusKm],
+    ['Times overlap', t.slots.some((s) => r.slots.includes(s))],
+    ['Fee fits their budget', t.fee <= r.budgetMax],
+    ['Format you offer', shares(t.formats, formatsOf(r))],
   ]
   const met = checks.filter(([, v]) => v).length
 
@@ -53,7 +57,7 @@ export default function RequirementDetail() {
       <TopBar title="" back />
 
       <div className="page" style={{ paddingTop: 4 }}>
-        <p className="eyebrow">A family is looking for</p>
+        <p className="eyebrow">A family needs</p>
         <h1 className="display" style={{ marginTop: 8, fontSize: '2rem' }}>
           {r.subjects.join(' & ')}
           <br />
@@ -67,7 +71,7 @@ export default function RequirementDetail() {
             <IcPin size={12} />
             {localityName(r.locality)} · {distLabel(km)}
           </Chip>
-          <Chip>{r.format === 'group' ? 'Small group' : 'One-to-one'}</Chip>
+          <Chip>{formatLabel(formatsOf(r))}</Chip>
           <Chip>Posted {r.posted}</Chip>
         </div>
 
@@ -89,21 +93,21 @@ export default function RequirementDetail() {
             <Avatar name={r.family} size={44} />
             <div className="u-grow">
               <span className="strong">{r.family}</span>
-              <p className="xs">Parent · joined via {localityName(r.locality)}</p>
+              <p className="xs">Parent · {localityName(r.locality)}</p>
             </div>
           </div>
         </div>
 
         {/* ---- Their terms ---- */}
         <h2 className="h2" style={{ marginTop: 28, marginBottom: 12 }}>
-          What they are asking for
+          What they want
         </h2>
         <KV
           items={[
             { k: 'Budget', v: `${budgetUpTo(r.budgetMax)}/mo` },
             { k: 'Your fee', v: `${inr(t.fee)}/mo` },
             { k: 'Mode', v: r.modes.map((m) => modeLabel(m, 'teacher')).join(' · ') },
-            { k: 'Format', v: r.format === 'group' ? 'Small group' : 'One-to-one' },
+            { k: 'Format', v: formatLabel(formatsOf(r)) },
             { k: 'When', v: r.slots.map(slotLabel).join(' · ') },
             {
               k: 'Responses so far',
@@ -115,7 +119,7 @@ export default function RequirementDetail() {
         {/* ---- Explainable fit ---- */}
         <div className="card" style={{ marginTop: 18 }}>
           <div className="u-spread">
-            <span className="h3">Why you are seeing this</span>
+            <span className="h3">Why you see this</span>
             <Chip tone={met >= 6 ? "green" : met >= 4 ? "orange" : ""}>
               {met} of {checks.length}
             </Chip>
@@ -148,15 +152,14 @@ export default function RequirementDetail() {
         <div className="notice notice--orange" style={{ marginTop: 18 }}>
           <IcLock size={19} />
           <span className="sm">
-            You are seeing a requirement, not a child. The learner’s name, the family’s address
-            and their number appear only if they accept you.
+            This is a requirement, not a child. Names appear only if they accept you.
           </span>
         </div>
 
         <div style={{ marginTop: 26 }}>
           {already ? (
             <Button block variant="quiet" onClick={() => nav('/t/requests')}>
-              You have already responded. See it
+              See your offer
             </Button>
           ) : (
             <>
@@ -164,7 +167,7 @@ export default function RequirementDetail() {
                 Offer to teach
               </Button>
               <p className="xs" style={{ textAlign: 'center', marginTop: 10 }}>
-                Free. Bargad never charges you to reply to a family.
+                Always free to reply.
               </p>
             </>
           )}
@@ -176,9 +179,19 @@ export default function RequirementDetail() {
         open={offering}
         onClose={() => setOffering(false)}
         title={`Offer to teach ${r.subjects.join(' & ')}`}
-        subtitle="Say exactly what you can do. They accept, decline, or ask you a question."
+        subtitle="They can accept, decline or ask a question."
         footer={
-          <Button block onClick={send}>
+          <Button
+            block
+            aria-disabled={!payload.modes.length || !payload.formats.length}
+            onClick={() =>
+              !payload.modes.length
+                ? toast('Choose how you would teach')
+                : !payload.formats.length
+                  ? toast('Choose a class format')
+                  : send()
+            }
+          >
             Send offer
           </Button>
         }
@@ -189,33 +202,40 @@ export default function RequirementDetail() {
             {t.name} · {t.qualification}
           </p>
           <p className="xs" style={{ marginTop: 6 }}>
-            Your public profile, locality and fee, not your address or phone number.
+            Your profile, area and fee. Not your address.
           </p>
         </div>
 
-        <Field label="How you would teach">
+        {/* Your profile is what families search by, not a cage. Filtering
+            these three down to it meant a family could ask for a Sunday and you
+            had no way to say yes without going to Profile and editing your
+            availability first. The fee below already lets you make a one-off
+            exception for one family; so do these. */}
+        <Field group label="How you teach" hint="Pick any you can do for them.">
           <OptionGroup
-            options={modesFor('teacher').filter((m) => t.modes.includes(m.id))}
-            value={payload.mode}
-            onChange={(v) => set('mode', v)}
+            options={modesFor('teacher')}
+            value={payload.modes}
+            onChange={(v) => set('modes', v)}
+            multi
             wide
           />
         </Field>
 
-        <Field label="Format">
+        <Field group label="Format" hint="Pick any you can do for them.">
           <OptionGroup
             options={[
               { id: 'one', label: 'One-to-one' },
               { id: 'group', label: 'Small group' },
-            ].filter((o) => t.formats.includes(o.id))}
-            value={payload.format}
-            onChange={(v) => set('format', v)}
+            ]}
+            value={payload.formats}
+            onChange={(v) => set('formats', v)}
+            multi
           />
         </Field>
 
-        <Field label="Times you can offer">
+        <Field group label="Times you offer" hint={`They are free: ${r.slots.map(slotLabel).join(', ')}`}>
           <OptionGroup
-            options={SLOTS.filter((s) => t.slots.includes(s.id))}
+            options={SLOTS}
             value={payload.slots}
             onChange={(v) => set('slots', v)}
             multi
@@ -224,8 +244,8 @@ export default function RequirementDetail() {
         </Field>
 
         <Field
-          label={`Your fee for this: ${inr(payload.fee)}/month`}
-          hint={`They can pay ${budgetLabel(r.budgetMax)} a month. You can offer a different fee for this family.`}
+          label={`Your fee: ${inr(payload.fee)}/month`}
+          hint={`They can pay ${budgetLabel(r.budgetMax)}. You can offer differently.`}
         >
           <input
             className="range"
@@ -239,14 +259,14 @@ export default function RequirementDetail() {
         </Field>
 
         <Field
-          label="A short note"
-          hint="One or two lines about how you would approach what they described."
+          label="Short note"
+          hint="How would you approach this?"
         >
           <textarea
             className="textarea"
             value={payload.note}
             onChange={(e) => set('note', e.target.value)}
-            placeholder={`I have taught ${r.classLevel} ${r.board} ${r.subjects[0]} for several years…`}
+            placeholder={`I have taught ${r.classLevel} ${r.board} ${r.subjects[0]} for years…`}
           />
         </Field>
 
@@ -254,8 +274,7 @@ export default function RequirementDetail() {
           <div className="notice" style={{ marginBottom: 24 }}>
             <IcInfo size={18} />
             <span>
-              Your fee is above their stated budget. Being upfront now is better than after a
-              demo class. Many families will still say yes if you explain why.
+              Above their budget. Say so now, not after a demo.
             </span>
           </div>
         )}

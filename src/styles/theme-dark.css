@@ -1,0 +1,95 @@
+/* ============================================================
+   BARGAD · Blackboard
+   ------------------------------------------------------------
+   The dark theme is a blackboard and the light theme is a whiteboard.
+   That is not a metaphor bolted on afterwards: the Educational Doodles
+   Pack this product takes its illustrations from is published twice in
+   the source file, once as marker on white and once as chalk on black.
+   The doodles already inherit currentColor, so they become chalk here
+   without a single one being redrawn.
+
+   Everything is still a token swap scoped to [data-theme='dark'] on
+   <html>. No component changes, no second set of markup.
+
+   Three rules decide the values:
+
+   1. The board is dark slate green, not black. A pure black ground
+      makes chalk look like neon; the green is what makes it read as a
+      board rather than as generic dark mode.
+
+   2. Ink and ground trade places, as in any dark theme: chalk on the
+      board, and a raised surface is still lighter than the page.
+
+   3. A brand colour becomes a CHALK colour, which means a pastel. That
+      inverts what sits on it: white disappears on pastel chalk, so
+      anything printed on a brand fill reads --on-brand, the board.
+   ============================================================ */
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* ---------- The board ---------- */
+  --bg: #1c2622;
+  --surface: #24302b;
+  --sunk: #16201c;
+  --frame: #0d1310;
+
+  /* ---------- Chalk ----------
+     --ink   14.6:1 on the board
+     --ink-2  9.1:1
+     --ink-3  5.9:1 on the board, and it must also clear 4.5:1 on the
+              tinted notices, because .sm keeps this colour inside them
+     --ink-4  decoration only */
+  --ink: #eef1ea;
+  --ink-2: #c2cbc2;
+  --ink-3: #99a39a;
+  --ink-4: #6a746c;
+
+  /* The ink block is chalk-pale now, so what sits on it goes board-dark. */
+  --on-ink: #1c2622;
+
+  /* ---------- Coloured chalk ----------
+     Chalk is a pastel by nature. Keeping the saturated marker colours here
+     would have read as stickers stuck to a blackboard. */
+  --green: #86d9a9;
+  --green-deep: #6cc994;
+  --indigo: #a3b6ff;
+  --orange: #ffd98d;
+  --blush: #ffb5c0;
+
+  /* Board-dark, because white is invisible on a pastel. */
+  --on-brand: #16201c;
+  /* Lighter than the bar, not darker: on a board the lit tab comes forward. */
+  --hilite: #35443d;
+
+  /* ---------- Chalk written on the board's own tints ---------- */
+  --green-ink: #a8e8c4;
+  --orange-ink: #ffe3ae;
+  --indigo-ink: #c2cdff;
+  --blush-ink: #ffd0d7;
+
+  /* ---------- Tints: chalk rubbed into the board, not paint ---------- */
+  --green-t: #1e332b;
+  --green-t2: #274536;
+  --indigo-t: #232a3f;
+  --indigo-t2: #2d3754;
+  --orange-t: #33291a;
+  --orange-t2: #453723;
+  --blush-t: #33232a;
+
+  /* ---------- Chalk dust, heavier than a whiteboard's tooth ---------- */
+  --board-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/><feColorMatrix type='saturate' values='0'/></filter><rect width='180' height='180' filter='url(%23g)' opacity='0.07'/></svg>");
+
+  /* ---------- A shadow must be darker than what it falls on ---------- */
+  --e-2: 0 2px 10px rgba(0, 0, 0, 0.44);
+  --e-3: 0 14px 40px rgba(0, 0, 0, 0.62);
+  --e-4: 0 -8px 34px rgba(0, 0, 0, 0.62);
+  --scrim: rgba(8, 12, 10, 0.68);
+}
+
+/* The map is somebody else's daylight photograph. Dark mode cannot recolour
+   another service's tiles, so it dims them rather than letting a white
+   rectangle punch a hole in the board. */
+:root[data-theme='dark'] .lmap {
+  filter: brightness(0.74) contrast(1.06);
+}

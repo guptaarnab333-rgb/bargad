@@ -33,15 +33,16 @@ function ScrollReset() {
 }
 
 /** Role-aware shell with bottom navigation. */
-/* One attribute on <html> swaps the entire surface language. Keeping both in
-   the build means comparing them is a tap, and going back is not a revert. */
-function SkinSwitch() {
+/* One attribute on <html> carries the theme. Every colour in the app is a
+   token, so light and dark are the same components reading a different set. */
+function ThemeSwitch() {
   const { state } = useApp()
   useEffect(() => {
-    const el = document.documentElement
-    if (state.skin === 'soft') el.setAttribute('data-skin', 'soft')
-    else el.removeAttribute('data-skin')
-  }, [state.skin])
+    document.documentElement.setAttribute(
+      'data-theme',
+      state.theme === 'dark' ? 'dark' : 'light'
+    )
+  }, [state.theme])
   return null
 }
 
@@ -62,10 +63,14 @@ function RoleLayout({ role, children }) {
         ? r.direction === 'received' && r.status === 'pending'
         : r.status === 'clarify'
     ).length,
+    // A chat that opened while the user was elsewhere, and has not been read.
+    messages: state.threads.filter(
+      (t) => t.unread && (role === 'teacher' ? !!t.withRequirement : !!t.withId)
+    ).length,
   }
   return (
     <>
-      <div className="shell__scroll">{children}</div>
+      <div className="shell__scroll shell__scroll--tabbed">{children}</div>
       <TabBar role={role} badges={badges} />
     </>
   )
@@ -84,7 +89,7 @@ export default function App() {
     <div className="deskframe">
       <div className="shell">
         <ScrollReset />
-        <SkinSwitch />
+        <ThemeSwitch />
         <Routes>
           <Route
             path="/"

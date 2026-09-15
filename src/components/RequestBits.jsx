@@ -4,12 +4,12 @@ import { useApp } from '../store/AppContext'
 import { IcCheck, IcQuestion, IcX } from './Icons'
 
 const STEP_LABELS = {
-  sent: 'Request sent',
-  received: 'Request received',
+  sent: 'Sent',
+  received: 'Received',
   clarify: 'Question asked',
-  accepted: 'Accepted, chat opened',
+  accepted: 'Accepted',
   declined: 'Declined',
-  expired: 'Expired without a reply',
+  expired: 'Expired',
   active: 'Tuition started',
 }
 
@@ -21,17 +21,17 @@ export function Timeline({ events = [], status, awaiting = 'them' }) {
           {
             k: 'reply',
             label: awaiting === 'you' ? 'Your reply' : 'Their reply',
-            hint: 'Expires if unanswered in 7 days',
+            hint: 'Expires in 7 days',
           },
         ]
       : status === 'accepted'
-        ? [{ k: 'demo', label: 'Arrange a demo class', hint: 'Agree a time in chat' }]
+        ? [{ k: 'demo', label: 'Arrange a demo', hint: 'Agree a time in chat' }]
         : status === 'clarify'
           ? [
               {
                 k: 'answer',
                 label: awaiting === 'you' ? 'Their answer' : 'Your answer',
-                hint: 'Expires if unanswered in 7 days',
+                hint: 'Expires in 7 days',
               },
             ]
           : []
@@ -72,11 +72,11 @@ export function Timeline({ events = [], status, awaiting = 'them' }) {
 }
 
 /**
- * The accept / decline / ask decision.
- * `asOther` marks this as the prototype's simulate-the-other-side control,
- * which is labelled honestly in the UI rather than pretending to be real.
+ * The accept / decline / ask decision, and always the user's own. It used to
+ * double as a stand-in for the other person; the other side answers by itself
+ * now, so this is only ever a real decision on a request somebody sent you.
  */
-export function RespondSheet({ open, onClose, who, onResolve, asOther = false }) {
+export function RespondSheet({ open, onClose, who, onResolve }) {
   const { toast } = useApp()
   const [mode, setMode] = useState(null)
   const [note, setNote] = useState('')
@@ -93,11 +93,7 @@ export function RespondSheet({ open, onClose, who, onResolve, asOther = false })
       open={open}
       onClose={close}
       title={mode === 'clarify' ? 'Ask a question' : mode === 'declined' ? 'Decline' : `Reply to ${who}`}
-      subtitle={
-        asOther
-          ? 'Prototype control. This stands in for the other person opening their own app.'
-          : 'Accepting opens a private chat. Nothing is shared before that.'
-      }
+      subtitle="Accepting opens a private chat."
       footer={
         mode === 'clarify' ? (
           <>
@@ -110,7 +106,7 @@ export function RespondSheet({ open, onClose, who, onResolve, asOther = false })
               onClick={() =>
                 note.trim()
                   ? onResolve('clarify', { note })
-                  : toast('Write your question first, then send it.')
+                  : toast('Write your question first')
               }
             >
               Send question
@@ -122,12 +118,12 @@ export function RespondSheet({ open, onClose, who, onResolve, asOther = false })
               Back
             </Button>
             <Button block variant="blush" onClick={() => onResolve('declined', { reason })}>
-              Decline politely
+              Decline
             </Button>
           </>
         ) : (
           <Button block onClick={() => onResolve('accepted', {})}>
-            Accept and open chat
+            Accept
           </Button>
         )
       }
@@ -153,7 +149,7 @@ export function RespondSheet({ open, onClose, who, onResolve, asOther = false })
               <div className="u-grow">
                 <span className="h3">Ask something first</span>
                 <p className="sm" style={{ marginTop: 2 }}>
-                  One question, without opening a full chat.
+                  One question, no chat yet.
                 </p>
               </div>
             </div>
@@ -177,7 +173,7 @@ export function RespondSheet({ open, onClose, who, onResolve, asOther = false })
               <div className="u-grow">
                 <span className="h3">Decline</span>
                 <p className="sm" style={{ marginTop: 2 }}>
-                  A clear no is more useful than silence.
+                  A clear no beats silence.
                 </p>
               </div>
             </div>
@@ -188,20 +184,20 @@ export function RespondSheet({ open, onClose, who, onResolve, asOther = false })
       {mode === 'clarify' && (
         <Field
           label="Your question"
-          hint="They can answer without either of you sharing contact details."
+          hint="No contact details are shared."
         >
           <textarea
             className="textarea"
             autoFocus
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Would Sunday mornings work instead? And would a group of three be acceptable?"
+            placeholder="Would Sunday mornings work instead?"
           />
         </Field>
       )}
 
       {mode === 'declined' && (
-        <Field label="Reason" hint="Shown to them so they know whether to try again later.">
+        <Field group label="Reason" hint="Shown to them.">
           <OptionGroup
             options={[
               'Not able to take a new student',
@@ -217,19 +213,5 @@ export function RespondSheet({ open, onClose, who, onResolve, asOther = false })
         </Field>
       )}
     </Sheet>
-  )
-}
-
-/** Labelled affordance that lets one device demonstrate both sides. */
-export function SimulateBar({ label, onClick }) {
-  return (
-    <div className="notice" style={{ marginTop: 14, alignItems: 'center' }}>
-      <span className="xs u-grow" style={{ maxWidth: '22ch' }}>
-        Prototype only: stand in for the other person
-      </span>
-      <Button size="sm" variant="quiet" onClick={onClick}>
-        {label}
-      </Button>
-    </div>
   )
 }

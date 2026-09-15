@@ -2,15 +2,19 @@ import Doodle from './Doodle'
 import markSvg from '../assets/bargad-mark.svg?raw'
 
 /**
- * The Bargad mark: two braided hands clasping.
- * Authored in Figma (file Rx7z6ddx, page "Bargad Logo", frame "Final logo")
- * and used verbatim. Do not redraw it here.
+ * The Bargad mark: a tree growing out of a pencil.
+ * Authored in Figma (file Rx7z6ddx, node 51:1371) and exported verbatim. Do
+ * not redraw it here. The only changes made to the export are mechanical and
+ * listed at the top of the SVG's history: the frame background and the white
+ * card behind the artwork are stripped, the full-bounds clip is dropped, and
+ * the graphite tip reads currentColor so it is chalk on the blackboard rather
+ * than near-black on near-black.
  */
 const MARK = markSvg
   .replace(/\s(width|height)="[^"]*"/g, '')
   .replace('<svg ', '<svg class="mark__svg" preserveAspectRatio="xMidYMid meet" ')
 
-const RATIO = 269 / 148
+const RATIO = 451.53 / 495.89
 
 export function BargadMark({ size = 34, className = '' }) {
   return (
@@ -26,7 +30,11 @@ export function BargadMark({ size = 34, className = '' }) {
 export function Logo({ size = 34, showWord = true, wordStyle }) {
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 9 }}>
-      <BargadMark size={size * 0.82} />
+      {/* The old mark was 1.82:1 wide, so 0.82 of the lockup height gave it
+          plenty of area. This one is nearly square and at that multiplier it
+          read as half the logo it used to be. A square mark carries the full
+          height of the lockup. */}
+      <BargadMark size={size * 1.15} />
       {showWord && (
         <span
           className="logo__word"

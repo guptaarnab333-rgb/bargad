@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useApp } from '../store/AppContext'
 import { Avatar, Button, Chip, Empty, KV, Segmented, TopBar } from '../components/UI'
-import { RespondSheet, SimulateBar, Timeline } from '../components/RequestBits'
+import { RespondSheet, Timeline } from '../components/RequestBits'
 import { IcPin, IcQuestion } from '../components/Icons'
-import { budgetUpTo, distanceFrom, distLabel, inr, localityName, requirementById, slotShort, STATUS_META } from '../lib/utils'
+import { budgetUpTo, distanceFrom, distLabel, formatLabel, formatsOf, inr, localityName, requirementById, slotShort, STATUS_META } from '../lib/utils'
 
 export default function TeacherRequests() {
   const { state, dispatch, toast } = useApp()
@@ -28,15 +28,12 @@ export default function TeacherRequests() {
       outcome,
       note: extra.note,
       reason: extra.reason,
-      sysText:
-        req.direction === 'received'
-          ? `You accepted ${r?.family}'s request. You can now message each other.`
-          : `${r?.family} accepted your offer. You can now message each other.`,
+      sysText: `You accepted ${r?.family}. Chat is open.`,
     })
     setRespondTo(null)
     toast(
       outcome === 'accepted'
-        ? 'Accepted, chat is open'
+        ? 'Chat is open'
         : outcome === 'clarify'
           ? 'Question sent'
           : 'Declined',
@@ -46,7 +43,7 @@ export default function TeacherRequests() {
 
   return (
     <>
-      <TopBar title="My Requests" />
+      <TopBar title="Requests" />
       <div style={{ padding: '4px 20px 8px' }}>
         <Segmented
           items={[
@@ -61,19 +58,18 @@ export default function TeacherRequests() {
       <div className="page" style={{ paddingTop: 12 }}>
         {tab === 'in' && waiting > 0 && (
           <p className="sm" style={{ marginBottom: 14 }}>
-            <span className="strong">{waiting} waiting.</span> A clear decline is more useful to
-            a family than being left to wait, and it costs you nothing either way.
+            <span className="strong">{waiting} waiting.</span> A clear no beats silence.
           </p>
         )}
 
         {list.length === 0 ? (
           <Empty
             doodle="plane"
-            title={tab === 'in' ? 'No requests yet' : 'You have not offered yet'}
+            title={tab === 'in' ? 'No requests yet' : 'No offers yet'}
             body={
               tab === 'in'
-                ? 'Families who find your profile and send you a request will appear here. Being “Open to Teach” is what makes you visible.'
-                : 'When you answer a family’s requirement, you can follow it here.'
+                ? 'Stay Open to Teach to be found.'
+                : 'Offers you send appear here.'
             }
             action={
               <Link to="/t/discover" className="btn btn--quiet">
@@ -123,7 +119,7 @@ export default function TeacherRequests() {
                             { k: 'When', v: r.slots.map(slotShort).join(', ') },
                             {
                               k: 'Format',
-                              v: r.format === 'group' ? 'Small group' : 'One-to-one',
+                              v: formatLabel(formatsOf(r)),
                             },
                           ]}
                         />
@@ -157,8 +153,7 @@ export default function TeacherRequests() {
 
                   {req.status === 'expired' && (
                     <p className="sm" style={{ marginTop: 12 }}>
-                      This expired because nobody replied within seven days. The family has very
-                      likely found someone else.
+                      Expired after seven days with no reply.
                     </p>
                   )}
 
@@ -183,9 +178,9 @@ export default function TeacherRequests() {
                             type: 'RESOLVE_REQUEST',
                             id: req.id,
                             outcome: 'accepted',
-                            sysText: `You accepted ${r.family}'s request. You can now message each other.`,
+                            sysText: `You accepted ${r.family}. Chat is open.`,
                           })
-                          toast('Accepted, chat is open', 'green')
+                          toast('Chat is open', 'green')
                         }}
                       >
                         Accept
@@ -203,13 +198,6 @@ export default function TeacherRequests() {
                     </Button>
                   )}
 
-                  {/* Prototype: act as the family for offers you sent out */}
-                  {!isIncoming && req.status === 'pending' && (
-                    <SimulateBar
-                      label={`Reply as ${r.family.split(' ')[0]}`}
-                      onClick={() => setRespondTo(req)}
-                    />
-                  )}
                 </div>
               )
             })}
@@ -220,13 +208,8 @@ export default function TeacherRequests() {
       <RespondSheet
         open={!!respondTo}
         onClose={() => setRespondTo(null)}
-        who={
-          respondTo
-            ? requirementById(respondTo.fromFamily ?? respondTo.toRequirement)?.family
-            : ''
-        }
+        who={respondTo ? requirementById(respondTo.fromFamily)?.family : ''}
         onResolve={resolve}
-        asOther={respondTo?.direction !== 'received'}
       />
     </>
   )

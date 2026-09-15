@@ -52,6 +52,29 @@ solved for, not guessed: it clears 4.5:1 on every surface in the system, worst c
 indigo tint. Placeholders and inactive tab labels use `--ink-3`. `--ink-4` is decoration only
 (switch track, sheet grab handle) and never carries text.
 
+## Light and dark
+
+One design, two grounds. Dark is not a second skin: it is the same components
+reading a different set of tokens, swapped by `data-theme="dark"` on `<html>`.
+Two rules decide every value in it.
+
+**Ink and ground trade places.** Light is near-black ink on cream, with a raised
+surface lighter than the page and a sunk one darker. Dark is near-white ink on a
+warm near-black, and a raised surface is still lighter than the page. So
+"raised" and "sunk" keep meaning the same thing in both.
+
+**A brand colour used as a fill keeps its hue; used as text it flips.** White
+still clears 4.5:1 on green-deep, indigo, orange and the arch, so fills are
+untouched. But the tints those colours print on are dark now, so `--green-ink`
+and its siblings come up rather than down.
+
+The ground stays warm. Bargad's light mode is cream, and a cold grey dark mode
+reads as a different product.
+
+Anything painted on an ink block reads `--on-ink`, never `#fff`. Ink is the one
+token that inverts, so a hardcoded white on it is a bug waiting for dark mode:
+white text on a near-white button.
+
 ## Typography
 
 Two families, split by job.
@@ -61,6 +84,30 @@ Two families, split by job.
   Tabular numerals on anything numeric.
 
 Display type never appears in buttons, labels or data. Scale is a fixed rem ramp, not fluid clamps.
+
+## Voice
+
+Microcopy is written to fixed limits, not to taste.
+
+- **Headlines**: 3 to 5 words.
+- **Body under a headline**: one sentence, 12 words at most.
+- **Buttons, chips, hints, placeholders**: 1 to 3 words. Verb plus object where there is an
+  object ("Send request", "Start tuition"), a bare verb where there is not ("Accept",
+  "Propose").
+- **Tone**: professional, warm, plain. No marketing language, no exclamation marks, no em dashes.
+
+Three kinds of text may run to two short sentences, because the second sentence carries a
+commitment the product is built on, and cutting it would delete the promise rather than shorten
+the copy:
+
+- What Bargad has and has not verified.
+- What stays private until a request is accepted.
+- That neither side is ever charged.
+
+Two deliberate exceptions to the word limits. Search placeholders teach the search grammar by
+example ("Class 9 maths in Dalanwala"), and the onboarding "Still needed" line names every
+missing field, because a button that refuses to say why is what stranded people in the first
+place.
 
 ## Shape
 

@@ -25,6 +25,9 @@ export const LOCALITIES = [
   { id: 'sahastradhara', name: 'Sahastradhara Road', city: 'Dehradun', lat: 30.362, lng: 78.085 },
   { id: 'clement-town', name: 'Clement Town', city: 'Dehradun', lat: 30.266, lng: 77.995 },
   { id: 'prem-nagar', name: 'Prem Nagar', city: 'Dehradun', lat: 30.323, lng: 77.945 },
+  // The campus this project is built and demonstrated from. Coordinates are
+  // OpenStreetMap's for the campus itself (way 334489110).
+  { id: 'doon-university', name: 'Doon University', city: 'Dehradun', lat: 30.2673, lng: 78.0453 },
   // Delhi NCR
   { id: 'saket', name: 'Saket', city: 'New Delhi', lat: 28.522, lng: 77.21 },
   { id: 'dwarka', name: 'Dwarka', city: 'New Delhi', lat: 28.592, lng: 77.046 },
@@ -107,6 +110,9 @@ export const CATEGORIES = [
 /** The top of the budget slider. Past this the family means "no limit". */
 export const BUDGET_CAP = 12000
 
+/** The top of the seats slider. At the top a teacher means "ten or more". */
+export const SEATS_CAP = 10
+
 export const BOARDS = ['CBSE', 'ICSE', 'ISC', 'UK Board']
 
 export const CLASSES = [
@@ -138,6 +144,7 @@ export const SLOTS = [
   { id: 'wd-afternoon', label: 'Weekday afternoons' },
   { id: 'wd-evening', label: 'Weekday evenings' },
   { id: 'we-morning', label: 'Weekend mornings' },
+  { id: 'we-afternoon', label: 'Weekend afternoons' },
   { id: 'we-evening', label: 'Weekend evenings' },
 ]
 
@@ -298,7 +305,7 @@ export const TEACHERS = [
     modes: ['home'],
     locality: 'patel-nagar',
     radiusKm: 4,
-    slots: ['wd-afternoon', 'we-morning'],
+    slots: ['wd-afternoon', 'we-morning', 'we-afternoon'],
     fee: 2400,
     formats: ['one'],
     capacity: 'open',
@@ -462,7 +469,7 @@ export const TEACHERS = [
     modes: ['online', 'mine'],
     locality: 'dalanwala',
     radiusKm: 5,
-    slots: ['we-morning', 'we-evening'],
+    slots: ['we-morning', 'we-afternoon', 'we-evening'],
     fee: 1900,
     formats: ['one', 'group'],
     capacity: 'open',
@@ -602,7 +609,7 @@ export const REQUIREMENTS = [
     modes: ['home'],
     slots: ['wd-evening'],
     budgetMax: 4000,
-    format: 'one',
+    formats: ['one'],
     need: 'Boards in February. She is comfortable with algebra but loses marks badly in geometry and trigonometry. Looking for someone patient who can go back to Class 9 basics if needed.',
     posted: '2 days ago',
     responses: 3,
@@ -620,7 +627,7 @@ export const REQUIREMENTS = [
     modes: ['home', 'online'],
     slots: ['wd-evening', 'we-morning'],
     budgetMax: 6000,
-    format: 'one',
+    formats: ['one', 'group'],
     need: 'Needs serious help with Physics numericals before the pre-boards. Chemistry is a secondary priority, organic mainly.',
     posted: '5 hours ago',
     responses: 1,
@@ -638,7 +645,7 @@ export const REQUIREMENTS = [
     modes: ['home'],
     slots: ['wd-afternoon'],
     budgetMax: 3500,
-    format: 'one',
+    formats: ['one'],
     need: 'He reads well but writing is weak: spelling, sentence structure, and he freezes in comprehension. Hindi is a second subject we would like covered if possible.',
     posted: '1 day ago',
     responses: 2,
@@ -656,7 +663,7 @@ export const REQUIREMENTS = [
     modes: ['home', 'mine'],
     slots: ['we-evening', 'wd-evening'],
     budgetMax: 3000,
-    format: 'group',
+    formats: ['group'],
     need: 'Happy with a small batch near Clement Town, she does better with other students around. Budget is tight so a group seat suits us.',
     posted: '3 days ago',
     responses: 4,
@@ -674,7 +681,7 @@ export const REQUIREMENTS = [
     modes: ['online'],
     slots: ['wd-evening'],
     budgetMax: 5500,
-    format: 'one',
+    formats: ['one'],
     need: 'Python for the CBSE CS syllabus. He picks things up quickly but has no discipline about practice, so we want someone who will set work and follow up.',
     posted: '6 days ago',
     responses: 2,
@@ -692,7 +699,7 @@ export const REQUIREMENTS = [
     modes: ['home'],
     slots: ['wd-afternoon'],
     budgetMax: 2500,
-    format: 'one',
+    formats: ['one'],
     need: 'Fractions and word problems. She has decided she is bad at Maths and I would like that changed before it hardens.',
     posted: '4 days ago',
     responses: 5,
@@ -708,9 +715,9 @@ export const REQUIREMENTS = [
     subjects: ['History', 'Geography'],
     locality: 'dwarka',
     modes: ['home', 'online'],
-    slots: ['we-morning'],
+    slots: ['we-morning', 'we-afternoon'],
     budgetMax: 3500,
-    format: 'one',
+    formats: ['one', 'group'],
     need: 'Weekend only, her weekdays are full. Map work in Geography is the main gap.',
     posted: '1 week ago',
     responses: 1,
@@ -728,7 +735,7 @@ export const REQUIREMENTS = [
     modes: ['mine', 'home'],
     slots: ['wd-evening'],
     budgetMax: 5000,
-    format: 'group',
+    formats: ['group'],
     need: 'Class 12 Maths, calculus specifically. A batch is fine, he is more regular when he has to show up somewhere.',
     posted: '2 days ago',
     responses: 3,
@@ -746,9 +753,9 @@ export const REQUIREMENTS = [
     subjects: ['Chess'],
     locality: 'vasant-vihar',
     modes: ['home', 'online'],
-    slots: ['we-morning'],
+    slots: ['we-afternoon'],
     budgetMax: 2500,
-    format: 'one',
+    formats: ['one'],
     need: 'He plays online constantly and loses to the same traps every time. Weekends only, his weekdays are already full with school work.',
     posted: '1 day ago',
     responses: 0,
@@ -766,7 +773,7 @@ export const REQUIREMENTS = [
     modes: ['home'],
     slots: ['we-morning', 'wd-evening'],
     budgetMax: 3000,
-    format: 'one',
+    formats: ['one'],
     need: 'She has a guitar that was a birthday present and nobody at home can teach her. A complete beginner, seven years old, patient teacher please.',
     posted: '4 hours ago',
     responses: 1,
@@ -784,7 +791,7 @@ export const REQUIREMENTS = [
     modes: ['mine'],
     slots: ['we-morning', 'we-evening'],
     budgetMax: 4000,
-    format: 'group',
+    formats: ['group'],
     need: 'He is on the school team but has no technique. A small group on weekends would suit him better than one-to-one.',
     posted: '3 days ago',
     responses: 2,

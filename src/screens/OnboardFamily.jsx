@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LocalityPicker } from '../components/LocalityPicker'
 import { BOARDS, BUDGET_CAP, CLASSES, FORMATS, LOCALITIES, SLOTS } from '../data/seed'
@@ -24,7 +24,7 @@ export default function OnboardFamily() {
     modes: [],
     slots: [],
     budgetMax: 4000,
-    format: 'one',
+    formats: ['one'],
     need: '',
     looking: true,
     posted: 'Just now',
@@ -40,8 +40,8 @@ export default function OnboardFamily() {
    */
   const missing = {
     1: [
-      [d.parentName.trim().length > 1, 'your name'],
-      [d.learner.trim().length > 0, "your child's first name"],
+      [d.parentName.trim().length > 1, "the parent's name"],
+      [d.learner.trim().length > 0, "the student's name"],
     ],
     2: [
       [!!d.classLevel, 'the class'],
@@ -49,9 +49,10 @@ export default function OnboardFamily() {
       [d.subjects.length > 0, 'at least one subject'],
     ],
     3: [
-      [!!d.locality, 'your locality'],
-      [d.modes.length > 0, 'how classes should happen'],
+      [!!d.locality, 'your area'],
+      [d.modes.length > 0, 'how classes happen'],
       [d.slots.length > 0, 'when they are free'],
+      [d.formats.length > 0, 'a class format'],
     ],
     4: [],
   }[step]
@@ -65,11 +66,20 @@ export default function OnboardFamily() {
     setStep(n)
   }
 
+  /* A step is not a route, so the app's ScrollReset never sees it. Without
+     this the next step inherits the last one's scroll position, clamped to
+     whatever the shorter page allows, and its first field renders sliced in
+     half under the sticky top bar. */
+  useEffect(() => {
+    document.querySelector('.shell__scroll')?.scrollTo({ top: 0 })
+  }, [step])
+
+
   const next = () => {
     if (missing.length) return setShowMissing(true)
     if (step < STEPS) return go(step + 1)
     dispatch({ type: 'SAVE_FAMILY', data: d })
-    toast('You are now looking for a teacher', 'green')
+    toast('Your requirement is live', 'green')
     // Ask for an account where the answer matters: there is finally something
     // worth keeping, and losing it to a cleared browser is the real risk.
     nav(account ? '/f' : '/auth?next=/f', { replace: true })
@@ -89,7 +99,7 @@ export default function OnboardFamily() {
         <Doodle name="globe" size={120} weight={1.2} className="wdood wdood--2" />
       </div>
       <TopBar
-        title="Tell us what you need"
+        title="What you need"
         back
         onBack={() => (step === 1 ? nav('/welcome') : go(step - 1))}
       />
@@ -100,27 +110,26 @@ export default function OnboardFamily() {
           <>
             <h1 className="h1">Who is this for?</h1>
             <p className="body" style={{ marginTop: 8, marginBottom: 26 }}>
-              You hold the account. Your child is a learner on it. Teachers never see their
-              full name or contact details before you accept a connection.
+              Teachers never see your child’s name until you accept.
             </p>
-            <Field label="Your name">
+            <Field label="Parent's name">
               <input
                 className="input"
                 value={d.parentName}
                 onChange={(e) => set('parentName', e.target.value)}
-                placeholder="e.g. Anil Gusain"
+                placeholder="Anil Gusain"
                 autoFocus
               />
             </Field>
             <Field
-              label="Your child's first name"
-              hint="Only shown to a teacher after you accept them. Teachers see “Class 10 · CBSE” until then."
+              label="Student's name"
+              hint="Shared only after you accept a teacher."
             >
               <input
                 className="input"
                 value={d.learner}
                 onChange={(e) => set('learner', e.target.value)}
-                placeholder="e.g. Riya"
+                placeholder="Riya"
               />
             </Field>
           </>
@@ -128,22 +137,29 @@ export default function OnboardFamily() {
 
         {step === 2 && (
           <>
-            <h1 className="h1">What do they need help with?</h1>
+            <h1 className="h1">What do they need?</h1>
             <p className="body" style={{ marginTop: 8, marginBottom: 26 }}>
-              Be specific. Teachers use exactly this to decide whether they are the right
-              person for your child.
+              Teachers read this to decide if they can help.
             </p>
-            <Field label="Class">
+            <Field group label="Class">
               <OptionGroup
                 options={CLASSES}
                 value={d.classLevel}
                 onChange={(v) => set('classLevel', v)}
+                allowOther
+                otherPlaceholder="Nursery"
               />
             </Field>
-            <Field label="Board">
-              <OptionGroup options={BOARDS} value={d.board} onChange={(v) => set('board', v)} />
+            <Field group label="Board">
+              <OptionGroup
+                options={BOARDS}
+                value={d.board}
+                onChange={(v) => set('board', v)}
+                allowOther
+                otherPlaceholder="Bihar Board"
+              />
             </Field>
-            <Field label="Subjects">
+            <Field group label="Subjects">
               <SubjectPicker
                 value={d.subjects}
                 onChange={(v) => set('subjects', v)}
@@ -152,14 +168,14 @@ export default function OnboardFamily() {
               />
             </Field>
             <Field
-              label="What is actually going wrong?"
-              hint="This is the part teachers read most carefully."
+              label="What is going wrong"
+              hint="Teachers read this first."
             >
               <textarea
                 className="textarea"
                 value={d.need}
                 onChange={(e) => set('need', e.target.value)}
-                placeholder="Boards in February. Comfortable with algebra but loses marks in geometry…"
+                placeholder="Fine with algebra, loses marks in geometry. Boards in February."
               />
             </Field>
           </>
@@ -169,17 +185,16 @@ export default function OnboardFamily() {
           <>
             <h1 className="h1">Where and when?</h1>
             <p className="body" style={{ marginTop: 8, marginBottom: 26 }}>
-              Only your locality is shown. Your address stays private until you have accepted a
-              teacher and arranged a demo class.
+              Only your area is shown, never your address.
             </p>
-            <Field label="Your locality">
+            <Field group label="Your area">
               <LocalityPicker
                 value={d.locality}
                 coords={d.coords}
                 onChange={(id, coords) => setD((x) => ({ ...x, locality: id, coords }))}
               />
             </Field>
-            <Field label="How should classes happen?">
+            <Field group label="How classes happen">
               <OptionGroup
                 options={modesFor('family')}
                 value={d.modes}
@@ -188,7 +203,7 @@ export default function OnboardFamily() {
                 wide
               />
             </Field>
-            <Field label="When are they free?">
+            <Field group label="When they are free">
               <OptionGroup
                 options={SLOTS}
                 value={d.slots}
@@ -197,11 +212,12 @@ export default function OnboardFamily() {
                 wide
               />
             </Field>
-            <Field label="One-to-one or a small group?">
+            <Field group label="Class format" hint="Either, or both.">
               <OptionGroup
                 options={FORMATS}
-                value={d.format}
-                onChange={(v) => set('format', v)}
+                value={d.formats}
+                onChange={(v) => set('formats', v)}
+                multi
               />
             </Field>
           </>
@@ -209,10 +225,9 @@ export default function OnboardFamily() {
 
         {step === 4 && (
           <>
-            <h1 className="h1">What can you spend?</h1>
+            <h1 className="h1">Your monthly budget</h1>
             <p className="body" style={{ marginTop: 8, marginBottom: 26 }}>
-              Teachers publish their monthly fee openly, so you will not waste time on people
-              outside your range, and they will not waste time on requests they must refuse.
+              Teachers show their fees, so nobody wastes time.
             </p>
             <Field label="Monthly budget">
               <div
@@ -243,14 +258,13 @@ export default function OnboardFamily() {
                 onChange={(e) => set('budgetMax', +e.target.value)}
               />
               <span className="xs" style={{ display: 'block', marginTop: 6 }}>
-                The most you can pay each month. Slide to the end for no limit.
+                Slide to the end for no limit.
               </span>
             </Field>
             <div className="notice notice--indigo" style={{ marginTop: 8 }}>
               <span style={{ flex: 'none', fontSize: 17 }}>🪢</span>
               <span>
-                Turning on <strong>Looking for a Teacher</strong> lets nearby teachers see this
-                requirement and offer to teach. You still choose who to accept.
+                Nearby teachers can offer to teach. You choose who to accept.
               </span>
             </div>
           </>
@@ -264,7 +278,7 @@ export default function OnboardFamily() {
             style={{ marginTop: 24 }}
           >
             <span>
-              Still needed on this step: <strong>{listMissing(missing)}</strong>.
+              Still needed: <strong>{listMissing(missing)}</strong>.
             </span>
           </div>
         )}

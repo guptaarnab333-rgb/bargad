@@ -1,4 +1,4 @@
-import { AGE_BANDS, BOARDS, BUDGET_CAP, distanceKm, haversineKm, LOCALITIES, MODES, REQUIREMENTS, SLOTS, SUBJECT_CATEGORY, SUBJECTS, TEACHERS } from '../data/seed'
+import { AGE_BANDS, BOARDS, BUDGET_CAP, distanceKm, haversineKm, LOCALITIES, MODES, REQUIREMENTS, SEATS_CAP, SLOTS, SUBJECT_CATEGORY, SUBJECTS, TEACHERS } from '../data/seed'
 
 export const uid = (p = 'x') => `${p}-${Math.random().toString(36).slice(2, 9)}`
 
@@ -37,6 +37,65 @@ export const slotLabel = (id) => SLOTS.find((s) => s.id === id)?.label ?? id
 export const slotShort = (id) => slotLabel(id).replace('Weekday ', 'Wkdy ').replace('Weekend ', 'Wknd ')
 export const modeShort = (id) => MODES.find((m) => m.id === id)?.short ?? id
 
+/* ---- When the demo class is ----
+   A demo is stored as a plain calendar date ("2026-09-20") and a 24 hour time
+   ("16:00"), never as a sentence. Those two survive a reload and sort, and
+   every phrase a person reads is derived from them, so the chat, the card and
+   the reminder can never drift apart. */
+const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const DAY_LONG = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+const MON_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const MON_LONG = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+]
+
+/** Local calendar date as yyyy-mm-dd. Never toISOString, which is UTC and
+    quietly moves the date backwards for anyone east of Greenwich. */
+export const isoDate = (d = new Date()) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+
+export const dateFromISO = (iso) => {
+  const [y, m, d] = String(iso).split('-').map(Number)
+  return new Date(y, (m || 1) - 1, d || 1)
+}
+
+export const addDays = (iso, n) => {
+  const d = dateFromISO(iso)
+  d.setDate(d.getDate() + n)
+  return isoDate(d)
+}
+
+/** "Today", "Tomorrow", or "Sat 20 Sep". */
+export function dayLabel(iso) {
+  if (!iso) return ''
+  const today = isoDate()
+  if (iso === today) return 'Today'
+  if (iso === addDays(today, 1)) return 'Tomorrow'
+  const d = dateFromISO(iso)
+  return `${DAY_SHORT[d.getDay()]} ${d.getDate()} ${MON_SHORT[d.getMonth()]}`
+}
+
+/** "Saturday 20 September", where there is room to say it properly. */
+export function dayLong(iso) {
+  if (!iso) return ''
+  const d = dateFromISO(iso)
+  return `${DAY_LONG[d.getDay()]} ${d.getDate()} ${MON_LONG[d.getMonth()]}`
+}
+
+/** "4:00 pm" from "16:00". */
+export function timeLabel(hhmm) {
+  const [h, m] = String(hhmm).split(':').map(Number)
+  if (Number.isNaN(h)) return ''
+  const suffix = h >= 12 ? 'pm' : 'am'
+  const hour = h % 12 === 0 ? 12 : h % 12
+  return `${hour}:${String(m || 0).padStart(2, '0')} ${suffix}`
+}
+
+/** "Tomorrow · 4:00 pm", the one-line form used on cards and in lists. */
+export const demoWhen = (demo) =>
+  demo?.date ? `${dayLabel(demo.date)} · ${timeLabel(demo.time)}` : ''
+
 /* ---- Subject categories ----
    `custom` is the map of subjects a person typed in themselves, kept on their
    own profile as { 'Bharatanatyam': 'activity' }. Anything nobody has
@@ -56,6 +115,14 @@ export const isNoBudgetLimit = (v) => v == null || v >= BUDGET_CAP
 export const budgetLabel = (v) => (isNoBudgetLimit(v) ? 'No upper limit' : inr(v))
 export const budgetUpTo = (v) => (isNoBudgetLimit(v) ? 'Any budget' : `Up to ${inr(v)}`)
 
+/* A slider has to stop somewhere, and a teacher with room for a whole batch
+   should not be made to say they have exactly ten places. The top of the
+   slider means "ten or more", the same way the top of the budget slider means
+   "no limit". */
+export const isMaxSeats = (v) => v >= SEATS_CAP
+export const seatsLabel = (v) => (isMaxSeats(v) ? `${SEATS_CAP}+` : `${v}`)
+export const seatsLine = (v) => `${seatsLabel(v)} ${v === 1 ? 'seat' : 'seats'}`
+
 /** Mode wording is role-specific. Say whose screen it is being read on. */
 export const modeLabel = (id, role) =>
   MODES.find((m) => m.id === id)?.[role === 'family' ? 'family' : 'teacher'] ?? id
@@ -67,8 +134,17 @@ export const modesLine = (modes = []) => modes.map(modeShort).join(' + ')
 
 export const classRange = (classes = []) => {
   if (!classes.length) return ''
-  const nums = classes.map((c) => parseInt(c.replace(/\D/g, ''), 10)).sort((a, b) => a - b)
-  return nums.length === 1 ? `Class ${nums[0]}` : `Classes ${nums[0]}–${nums[nums.length - 1]}`
+  /* A class someone typed in has no number to sort by. Folding it into the
+     range printed "Classes NaN–12", so it is named alongside instead. */
+  const numberOf = (c) => parseInt(String(c).replace(/\D/g, ''), 10)
+  const nums = classes.map(numberOf).filter(Number.isFinite).sort((a, b) => a - b)
+  const named = classes.filter((c) => !Number.isFinite(numberOf(c)))
+  const range = !nums.length
+    ? ''
+    : nums.length === 1
+      ? `Class ${nums[0]}`
+      : `Classes ${nums[0]}–${nums[nums.length - 1]}`
+  return [range, ...named].filter(Boolean).join(' · ')
 }
 
 /* ---- Age groups ---- */
@@ -127,6 +203,25 @@ export const distLabel = (km) =>
 /** Overlap helper used everywhere fit is computed. */
 const overlap = (a = [], b = []) => a.filter((x) => b.includes(x))
 
+/* One value or many, always read as a list. A profile saved before a field
+   became plural still holds a bare string, and nothing downstream should have
+   to know which shape it is looking at. */
+export const asList = (v) => (Array.isArray(v) ? v : v == null || v === '' ? [] : [v])
+
+/** The class formats on a teacher, a family or a requirement, however stored. */
+export const formatsOf = (x) => asList(x?.formats ?? x?.format)
+
+/** Do two sets of choices have anything in common? */
+export const shares = (a, b) => overlap(asList(a), asList(b)).length > 0
+
+/** One phrase for a set of formats, including the case where both are offered. */
+export function formatLabel(v) {
+  const list = asList(v)
+  if (list.includes('one') && list.includes('group')) return 'One-to-one or group'
+  if (list.includes('group')) return 'Small group'
+  return 'One-to-one'
+}
+
 /* A teacher declares either classes or age groups depending on what they teach;
    a family only ever gives a class. The band is derived so a family is never
    asked the same question twice in two vocabularies. */
@@ -183,7 +278,7 @@ export function scoreTeacherForRequirement(teacher, req) {
     score += 12
     reasons.push('Within your budget')
   }
-  if (teacher.formats.includes(req.format)) score += 5
+  if (shares(teacher.formats, formatsOf(req))) score += 5
 
   // Capacity shapes discovery: a teacher who cannot take anyone should not
   // dominate results, even if they are a perfect subject match.
@@ -427,7 +522,7 @@ export function filterRequirements(list, f) {
       return false
     // A family only ever gives a class, so the band is derived rather than asked.
     if (f.ageBand && ageBandForClass(r.classLevel) !== f.ageBand) return false
-    if (f.format && r.format !== f.format) return false
+    if (f.format && !formatsOf(r).includes(f.format)) return false
     if (f.text) {
       const hay = `${r.family} ${r.need} ${r.subjects.join(' ')} ${r.classLevel} ${r.board}`.toLowerCase()
       if (!f.text.split(' ').every((w) => hay.includes(w))) return false

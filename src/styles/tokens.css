@@ -6,16 +6,34 @@
    ============================================================ */
 
 :root {
-  /* ---------- Ground ---------- */
-  --bg: #f5f1ea;
+  /* ---------- Ground: a whiteboard ----------
+     The doodle pack this product draws from is published twice, once as marker
+     on white and once as chalk on black. So the two themes are the two boards,
+     and the illustrations are at home in both without being redrawn. */
+  --bg: #f4f6f7;
   --surface: #ffffff;
-  --sunk: #ebe6dc;
+  --sunk: #e8ebee;
+
+  /* What sits ON an ink block. Ink is near-black in light and near-white in
+     dark, so anything printed on it has to flip with it. */
+  --on-ink: #ffffff;
+  /* What sits ON a brand block. White on a marker colour, board-dark on a
+     chalk one, because chalk colours are pastels and white vanishes on them. */
+  --on-brand: #ffffff;
+  /* The lit circle behind the tab you are on. */
+  --hilite: #e8ebee;
+  /* Chalk dust and marker tooth. A board is never perfectly flat. */
+  --board-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/><feColorMatrix type='saturate' values='0'/></filter><rect width='180' height='180' filter='url(%23g)' opacity='0.035'/></svg>");
+  /* The ground behind the phone on a wide screen, and the dimming behind a
+     sheet. Both belong to the theme, not to a component. */
+  --frame: #dbdee4;
+  --scrim: rgba(33, 35, 40, 0.46);
 
   /* ---------- Ink ramp (all verified ≥4.5:1 on --bg) ---------- */
-  --ink: #272727;
-  --ink-2: #57534b; /* 6.5:1, secondary body */
-  --ink-3: #656158; /* ≥4.6:1 on every surface in the system */
-  --ink-4: #8e897f; /* decoration only: switch track, grab handle, empty art */
+  --ink: #212328; /* 14.2:1 on --bg */
+  --ink-2: #4b4f57; /* 7.4:1, secondary body */
+  --ink-3: #5b606a; /* 5.7:1 on --bg, 4.7:1 on the indigo tint, the tightest case */
+  --ink-4: #8b909b; /* decoration only: switch track, grab handle, empty art */
 
   /* ---------- Brand ---------- */
   --green: #0dab76; /* fills, tints, dots: never behind white text */

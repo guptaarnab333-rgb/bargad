@@ -102,11 +102,11 @@ export default function Auth() {
             <div className="authart">
               <Doodle name="globe" size={96} weight={1.4} />
             </div>
-            <h1 className="h1">{returning ? 'Welcome back' : 'Keep this on any phone'}</h1>
+            <h1 className="h1">{returning ? 'Welcome back' : 'Save your profile'}</h1>
             <p className="body" style={{ marginTop: 10, marginBottom: 24 }}>
               {returning
-                ? 'Use the number or email you set up with, and your profile, requests and chats come back.'
-                : 'Everything you just set up lives on this device. An account means it survives a new phone, a cleared browser, or a reinstall.'}
+                ? 'Use the number or email you signed up with.'
+                : 'Right now this lives only on this phone.'}
             </p>
             <Button block onClick={() => setStage('phone')}>
               Continue with phone
@@ -122,8 +122,7 @@ export default function Auth() {
             <div className="notice" style={{ marginTop: 20 }}>
               <IcLock size={18} />
               <span>
-                Your number is never shown on your profile and never used to find you. It is
-                how you get back in, nothing else.
+                Never shown on your profile. Only used to sign you in.
               </span>
             </div>
             {!returning && (
@@ -141,9 +140,9 @@ export default function Auth() {
 
         {stage === 'phone' && (
           <>
-            <h1 className="h1">What is your number?</h1>
+            <h1 className="h1">Your phone number</h1>
             <p className="body" style={{ marginTop: 10, marginBottom: 24 }}>
-              We will send a six digit code to check it is you.
+              We will text you a six digit code.
             </p>
             <Field label="Phone number">
               <div className="phonerow">
@@ -162,9 +161,9 @@ export default function Auth() {
             <Button
               block
               aria-disabled={!phoneOk}
-              onClick={() => (phoneOk ? setStage('otp') : toast('Enter a ten digit number'))}
+              onClick={() => (phoneOk ? setStage('otp') : toast('Enter 10 digits'))}
             >
-              Send the code
+              Send code
             </Button>
           </>
         )}
@@ -181,10 +180,10 @@ export default function Auth() {
             <OtpBoxes value={code} onChange={setCode} />
             <p className="sm" style={{ margin: '16px 0 24px' }}>
               {left > 0 ? (
-                <>Resend the code in {left}s</>
+                <>Resend in {left}s</>
               ) : (
                 <button className="linkish" onClick={() => setStage('otp')}>
-                  Resend the code
+                  Resend code
                 </button>
               )}
             </p>
@@ -194,16 +193,15 @@ export default function Auth() {
               onClick={() =>
                 code.length === OTP_LENGTH
                   ? finish('phone', `+91 ${phone}`)
-                  : toast('Enter all six digits')
+                  : toast('Enter all 6 digits')
               }
             >
-              {returning ? 'Log in' : 'Save my profile'}
+              {returning ? 'Log in' : 'Save profile'}
             </Button>
             <div className="notice notice--orange" style={{ marginTop: 18 }}>
               <IcInfo size={18} />
               <span>
-                Prototype: no message is sent and any six digits are accepted. In the real
-                product this is where the code from the SMS goes.
+                Prototype: no SMS is sent. Any six digits work.
               </span>
             </div>
           </>
@@ -211,9 +209,9 @@ export default function Auth() {
 
         {stage === 'email' && (
           <>
-            <h1 className="h1">What is your email?</h1>
+            <h1 className="h1">Your email address</h1>
             <p className="body" style={{ marginTop: 10, marginBottom: 24 }}>
-              We will send a link that signs you in. No password to remember.
+              We will send a link that signs you in.
             </p>
             <Field label="Email">
               <input
@@ -228,9 +226,9 @@ export default function Auth() {
             <Button
               block
               aria-disabled={!emailOk}
-              onClick={() => (emailOk ? setStage('sent') : toast('Enter a valid email address'))}
+              onClick={() => (emailOk ? setStage('sent') : toast('Enter a valid email'))}
             >
-              Send the link
+              Send link
             </Button>
           </>
         )}
@@ -242,18 +240,16 @@ export default function Auth() {
             </div>
             <h1 className="h1">Check your email</h1>
             <p className="body" style={{ marginTop: 10, marginBottom: 24 }}>
-              A sign-in link is on its way to <strong>{email.trim()}</strong>. Open it on any
-              phone and your profile comes with you.
+              We sent a sign-in link to <strong>{email.trim()}</strong>.
             </p>
             <Button block onClick={() => finish('email', email.trim())}>
               <IcCheck size={16} />
-              I have opened the link
+              I opened it
             </Button>
             <div className="notice notice--orange" style={{ marginTop: 18 }}>
               <IcInfo size={18} />
               <span>
-                Prototype: no email is sent. This button stands in for tapping the link in
-                your inbox.
+                Prototype: no email is sent. This stands in for the link.
               </span>
             </div>
           </>

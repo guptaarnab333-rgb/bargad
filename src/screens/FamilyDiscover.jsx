@@ -91,7 +91,7 @@ export default function FamilyDiscover() {
           setQ(v)
           setDropped([])
         }}
-        placeholder="Try: maths teacher near me under 3000"
+        placeholder="Maths teacher under 3000"
         onFilters={() => setOpen(true)}
         activeCount={activeCount}
       />
@@ -116,7 +116,7 @@ export default function FamilyDiscover() {
         <p className="sm" style={{ marginBottom: 14 }}>
           <span className="strong">{results.length}</span>{' '}
           {results.length === 1 ? 'teacher' : 'teachers'}
-          {adv.openOnly ? ' able to take students' : ''} · sorted by{' '}
+          {adv.openOnly ? ' with room' : ''} ·{' '}
           {SORTS.find((s) => s.id === sort).label.toLowerCase()}
         </p>
 
@@ -134,16 +134,16 @@ export default function FamilyDiscover() {
                     One honest, labelled slot keeps that visible in the product. */}
                 {i === 2 && (
                   <Promo
-                    emoji="📗"
-                    title="Oxford Class 10 board companion"
-                    body="Solved papers for CBSE and ICSE. Delivered anywhere in India."
+                    doodle="book"
+                    title="Class 10 board companion"
+                    body="Solved papers for CBSE and ICSE."
                   />
                 )}
                 {i === 7 && (
                   <Promo
-                    emoji="🎒"
-                    title="Doon Stationers · school supplies"
-                    body="Geometry boxes, lab records and chart paper, delivered across Dehradun."
+                    doodle="pencil"
+                    title="Doon Stationers"
+                    body="Geometry boxes and lab records, across Dehradun."
                   />
                 )}
               </Fragment>
@@ -152,8 +152,8 @@ export default function FamilyDiscover() {
         ) : (
           <Empty
             doodle="globe"
-            title="Nobody matches all of that"
-            body="Try removing a filter. Budget and locality are usually the two that cut the list down hardest."
+            title="No matches"
+            body="Budget and area cut the list down hardest."
             action={
               <Button
                 variant="quiet"
@@ -181,7 +181,7 @@ export default function FamilyDiscover() {
         open={open}
         onClose={() => setOpen(false)}
         title="Narrow it down"
-        subtitle="Teachers who cannot take a student are hidden by default."
+        subtitle="Teachers with no room are hidden by default."
         footer={
           <>
             <Button
@@ -281,9 +281,9 @@ export default function FamilyDiscover() {
         >
           <div className="u-spread" style={{ gap: 12 }}>
             <div className="u-grow">
-              <span className="h3">Only show teachers with room</span>
+              <span className="h3">Only teachers with room</span>
               <p className="sm" style={{ marginTop: 3 }}>
-                Hides anyone marked currently full.
+                Hides anyone marked full.
               </p>
             </div>
             <Chip tone={adv.openOnly ? 'green' : undefined}>{adv.openOnly ? 'On' : 'Off'}</Chip>

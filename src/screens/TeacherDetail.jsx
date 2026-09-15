@@ -5,7 +5,7 @@ import { REVIEWS, SLOTS } from '../data/seed'
 import { Avatar, Button, Chip, KV, Sheet, Stars, TopBar, Field, OptionGroup } from '../components/UI'
 import { CapacityChip, VerifiedChip } from '../components/Cards'
 import { IcCheck, IcInfo, IcLock, IcPin, IcShield } from '../components/Icons'
-import { avgScore, budgetLabel, distanceFrom, distLabel, inr, localityName, modeLabel, modesFor, slotLabel, teacherById, teachesRange } from '../lib/utils'
+import { avgScore, budgetLabel, distanceFrom, distLabel, formatLabel, inr, localityName, modeLabel, modesFor, slotLabel, teacherById, teachesRange } from '../lib/utils'
 
 export default function TeacherDetail() {
   const { id } = useParams()
@@ -20,11 +20,14 @@ export default function TeacherDetail() {
   const avg = avgScore(reviews)
   const km = distanceFrom(f.locality, t?.locality)
 
+  /* Start from everything the two sides already have in common rather than
+     from one arbitrary pick, and let either side be dropped. */
+  const sharedModes = (t?.modes ?? []).filter((m) => f.modes.includes(m))
   const [payload, setPayload] = useState({
     classLevel: f.classLevel,
     board: f.board,
     subjects: f.subjects.filter((s) => t?.subjects.includes(s)),
-    mode: t?.modes.find((m) => f.modes.includes(m)) ?? t?.modes[0],
+    modes: sharedModes.length ? sharedModes : (t?.modes ?? []).slice(0, 1),
     slots: f.slots.filter((s) => t?.slots.includes(s)),
     budgetMax: f.budgetMax,
     note: f.need,
@@ -37,7 +40,7 @@ export default function TeacherDetail() {
   const send = () => {
     dispatch({ type: 'SEND_REQUEST', teacherId: t.id, payload })
     setSending(false)
-    toast('Request sent. You will hear back soon', 'green')
+    toast('Request sent', 'green')
     nav('/f/requests')
   }
 
@@ -92,7 +95,7 @@ export default function TeacherDetail() {
               </p>
             </div>
             <p className="sm" style={{ maxWidth: '16ch', textAlign: 'right', color: 'var(--orange-ink)' }}>
-              Set by {t.name.split(' ')[0]}. Talk about it in chat once you connect.
+              Set by {t.name.split(' ')[0]}. Discuss it in chat.
             </p>
           </div>
         </div>
@@ -105,7 +108,7 @@ export default function TeacherDetail() {
 
         {/* ---- Facts ---- */}
         <h2 className="h2" style={{ marginTop: 28, marginBottom: 12 }}>
-          The details
+          Details
         </h2>
         <KV
           items={[
@@ -114,11 +117,11 @@ export default function TeacherDetail() {
             { k: 'Boards', v: t.boards.join(', ') },
             { k: t.classes?.length ? 'Classes' : 'Age groups', v: teachesRange(t) },
             { k: 'How classes happen', v: t.modes.map((m) => modeLabel(m, 'family')).join(' · ') },
-            { k: 'Format', v: t.formats.includes('group') ? 'One-to-one or group' : 'One-to-one' },
+            { k: 'Format', v: formatLabel(t.formats) },
             { k: 'Available', v: t.slots.map(slotLabel).join(' · ') },
             { k: 'Travels up to', v: `${t.radiusKm} km` },
             { k: 'Students taught', v: `${t.studentsTaught}` },
-            { k: 'Usually replies in', v: `${t.responseHrs} hours` },
+            { k: 'Replies in', v: `${t.responseHrs} hours` },
           ]}
         />
 
@@ -131,8 +134,8 @@ export default function TeacherDetail() {
           <ul style={{ marginTop: 14, display: 'grid', gap: 10 }}>
             {[
               ['Government ID seen', t.verified.includes('id')],
-              ['Qualification document seen', t.verified.includes('qualification')],
-              ['Independently verified with the university', false],
+              ['Qualification seen', t.verified.includes('qualification')],
+              ['Verified with the university', false],
               ['Police background check', false],
             ].map(([label, done]) => (
               <li key={label} className="u-row" style={{ gap: 10 }}>
@@ -157,9 +160,7 @@ export default function TeacherDetail() {
             ))}
           </ul>
           <p className="xs" style={{ marginTop: 14, lineHeight: 1.5 }}>
-            Bargad has seen the documents a teacher uploaded. It has not confirmed them with any
-            institution, and does not run background checks. Meet for a demo class before you
-            decide.
+            Bargad has seen these documents, not confirmed them. Meet before you decide.
           </p>
         </div>
 
@@ -167,10 +168,10 @@ export default function TeacherDetail() {
         {reviews.length > 0 && (
           <>
             <h2 className="h2" style={{ marginTop: 28, marginBottom: 4 }}>
-              From families who finished
+              After tuition ended
             </h2>
             <p className="sm" style={{ marginBottom: 14 }}>
-              Reviews can only be written after a tuition relationship has ended.
+              Written only after tuition ends.
             </p>
             {avg && (
               <div className="card card--sunk" style={{ marginBottom: 8 }}>
@@ -210,9 +211,8 @@ export default function TeacherDetail() {
         <div className="notice notice--orange" style={{ marginTop: 24 }}>
           <IcLock size={19} />
           <span className="sm">
-            <strong className="strong">Nothing private is shown here.</strong> No phone number,
-            no address. If {t.name.split(' ')[0]} accepts your request, a private chat opens and
-            you can share what you choose.
+            <strong className="strong">Nothing private here.</strong> A chat opens only if{' '}
+            {t.name.split(' ')[0]} accepts.
           </span>
         </div>
 
@@ -220,11 +220,11 @@ export default function TeacherDetail() {
         <div style={{ marginTop: 26 }}>
           {already ? (
             <Button block variant="quiet" onClick={() => nav('/f/requests')}>
-              You have already sent a request. See it
+              See your request
             </Button>
           ) : canRequest ? (
             <Button block onClick={() => setSending(true)}>
-              Send a request
+              Send request
             </Button>
           ) : (
             <>
@@ -232,8 +232,7 @@ export default function TeacherDetail() {
                 {t.name.split(' ')[0]} is currently full
               </Button>
               <p className="xs" style={{ textAlign: 'center', marginTop: 10 }}>
-                Teachers who cannot take a student are shown, but not contactable, so you do not
-                spend a week waiting for a no.
+                Full teachers are shown, but not contactable.
               </p>
             </>
           )}
@@ -245,16 +244,18 @@ export default function TeacherDetail() {
         open={sending}
         onClose={() => setSending(false)}
         title={`Request ${t.name.split(' ')[0]}`}
-        subtitle="Already filled in from your requirement. Change anything that is different for this teacher."
+        subtitle="Filled in from your requirement. Change anything."
         footer={
           <Button
             block
             onClick={() =>
-              payload.subjects.length
-                ? send()
-                : toast('Choose at least one subject you need help with.')
+              !payload.subjects.length
+                ? toast('Choose at least one subject')
+                : !payload.modes.length
+                  ? toast('Choose how classes happen')
+                  : send()
             }
-            aria-disabled={!payload.subjects.length}
+            aria-disabled={!payload.subjects.length || !payload.modes.length}
           >
             Send request
           </Button>
@@ -266,12 +267,11 @@ export default function TeacherDetail() {
             {f.classLevel} · {f.board} · {localityName(f.locality)}
           </p>
           <p className="xs" style={{ marginTop: 6 }}>
-            Not {f.learner}’s full name, your address or your number. Those stay private unless
-            you accept each other.
+            Not {f.learner}’s name, your address or your number.
           </p>
         </div>
 
-        <Field label="Subjects you need">
+        <Field group label="Subjects">
           <OptionGroup
             options={t.subjects}
             value={payload.subjects}
@@ -280,16 +280,17 @@ export default function TeacherDetail() {
           />
         </Field>
 
-        <Field label="How should classes happen?">
+        <Field group label="How classes happen" hint="Pick any that suit you.">
           <OptionGroup
             options={modesFor('family').filter((m) => t.modes.includes(m.id))}
-            value={payload.mode}
-            onChange={(v) => set('mode', v)}
+            value={payload.modes}
+            onChange={(v) => set('modes', v)}
+            multi
             wide
           />
         </Field>
 
-        <Field label="When suits you?" hint={`${t.name.split(' ')[0]} is free: ${t.slots.map(slotLabel).join(', ')}`}>
+        <Field group label="When suits you" hint={`${t.name.split(' ')[0]} is free: ${t.slots.map(slotLabel).join(', ')}`}>
           <OptionGroup
             options={SLOTS.filter((s) => t.slots.includes(s.id))}
             value={payload.slots}
@@ -301,22 +302,26 @@ export default function TeacherDetail() {
 
         <Field
           label="Anything they should know"
-          hint="Teachers say this is the part they read first."
+          hint="Teachers read this first."
         >
+          {/* This starts filled from the requirement, but a family that left
+              that blank met an empty box with nothing telling them it wanted
+              writing. The example does that job; the hint alone did not. */}
           <textarea
             className="textarea"
             value={payload.note}
             onChange={(e) => set('note', e.target.value)}
+            placeholder="Boards in February. Loses marks in geometry."
           />
         </Field>
 
         <div className="notice" style={{ marginBottom: 24 }}>
           <IcInfo size={18} />
           <span>
-            Their fee is <strong className="strong">{inr(t.fee)}/month</strong>; your budget is{' '}
+            <strong className="strong">{inr(t.fee)}/month</strong> against your budget of{' '}
             {budgetLabel(f.budgetMax)}.{' '}
             {t.fee > f.budgetMax
-              ? 'That is above your range. Say so here rather than after a demo.'
+              ? 'Above your range. Say so now, not after a demo.'
               : 'That fits.'}
           </span>
         </div>

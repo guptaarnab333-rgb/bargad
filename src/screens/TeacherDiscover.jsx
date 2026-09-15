@@ -92,7 +92,7 @@ export default function TeacherDiscover() {
       <SearchBar
         value={q}
         onChange={(v) => { setQ(v); setDropped([]) }}
-        placeholder="Try: class 9 maths in Dalanwala"
+        placeholder="Class 9 maths in Dalanwala"
         onFilters={() => setOpen(true)}
         activeCount={activeCount}
       />
@@ -116,8 +116,7 @@ export default function TeacherDiscover() {
       <div className="page" style={{ paddingTop: 16 }}>
         <p className="sm" style={{ marginBottom: 14 }}>
           <span className="strong">{results.length}</span>{' '}
-          {results.length === 1 ? 'family' : 'families'} looking · you choose who to answer, and
-          it costs nothing to reply.
+          {results.length === 1 ? 'family' : 'families'} looking · replying is free
         </p>
 
         {results.length ? (
@@ -137,8 +136,8 @@ export default function TeacherDiscover() {
         ) : (
           <Empty
             doodle="beaker"
-            title="No requirements match that"
-            body="Families post through the day. Clearing a filter or two usually brings a few back."
+            title="No matches"
+            body="Clearing a filter usually brings some back."
             action={
               <Button
                 variant="quiet"
@@ -157,7 +156,7 @@ export default function TeacherDiscover() {
         open={open}
         onClose={() => setOpen(false)}
         title="Narrow it down"
-        subtitle="Only what you can genuinely take on. Replying to everything helps nobody."
+        subtitle="Only what you can genuinely take on."
         footer={
           <>
             <Button

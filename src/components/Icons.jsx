@@ -30,13 +30,19 @@ export const IcSearch = (p) => (
   </S>
 )
 
+/* A page you act on, with the corner turned. It replaced two rows of
+   opposing arrows, which said "transfer" rather than "requests" and turned to
+   noise at 22px beside the magnifier. Drawn here rather than traced from the
+   reference PNG, so it keeps this set's stroke, cap and 24px box. */
 export const IcRequests = (p) => (
   <S {...p}>
-    <path d="M4 6.5h11" />
-    <path d="M4 12h16" />
-    <path d="M4 17.5h11" />
-    <path d="m17 4 3 2.5-3 2.5" />
-    <path d="m7 15-3 2.5L7 20" />
+    <path d="M9.4 3h6.4a1.4 1.4 0 0 1 1.4 1.4v5.4" />
+    <path d="M4.6 8.5v10.1A1.4 1.4 0 0 0 6 20h4.2" />
+    <path d="M9.4 3 4.6 8.5" />
+    <path d="M7.6 10.4h5.6" />
+    <path d="M7.6 14h3.4" />
+    <circle cx="17.2" cy="17.2" r="4.4" />
+    <path d="m15.2 17.3 1.4 1.4 2.8-2.9" />
   </S>
 )
 

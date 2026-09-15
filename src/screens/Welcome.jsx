@@ -12,16 +12,14 @@ const ROLES = [
   {
     id: 'teacher',
     title: 'I teach',
-    body: 'Set your subjects, your area and your fee. Choose which families to answer.',
+    body: 'Set your subjects, area and fee.',
     cls: 'rolecard--teach',
-    doodle: 'book',
   },
   {
     id: 'family',
-    title: 'I am looking for a teacher',
-    body: 'Say what your child needs. See teachers who are actually free right now.',
+    title: 'I need a teacher',
+    body: 'Tell us what your child needs.',
     cls: 'rolecard--find',
-    doodle: 'globe',
   },
 ]
 
@@ -49,46 +47,39 @@ export default function Welcome() {
 
         <div className="welcome__top">
           <Logo size={38} />
+          {/* No hardcoded break. At this size the line cannot hold "Teachers
+              and families" on one row at 375px, so a forced break produced a
+              stranded middle line. Letting the browser balance it is the only
+              way the bigger size reads as a block rather than as a mistake. */}
           <h1 className="display welcome__head">
-            Teachers and families
-            <br />
-            <em>find each other</em> here.
+            Teachers and families connect <em>directly</em>.
           </h1>
-          <p className="welcome__sub">A local learning network, anywhere in India.</p>
+          <p className="welcome__sub">Local tuition, anywhere in India.</p>
         </div>
 
         <div className="welcome__choice">
-          <p className="welcome__prompt">Which are you?</p>
-          {ROLES.map(({ id, title, body, cls, doodle }) => (
-            <button key={id} className={`rolecard ${cls}`} onClick={() => go(id)}>
-              <Doodle name={doodle} size={86} weight={1.6} className="rolecard__art" />
-              <span className="rolecard__title">{title}</span>
+          {ROLES.map(({ id, title, body, cls }) => (
+            <div key={id} className="rolepick">
+              <button className={`rolecard ${cls}`} onClick={() => go(id)}>
+                {title}
+              </button>
               <span className="rolecard__body">{body}</span>
-            </button>
+            </div>
           ))}
 
           {(state.teacher || state.family) && (
-            <p className="xs" style={{ textAlign: 'center', marginTop: 4 }}>
-              You already have {state.teacher && state.family ? 'both profiles' : 'a profile'} on
-              this device. Pick one to continue.
+            <p className="xs" style={{ textAlign: 'center', marginTop: 14 }}>
+              Already set up on this device. Pick one.
             </p>
           )}
         </div>
 
         <div className="welcome__foot">
-          <p className="welcome__note">
-            <strong>Free for everyone.</strong> Teachers are never charged to reply, families are
-            never charged to message. Bargad is paid for by advertising.
-          </p>
-          <p className="welcome__note">
-            <strong>No cold messages.</strong> Phone numbers and addresses stay hidden until both
-            sides agree to connect.
-          </p>
           <button className="welcome__login" onClick={() => nav('/auth?mode=login')}>
-            Used Bargad before? <strong>Log in</strong>
+            Already here? <strong>Log in</strong>
           </button>
           <p className="xs" style={{ textAlign: 'center' }}>
-            Academic prototype · All people and data are fictional
+            Prototype · People and data are fictional
           </p>
         </div>
       </div>

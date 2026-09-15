@@ -2,12 +2,12 @@ import { HomeHeader } from '../components/HomeHeader'
 import { Link, useNavigate } from 'react-router-dom'
 import { useMemo, useState } from 'react'
 import { useApp } from '../store/AppContext'
-import { CAPACITY, REQUIREMENTS } from '../data/seed'
+import { CAPACITY, REQUIREMENTS, SEATS_CAP } from '../data/seed'
 import { RequirementCard, RequestCard } from '../components/Cards'
 import { Button, Chip, Sheet, OptionGroup, SectionHead, Avatar } from '../components/UI'
 import { BannerDoodle, Logo } from '../components/Brand'
 import { IcArrow, IcSliders } from '../components/Icons'
-import { greeting, inr, localityName, requirementById, scoreRequirementForTeacher, slotShort, teachesRange } from '../lib/utils'
+import { dayLabel, greeting, inr, localityName, requirementById, scoreRequirementForTeacher, seatsLabel, seatsLine, slotShort, teachesRange } from '../lib/utils'
 
 export default function TeacherHome() {
   const { state, dispatch, toast } = useApp()
@@ -68,7 +68,7 @@ export default function TeacherHome() {
           <div className="intent__foot">
             <span className="sm strong">
               {isOn
-                ? `${t.seatsLeft} ${t.seatsLeft === 1 ? 'seat' : 'seats'} open`
+                ? `${seatsLine(t.seatsLeft)} open`
                 : 'Hidden from new requests'}
             </span>
             <Button size="sm" variant="quiet" onClick={() => setEditing(true)}>
@@ -85,8 +85,8 @@ export default function TeacherHome() {
           <SectionHead
             title={
               matches.length
-                ? `${matches.length} ${matches.length === 1 ? 'family is' : 'families are'} looking for what you teach`
-                : 'Nothing matching right now'
+                ? `${matches.length} ${matches.length === 1 ? 'family' : 'families'} near you`
+                : 'No matches today'
             }
             action={
               matches.length > 2 ? (
@@ -112,8 +112,7 @@ export default function TeacherHome() {
             <div className="notice">
               <span style={{ flex: 'none', fontSize: 17 }}>🌱</span>
               <span>
-                No family nearby is asking for {t.subjects.join(' or ')} at your class levels
-                today. Widening your travel radius in Profile usually helps.
+                Nothing nearby today. Widening your travel radius usually helps.
               </span>
             </div>
           )}
@@ -122,8 +121,8 @@ export default function TeacherHome() {
         <div className="notice" style={{ marginTop: 26 }}>
           <span style={{ flex: 'none', fontSize: 17 }}>🔕</span>
           <span>
-            You are marked as <strong className="strong">{cap.label.toLowerCase()}</strong>, so
-            families are not sending you requests. Turn yourself back on whenever you have room.
+            Marked <strong className="strong">{cap.label.toLowerCase()}</strong>, so families
+            cannot send requests.
           </span>
         </div>
       )}
@@ -150,7 +149,7 @@ export default function TeacherHome() {
                   avatarName={r.family}
                   title={`${r.subjects.join(' & ')} · ${r.classLevel}`}
                   sub={`${r.family} · ${localityName(r.locality)}`}
-                  meta={`Received ${req.createdAt} · replies expected within 48 hours`}
+                  meta={`Received ${req.createdAt}`}
                   status="pending"
                 />
               )
@@ -176,7 +175,7 @@ export default function TeacherHome() {
                         {th.active
                           ? 'Tuition running'
                           : th.demo?.status === 'confirmed'
-                            ? `Demo confirmed · ${th.demo.day}`
+                            ? `Demo confirmed · ${dayLabel(th.demo.date)}`
                             : th.messages[th.messages.length - 1]?.text}
                       </p>
                     </div>
@@ -194,7 +193,7 @@ export default function TeacherHome() {
         open={editing}
         onClose={() => setEditing(false)}
         title="Are you taking students?"
-        subtitle="Families only see teachers who can actually accept them."
+        subtitle="Families only see teachers who can accept them."
         footer={
           <Button block onClick={() => setEditing(false)}>
             Done
@@ -211,18 +210,18 @@ export default function TeacherHome() {
           value={t.capacity}
           onChange={(v) => {
             dispatch({ type: 'SET_CAPACITY', capacity: v })
-            toast(`You are now “${CAPACITY[v].label}”`)
+            toast(CAPACITY[v].label)
           }}
           wide
         />
         {(t.capacity === 'open' || t.capacity === 'limited') && (
           <div style={{ marginTop: 22 }}>
-            <span className="field__label">Seats you can take: {t.seatsLeft}</span>
+            <span className="field__label">Seats open: {seatsLabel(t.seatsLeft)}</span>
             <input
               className="range"
               type="range"
               min="1"
-              max="10"
+              max={SEATS_CAP}
               value={t.seatsLeft}
               onChange={(e) => dispatch({ type: 'SET_SEATS', seats: +e.target.value })}
             />
@@ -230,10 +229,7 @@ export default function TeacherHome() {
         )}
         <div className="notice" style={{ margin: '18px 0 24px' }}>
           <span style={{ flex: 'none', fontSize: 17 }}>⚖️</span>
-          <span>
-            Marking yourself full does not hurt your profile. It moves you down in discovery so
-            families stop sending requests you would have to refuse.
-          </span>
+          <span>Being full does not hurt your profile.</span>
         </div>
       </Sheet>
     </div>

@@ -17,22 +17,22 @@ const SLIDES = [
     doodle: 'plane',
     tint: 'intro--green',
     token: '--green-t',
-    title: 'Nobody stands in between',
-    body: 'No bureau taking your first month’s fee. No charge for a teacher to reply to you. You find each other and deal with each other directly.',
+    title: 'No one in between',
+    body: 'No agency, no commission, no charge to reply.',
   },
   {
     doodle: 'book',
     tint: 'intro--indigo',
     token: '--indigo-t',
     title: 'Both sides choose',
-    body: 'Teachers decide which families to answer. Families decide which teacher to accept. Nobody here is a lead being sold to someone.',
+    body: 'Teachers pick families. Families pick teachers.',
   },
   {
     doodle: 'globe',
     tint: 'intro--orange',
     token: '--orange-t',
-    title: 'Teachers near you, who are actually free',
-    body: 'See who teaches your child’s class in your area, what they charge, and whether they have room right now, before you message anyone.',
+    title: 'Teachers near you',
+    body: 'See fees and free seats before you message.',
   },
 ]
 
@@ -88,7 +88,7 @@ export default function Intro() {
             ))}
           </div>
           <Button block onClick={() => (last ? finish() : setI(i + 1))}>
-            {last ? (home ? 'Back to Bargad' : 'Get started') : 'Next'}
+            {last ? (home ? 'Done' : 'Get started') : 'Next'}
           </Button>
         </div>
       </div>

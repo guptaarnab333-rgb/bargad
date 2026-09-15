@@ -20,6 +20,14 @@ const DOODLES = Object.fromEntries(
     const vb = (raw.match(/viewBox="([\d.\s-]+)"/) || [])[1]
     const [, , w, h] = vb ? vb.split(/\s+/).map(Number) : [0, 0, 1, 1]
     const svg = raw
+      /* The pack ships every stroke as literal black. This line is what lets a
+         doodle take the colour of whatever it is drawn on, and it is why one
+         set of files serves both boards: dark marker on the whiteboard, chalk
+         on the blackboard. The comment at the top of this file described it
+         long before the code did, and until now every doodle rendered pure
+         black. That only ever looked right because the light theme's ink is
+         nearly black too; on the blackboard they were invisible. */
+      .replace(/stroke="(black|#000|#000000)"/gi, 'stroke="currentColor"')
       .replace(/\spreserveAspectRatio="none"/, '')
       .replace(/\s(width|height)="[^"]*"/g, '')
       .replace('<svg ', '<svg class="doodle__svg" ')
