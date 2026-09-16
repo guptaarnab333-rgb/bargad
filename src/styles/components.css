@@ -5,12 +5,21 @@
    ============================================================ */
 
 /* ---------------- App shell ---------------- */
+/* A phone-shaped app has to be exactly as tall as the device, and 100dvh is
+   not a reliable way to ask. Safari recomputes it as its toolbars come and go,
+   an installed PWA has no toolbars at all, and the two disagree: the bar ended
+   up floating well above the bottom of the screen with the page ground showing
+   underneath it.
+
+   Fixed to the viewport instead. There is nothing to recompute and nothing to
+   lag, in a tab or installed. Left and right at 0 with a max-width and auto
+   margins keeps it centred. */
 .shell {
-  position: relative;
+  position: fixed;
+  inset: 0;
   width: 100%;
   max-width: var(--shell-max);
   margin: 0 auto;
-  height: 100dvh;
   /* The grain paints over the colour, under everything else, so the whole
      board has tooth without a single extra element in the tree. */
   background-color: var(--bg);
@@ -21,7 +30,11 @@
 }
 
 @media (min-width: 900px) {
+  /* On a desk the shell is an object on a page, not the page, so it goes back
+     into flow and the frame around it can breathe. */
   .shell {
+    position: relative;
+    inset: auto;
     max-width: 420px;
     height: min(880px, calc(100dvh - 48px));
     border-radius: 44px;
@@ -2082,6 +2095,14 @@ a.card:active {
 }
 
 /* ---------------- Home masthead ---------------- */
+/* The bar sticks to the top of the scroller, and the top of the scroller is
+   the top of the device: behind the clock and the camera. So the mark slid
+   under the status bar and sat there, unreadable, for the whole scroll.
+
+   The inset belongs to the bar rather than to the page, because the bar is what
+   has to clear the hardware once it is stuck. It carries the inset as padding
+   and pulls itself up by the same amount, so nothing moves at rest and the
+   backdrop covers the status bar once the bar is holding. */
 .appbar {
   position: sticky;
   top: 0;
@@ -2090,8 +2111,8 @@ a.card:active {
   align-items: center;
   justify-content: space-between;
   /* Bleeds past the page gutter so the backdrop reaches the screen edges. */
-  margin: 0 calc(var(--s-5) * -1) 22px;
-  padding: 6px var(--s-5) 10px;
+  margin: calc(var(--safe-t) * -1) calc(var(--s-5) * -1) 22px;
+  padding: calc(var(--safe-t) + 6px) var(--s-5) 10px;
   background: transparent;
   transition: background var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
 }
