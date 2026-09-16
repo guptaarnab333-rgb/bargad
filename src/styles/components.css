@@ -43,7 +43,8 @@
 }
 
 .shell__scroll--tabbed {
-  padding-bottom: calc(88px + var(--safe-b));
+  /* Clears the bar wherever the bar now sits. */
+  padding-bottom: calc(82px + var(--tabbar-gap));
 }
 
 .shell__scroll {
@@ -953,7 +954,7 @@ a.card:active {
   position: absolute;
   left: var(--s-4);
   right: var(--s-4);
-  bottom: calc(var(--safe-b) + 12px);
+  bottom: var(--tabbar-gap);
   z-index: var(--z-nav);
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -1115,7 +1116,7 @@ a.card:active {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: calc(var(--safe-b) + 88px);
+  bottom: calc(var(--tabbar-gap) + 80px);
   z-index: var(--z-toast);
   display: flex;
   flex-direction: column;

@@ -133,6 +133,14 @@
   /* ---------- Layout ---------- */
   --shell-max: 460px;
   --safe-b: env(safe-area-inset-bottom, 0px);
+
+  /* How far the floating tab bar sits above the bottom of the screen. Clearing
+     the whole home-indicator inset AND adding to it left the bar hovering well
+     up the display with a band of empty ground under it. The indicator glyph
+     only occupies the lowest few pixels of that inset, so the bar can sit
+     inside it and still never be touched by it. One value, so the scroll
+     padding and the toasts move with the bar instead of drifting from it. */
+  --tabbar-gap: max(8px, calc(var(--safe-b) - 16px));
   --safe-t: env(safe-area-inset-top, 0px);
 }
 
